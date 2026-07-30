@@ -1,0 +1,77 @@
+=== 권총 종목 분류 결과 (2024+) ===
+고유 종목명: 114
+  분류 성공: 65종 / 4764행
+  결선 스케줄(제외): 27종 / 183행
+  부분·중복(제외): 22종 / 483행
+  ★미분류: 0종 / 0행
+
+--- 표준코드별 집계 ---
+    704  AP10M-M-SENIOR
+    559  AP10M-W-SENIOR
+    506  AP10M-X-SENIOR-MIX
+    422  SP25M-W-SENIOR
+    325  RFP25M-M-SENIOR
+    257  AP10M-M-JUNIOR
+    226  AP10M-W-JUNIOR
+    214  AP10M-X-JUNIOR-MIX
+    193  FP50M-M-SENIOR
+    184  STP25M-M-SENIOR
+    127  SP25M-W-JUNIOR
+    122  SP25M-M-SENIOR
+    105  RFP25M-M-JUNIOR
+    104  SP25M-M-JUNIOR
+     90  CFP25M-M-SENIOR
+     89  STP25M-M-JUNIOR
+     88  AP10M-M-U18
+     78  AP10M-X-U18-MIX
+     72  AP10M-W-U18
+     69  FP50M-M-JUNIOR
+     39  AP10M-M-U16
+     30  AP10M-X-U16-MIX
+     29  STP25M-W-JUNIOR
+     26  AP10M-W-U16
+     19  STP25M-W-SENIOR
+     18  AP10M-W-YOUTH
+     18  FP50M-W-JUNIOR
+     16  AP10M-X-YOUTH-MIX
+     16  AP10M-M-YOUTH
+     15  FP50M-W-SENIOR
+      2  CFP25M-M-JUNIOR
+      1  AP10M-M-SENIOR-TEAM
+      1  AP10M-W-SENIOR-TEAM
+
+--- 부분·중복으로 제외된 종목명 ---
+  152  "25m Súng ngắn thể thao nữ 1/2" → SP25M-W-SENIOR
+  144  "25m Súng ngắn bắn nhanh nam 1/2" → RFP25M-M-SENIOR
+  86  "25m Súng ngắn thể thao nữ trẻ 1/2" → SP25M-W-JUNIOR
+  71  "25m Súng ngắn bắn nhanh nam trẻ 1/2" → RFP25M-M-JUNIOR
+  5  "25m Súng ngắn bắn nhanh nam 2/2" → RFP25M-M-SENIOR
+  4  "25m Súng ngắn thể thao nữ 2/2" → SP25M-W-SENIOR
+  2  "25m Súng ngắn thể thao nam trẻ 1/2" → SP25M-M-JUNIOR
+  2  "25m Súng ngắn thể thao nữ - Chậm" → SP25M-W-SENIOR
+  2  "25m Súng ngắn thể thao nữ - Nhanh" → SP25M-W-SENIOR
+  2  "25m Súng ngắn bắn nhanh nam - 1/2" → RFP25M-M-SENIOR
+  2  "25m Súng ngắn bắn nhanh nam - 2/2" → RFP25M-M-SENIOR
+  1  "25m Súng ngắn bắn nhanh nam trẻ 2/2" → RFP25M-M-JUNIOR
+  1  "25m Súng ngắn thể thao nam trẻ 2/2" → SP25M-M-JUNIOR
+  1  "25m Súng ngắn thể thao nữ trẻ 2/2" → SP25M-W-JUNIOR
+  1  "25m Súng ngắn ổ quay nam 1/2" → CFP25M-M-SENIOR
+  1  "25m Súng ngắn ổ quay nam 2/2" → CFP25M-M-SENIOR
+  1  "25m Súng ngắn thể thao nữ - 2/2" → SP25M-W-SENIOR
+  1  "25m Súng ngắn thể thao nữ - 1/2" → SP25M-W-SENIOR
+  1  "25m Súng ngắn thể thao nam - trẻ - 1/2" → SP25M-M-JUNIOR
+  1  "25m Súng ngắn thể thao nữ - trẻ - 1/2" → SP25M-W-JUNIOR
+  1  "25m Súng ngắn bắn nhanh nam - trẻ - 1/2" → RFP25M-M-JUNIOR
+  1  "25m Súng ngắn bắn nhanh nam - trẻ - 2/2" → RFP25M-M-JUNIOR
+
+--- 결선 스케줄로 제외된 종목명 (앞 10) ---
+  26  "10m Súng ngắn hơi nam - C.kết"
+  24  "10m Súng ngắn hơi hỗn hợp đồng đội - C.kết"
+  23  "10m Súng ngắn hơi nữ - C.kết"
+  22  "25m Súng ngắn thể thao nữ - C.kết"
+  20  "25m Súng ngắn bắn nhanh nam - C.kết"
+  10  "10m Súng ngắn hơi hỗn hợp đồng đội trẻ - C.kết"
+  9  "10m Súng ngắn hơi nam trẻ - C.kết"
+  8  "10m Súng ngắn hơi nữ trẻ - C.kết"
+  6  "25m Súng ngắn bắn nhanh nam trẻ - C.kết"
+  6  "25m Súng ngắn thể thao nữ trẻ - C.kết"

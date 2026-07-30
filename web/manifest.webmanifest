@@ -1,0 +1,14 @@
+{
+  "name": "베트남 권총기록 아카이브",
+  "short_name": "권총기록",
+  "description": "ISSF 권총 대회기록 조회·분석",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f1216",
+  "theme_color": "#0f1216",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

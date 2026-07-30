@@ -1,0 +1,18 @@
+{
+  "name": "vn-pistol-archive",
+  "version": "0.1.0",
+  "private": true,
+  "description": "베트남 사격연맹 권총기록 아카이브 — ISSF 권총 전 종목 수집·정규화·검색 DB",
+  "scripts": {
+    "etl": "node etl.js",
+    "etl:fetch": "node etl.js --fetch",
+    "load": "node load-db.js",
+    "load:data": "node load-db.js --data-only",
+    "update": "node etl.js --fetch && node load-db.js --data-only",
+    "lookup": "node lookup.js",
+    "classify": "node test-classify.js"
+  },
+  "dependencies": {
+    "pg": "^8.13.0"
+  }
+}
