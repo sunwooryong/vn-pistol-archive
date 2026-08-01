@@ -25,6 +25,10 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '20' }
 
+      - name: Keep Supabase awake
+        run: |
+          curl -s -o /dev/null "https://qkrzrdwcchszkqrywnil.supabase.co/rest/v1/profiles?select=id&limit=1" -H "apikey: sb_publishable_axYZFE3cRu6k12ntG8TItA_X7Nc5VTv" || true
+
       - name: ETL fetch live sheet
         run: node etl.js --fetch
 
