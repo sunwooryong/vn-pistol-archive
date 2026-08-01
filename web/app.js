@@ -47,10 +47,24 @@ const views = {};
 function show(tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.tab === tab));
   document.querySelectorAll('.view').forEach(v => v.hidden = v.id !== 'view-' + tab);
-  if (tab === 'fav') { Fav.renderTab($('#view-fav')); return; }  // 매번 새로 그림
+  if (tab === 'fav') { Fav.renderTab($('#view-fav')); return; }   // 매번 새로 그림
+  if (tab === 'admin') { window.coachApprovals($('#view-admin')); return; }
+  if (tab === 'me') { renderMe(); return; }
   if (!views[tab]) { views[tab] = true; init[tab](); }
 }
 const init = {};
+
+// 로그인한 선수 본인 대시보드
+async function renderMe() {
+  const box = $('#view-me');
+  const key = window.APP_ROLE && window.APP_ROLE.athleteKey;
+  if (!key) { box.innerHTML = '<div class="muted">연결된 선수 정보가 없습니다.</div>'; return; }
+  box.innerHTML = '<div class="muted">내 기록 불러오는 중…</div>';
+  const a = await DB.athleteByKey(key);
+  if (!a) { box.innerHTML = '<div class="muted">현재 데이터에서 본인 기록을 찾지 못했습니다. 코치에게 문의하세요.</div>'; return; }
+  const rows = await DB.athleteCareer(a.id);
+  buildCareer({ id: a.id, ...a }, rows, box);
+}
 
 // =====================================================================
 //  선수 검색
@@ -494,10 +508,21 @@ async function initInfo() {
   document.addEventListener('click', e => { if (!e.target.closest('#info-btn') && !e.target.closest('#info-pop')) pop.hidden = true; });
 }
 
-// ---------- 부팅 ----------
-document.querySelectorAll('.tab').forEach(t => t.onclick = () => show(t.dataset.tab));
-initInfo();
-show('athlete');
+// ---------- 앱 시작 (auth.js 가 로그인 후 호출) ----------
+window.startApp = function (opts) {
+  window.APP_ROLE = opts || { role: 'coach' };
+  const role = window.APP_ROLE.role;
+  // 역할별 탭 노출
+  const showTab = (name, on) => { const t = document.querySelector(`.tab[data-tab="${name}"]`); if (t) t.hidden = !on; };
+  showTab('fav', role === 'coach');
+  showTab('admin', role === 'coach');
+  showTab('me', role === 'athlete');
+  // 선수는 검색/즐겨찾기 대신 '내 정보'가 기본
+  document.querySelectorAll('.tab').forEach(t => t.onclick = () => show(t.dataset.tab));
+  const lo = $('#logout-btn'); if (lo) lo.onclick = () => window.authLogout();
+  initInfo();
+  show(role === 'athlete' ? 'me' : 'athlete');
+};
 
 // PWA 서비스워커 등록 (오프라인·홈화면 설치)
 if ('serviceWorker' in navigator) {

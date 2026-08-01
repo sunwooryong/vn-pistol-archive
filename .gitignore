@@ -2,3 +2,4 @@ build/
 node_modules/
 data/shooting.csv
 dist/
+.github/workflows/

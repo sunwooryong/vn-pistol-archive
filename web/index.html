@@ -7,86 +7,98 @@
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#0f1216">
   <link rel="apple-touch-icon" href="icon.svg">
-  <link rel="stylesheet" href="style.css?v=20">
+  <link rel="stylesheet" href="style.css?v=21">
 </head>
 <body>
-  <header>
-    <div class="hwrap">
-      <div class="htop">
-        <h1>권총기록 아카이브</h1>
-        <button id="info-btn" aria-label="데이터 정보">ⓘ <span id="info-date"></span></button>
+  <!-- 로그인 게이트 (로그인 전까지 표시) -->
+  <div id="auth-gate"></div>
+
+  <!-- 앱 (로그인 후 표시) -->
+  <div id="app-root" hidden>
+    <header>
+      <div class="hwrap">
+        <div class="htop">
+          <h1>권총기록 아카이브</h1>
+          <div class="hbtns">
+            <button id="info-btn" aria-label="데이터 정보">ⓘ <span id="info-date"></span></button>
+            <button id="logout-btn" aria-label="로그아웃">로그아웃</button>
+          </div>
+        </div>
+        <p class="tag">ISSF 권총 · 베트남 사격연맹</p>
       </div>
-      <p class="tag">ISSF 권총 · 베트남 사격연맹</p>
-    </div>
-    <div id="info-pop" hidden></div>
-  </header>
+      <div id="info-pop" hidden></div>
+    </header>
 
-  <nav class="tabs">
-    <button class="tab on" data-tab="athlete">선수</button>
-    <button class="tab" data-tab="comp">대회별</button>
-    <button class="tab" data-tab="medals">입상실적</button>
-    <button class="tab" data-tab="rank">랭킹</button>
-    <button class="tab" data-tab="fav">★</button>
-  </nav>
+    <nav class="tabs">
+      <button class="tab" data-tab="me" hidden>내 정보</button>
+      <button class="tab on" data-tab="athlete">선수</button>
+      <button class="tab" data-tab="comp">대회별</button>
+      <button class="tab" data-tab="medals">입상실적</button>
+      <button class="tab" data-tab="rank">랭킹</button>
+      <button class="tab" data-tab="fav" hidden>★</button>
+      <button class="tab" data-tab="admin" hidden>관리</button>
+    </nav>
 
-  <main>
-    <!-- 선수 검색 -->
-    <section id="view-athlete" class="view">
-      <div class="searchbar">
-        <input id="ath-q" type="search" placeholder="선수명 검색 (예: Phạm Quang Huy)" autocomplete="off">
+    <main>
+      <section id="view-me" class="view" hidden></section>
+
+      <section id="view-athlete" class="view">
+        <div class="searchbar">
+          <input id="ath-q" type="search" placeholder="선수명 검색 (예: Phạm Quang Huy)" autocomplete="off">
+        </div>
+        <div id="ath-count" class="count"></div>
+        <div id="ath-list" class="ath-list"></div>
+        <div id="ath-detail" class="ath-detail"></div>
+      </section>
+
+      <section id="view-comp" class="view" hidden>
+        <div class="filters">
+          <select id="comp-year"></select>
+          <select id="comp-scope"></select>
+        </div>
+        <div id="comp-count" class="count"></div>
+        <div id="comp-list" class="comp-list"></div>
+      </section>
+
+      <section id="view-medals" class="view" hidden>
+        <div class="filters">
+          <select id="med-year"></select>
+          <select id="med-disc"></select>
+          <select id="med-scope"></select>
+        </div>
+        <div id="med-count" class="count"></div>
+        <div id="med-out"></div>
+      </section>
+
+      <section id="view-fav" class="view" hidden></section>
+
+      <section id="view-rank" class="view" hidden>
+        <div class="filters">
+          <select id="rk-disc"></select>
+          <select id="rk-gender"></select>
+          <select id="rk-age"></select>
+        </div>
+        <div id="rk-count" class="count"></div>
+        <div id="rk-out"></div>
+      </section>
+
+      <section id="view-admin" class="view" hidden></section>
+    </main>
+
+    <div id="modal" hidden>
+      <div class="modal-card">
+        <button id="modal-close" aria-label="닫기">✕</button>
+        <div id="modal-body"></div>
       </div>
-      <div id="ath-count" class="count"></div>
-      <div id="ath-list" class="ath-list"></div>
-      <div id="ath-detail" class="ath-detail"></div>
-    </section>
-
-    <!-- 대회별 -->
-    <section id="view-comp" class="view" hidden>
-      <div class="filters">
-        <select id="comp-year"></select>
-        <select id="comp-scope"></select>
-      </div>
-      <div id="comp-count" class="count"></div>
-      <div id="comp-list" class="comp-list"></div>
-    </section>
-
-    <!-- 입상실적 -->
-    <section id="view-medals" class="view" hidden>
-      <div class="filters">
-        <select id="med-year"></select>
-        <select id="med-disc"></select>
-        <select id="med-scope"></select>
-      </div>
-      <div id="med-count" class="count"></div>
-      <div id="med-out"></div>
-    </section>
-
-    <!-- 즐겨찾기 -->
-    <section id="view-fav" class="view" hidden></section>
-
-    <!-- 랭킹 -->
-    <section id="view-rank" class="view" hidden>
-      <div class="filters">
-        <select id="rk-disc"></select>
-        <select id="rk-gender"></select>
-        <select id="rk-age"></select>
-      </div>
-      <div id="rk-count" class="count"></div>
-      <div id="rk-out"></div>
-    </section>
-  </main>
-
-  <div id="modal" hidden>
-    <div class="modal-card">
-      <button id="modal-close" aria-label="닫기">✕</button>
-      <div id="modal-body"></div>
     </div>
   </div>
 
-  <script src="config.js?v=20"></script>
-  <script src="data.js?v=20"></script>
-  <script src="analytics.js?v=20"></script>
-  <script src="favorites.js?v=20"></script>
-  <script src="app.js?v=20"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="config.js?v=21"></script>
+  <script src="data.js?v=21"></script>
+  <script src="analytics.js?v=21"></script>
+  <script src="favorites.js?v=21"></script>
+  <script src="app.js?v=21"></script>
+  <script src="auth.js?v=21"></script>
 </body>
 </html>

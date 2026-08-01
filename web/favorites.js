@@ -13,8 +13,20 @@ window.Fav = (function () {
     try { const s = JSON.parse(localStorage.getItem(LS)); if (s && s.groups && s.items) return s; } catch (e) { }
     return { groups: DEFAULT_GROUPS.slice(), items: {} };
   }
-  function save() { localStorage.setItem(LS, JSON.stringify(state)); listeners.forEach(f => f()); }
+  let cloudSave = null;
+  function save() {
+    if (cloudSave) cloudSave(JSON.parse(JSON.stringify(state)));
+    else localStorage.setItem(LS, JSON.stringify(state));
+    listeners.forEach(f => f());
+  }
   function onChange(f) { listeners.push(f); }
+  // 로그인 사용자: Supabase 를 백엔드로 사용
+  function setCloud(data, saveFn) {
+    cloudSave = saveFn;
+    if (data && data.items) { state = { groups: data.groups || DEFAULT_GROUPS.slice(), items: data.items }; }
+    else { save(); }  // 클라우드에 없으면 현재(로컬) 즐겨찾기를 올림
+    listeners.forEach(f => f());
+  }
 
   const snap = o => ({
     key: o.identity_key, name: o.full_name, birth_year: o.birth_year || null,
@@ -159,5 +171,5 @@ window.Fav = (function () {
     out.innerHTML = `<div class="cmp-h">선수 비교</div><div class="table-wrap"><table class="cmp"><thead><tr><th>항목</th>${th}</tr></thead><tbody>${rowsHtml.join('')}</tbody></table></div>`;
   }
 
-  return { starButton, renderTab, has, count, onChange };
+  return { starButton, renderTab, has, count, onChange, setCloud };
 })();
