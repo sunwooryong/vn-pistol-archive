@@ -1,0 +1,53 @@
+name: Build & Deploy
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+    - cron: '15 19 * * *'
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+
+      - name: ETL fetch live sheet
+        run: node etl.js --fetch
+
+      - name: Assemble site
+        run: |
+          rm -rf dist && mkdir -p dist/build
+          cp -r web/* dist/
+          cp build/*.json dist/build/
+
+      - name: Daily archive snapshot
+        if: github.event.schedule == '15 19 * * *' || github.event_name == 'workflow_dispatch'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          mkdir -p snapshots
+          tar -czf snapshots/latest.tar.gz -C build .
+          cp build/meta.json snapshots/latest-meta.json
+          git add snapshots
+          git commit -m "archive snapshot" || echo "no changes"
+          git push || echo "push skipped"
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: dist }
+      - id: deployment
+        uses: actions/deploy-pages@v4
