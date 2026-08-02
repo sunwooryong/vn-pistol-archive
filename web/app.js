@@ -2,12 +2,12 @@
 // =====================================================================
 //  검색 UI — 탭: 선수 / 대회별 / 입상실적 / 랭킹
 // =====================================================================
-const DISC = { air: '10m 공기권총', rapid_fire: '25m 속사권총', sport: '25m 스포츠권총',
-  standard: '25m 표준권총', centre_fire: '25m 센터파이어', pistol_50: '50m 권총' };
-const AGE = { senior: '', junior: '주니어', youth: '유소년', u16: 'U16', u18: 'U18' };
-const MEDAL = { gold: '금', silver: '은', bronze: '동' };
-const SCOPE = { domestic: '국내', international: '국제' };
-const GENDER = { M: '남', W: '여' };
+const DISC = { air: t('10m 공기권총'), rapid_fire: t('25m 속사권총'), sport: t('25m 스포츠권총'),
+  standard: t('25m 표준권총'), centre_fire: t('25m 센터파이어'), pistol_50: t('50m 권총') };
+const AGE = { senior: '', junior: t('주니어'), youth: t('유소년'), u16: 'U16', u18: 'U18' };
+const MEDAL = { gold: t('금'), silver: t('은'), bronze: t('동') };
+const SCOPE = { domestic: t('국내'), international: t('국제') };
+const GENDER = { M: t('남'), W: t('여') };
 const NOW_YEAR = new Date().getFullYear();
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -21,11 +21,11 @@ const ageText = by => by ? `${by}년생 (${NOW_YEAR - by}세)` : '생년 미상'
 function eventLabel(e) {
   const base = DISC[e.discipline] || e.raw_name || '';
   const p = [];
-  if (e.team_type === 'mixed_team') p.push('혼성단체부');
+  if (e.team_type === 'mixed_team') p.push(t('혼성단체부'));
   else {
-    if (e.gender === 'M') p.push('남자부');
-    else if (e.gender === 'W') p.push('여자부');
-    if (e.team_type === 'team') p.push('단체');
+    if (e.gender === 'M') p.push(t('남자부'));
+    else if (e.gender === 'W') p.push(t('여자부'));
+    if (e.team_type === 'team') p.push(t('단체'));
   }
   if (e.age_category && e.age_category !== 'senior') p.push(AGE[e.age_category] || e.age_category);
   return base + (p.length ? ' ' + p.join(' ') : '');
@@ -126,9 +126,9 @@ async function buildCareer(a, rows, detail) {
   head.innerHTML = `<h2>${esc(a.full_name)}${g ? ` <span class="g g-${g}">${GENDER[g]}</span>` : ''}</h2>
     <div class="meta">${a.birth_date ? esc(a.birth_date) + ' · ' : ''}${by ? `만 ${NOW_YEAR - by}세 · ` : ''}${foreign ? esc(nat) : '베트남'} · 총 ${rows.length}경기</div>
     <div class="tally">
-      <span class="tl">개인</span><span class="medal gold">금</span>${im.gold} <span class="medal silver">은</span>${im.silver} <span class="medal bronze">동</span>${im.bronze}
-      <span class="tl">단체</span><span class="medal gold">금</span>${tm.gold} <span class="medal silver">은</span>${tm.silver} <span class="medal bronze">동</span>${tm.bronze}
-      <span class="tl">결선진출</span><b>${finalsTotal}</b>회
+      <span class="tl">${t('개인')}</span><span class="medal gold">${t('금')}</span>${im.gold} <span class="medal silver">${t('은')}</span>${im.silver} <span class="medal bronze">${t('동')}</span>${im.bronze}
+      <span class="tl">${t('단체')}</span><span class="medal gold">${t('금')}</span>${tm.gold} <span class="medal silver">${t('은')}</span>${tm.silver} <span class="medal bronze">${t('동')}</span>${tm.bronze}
+      <span class="tl">${t('결선진출')}</span><b>${finalsTotal}</b>${t('회')}
     </div>`;
   // 즐겨찾기 별 (식별키가 있을 때)
   const starSrc = a.identity_key ? a : (a0.identity_key ? { ...a0 } : null);
@@ -244,8 +244,8 @@ function resultRow(r) {
 init.comp = async () => {
   const yearSel = $('#comp-year'), scopeSel = $('#comp-scope'), list = $('#comp-list'), cnt = $('#comp-count');
   const years = await DB.years();
-  yearSel.innerHTML = '<option value="">전체 연도</option>' + years.map(y => `<option>${y}</option>`).join('');
-  scopeSel.innerHTML = '<option value="">국내+국제</option><option value="domestic">국내</option><option value="international">국제</option>';
+  yearSel.innerHTML = `<option value="">${t('전체 연도')}</option>` + years.map(y => `<option>${y}</option>`).join('');
+  scopeSel.innerHTML = `<option value="">${t('국내+국제')}</option><option value="domestic">${t('국내')}</option><option value="international">${t('국제')}</option>`;
   async function load() {
     list.innerHTML = '<div class="muted">불러오는 중…</div>';
     const cs = await DB.competitions(yearSel.value, scopeSel.value);
@@ -378,9 +378,9 @@ function rankingTable(rows) {
 init.medals = async () => {
   const yearSel = $('#med-year'), discSel = $('#med-disc'), scopeSel = $('#med-scope'), out = $('#med-out'), cnt = $('#med-count');
   const years = await DB.years();
-  yearSel.innerHTML = '<option value="">전체 연도</option>' + years.map(y => `<option>${y}</option>`).join('');
-  discSel.innerHTML = '<option value="">전체 종목</option>' + Object.entries(DISC).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
-  scopeSel.innerHTML = '<option value="">국내+국제</option><option value="domestic">국내</option><option value="international">국제</option>';
+  yearSel.innerHTML = `<option value="">${t('전체 연도')}</option>` + years.map(y => `<option>${y}</option>`).join('');
+  discSel.innerHTML = `<option value="">${t('전체 종목')}</option>` + Object.entries(DISC).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+  scopeSel.innerHTML = `<option value="">${t('국내+국제')}</option><option value="domestic">${t('국내')}</option><option value="international">${t('국제')}</option>`;
   async function run() {
     out.innerHTML = '<div class="muted">불러오는 중…</div>';
     const rows = await DB.medals({ year: yearSel.value, discipline: discSel.value, scope: scopeSel.value });
@@ -441,9 +441,9 @@ init.medals = async () => {
 init.rank = async () => {
   const discSel = $('#rk-disc'), gSel = $('#rk-gender'), ageSel = $('#rk-age'), out = $('#rk-out'), cnt = $('#rk-count');
   discSel.innerHTML = Object.entries(DISC).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
-  gSel.innerHTML = '<option value="">남/여</option><option value="M">남자부</option><option value="W">여자부</option>';
-  ageSel.innerHTML = '<option value="">전체 연령</option>' +
-    [['senior', '일반'], ['junior', '주니어'], ['youth', '유소년'], ['u18', 'U18'], ['u16', 'U16']].map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+  gSel.innerHTML = `<option value="">${t('남/여')}</option><option value="M">${t('남자부')}</option><option value="W">${t('여자부')}</option>`;
+  ageSel.innerHTML = `<option value="">${t('전체 연령')}</option>` +
+    [['senior', t('일반')], ['junior', t('주니어')], ['youth', t('유소년')], ['u18', 'U18'], ['u16', 'U16']].map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
   async function run() {
     out.innerHTML = '<div class="muted">불러오는 중…</div>';
     const rows = await DB.eventAvg({ discipline: discSel.value, gender: gSel.value, age_category: ageSel.value });
@@ -512,14 +512,26 @@ async function initInfo() {
 window.startApp = function (opts) {
   window.APP_ROLE = opts || { role: 'coach' };
   const role = window.APP_ROLE.role;
+  // 다국어: 헤더·탭 라벨
+  const TABS = { me: '내 정보', athlete: '선수', comp: '대회별', medals: '입상실적', rank: '랭킹', admin: '관리' };
+  document.querySelectorAll('.tab').forEach(tab => {
+    const k = TABS[tab.dataset.tab]; if (k) tab.textContent = t(k);
+    tab.onclick = () => show(tab.dataset.tab);
+  });
+  const h1 = document.querySelector('header h1'); if (h1) h1.textContent = t('권총기록 아카이브');
+  const tag = document.querySelector('.tag'); if (tag) tag.textContent = t('ISSF 권총 · 베트남 사격연맹');
+  document.querySelector('#ath-q')?.setAttribute('placeholder', t('선수명 검색 (예: Phạm Quang Huy)'));
   // 역할별 탭 노출
-  const showTab = (name, on) => { const t = document.querySelector(`.tab[data-tab="${name}"]`); if (t) t.hidden = !on; };
+  const showTab = (name, on) => { const el2 = document.querySelector(`.tab[data-tab="${name}"]`); if (el2) el2.hidden = !on; };
   showTab('fav', role === 'coach');
   showTab('admin', role === 'coach');
   showTab('me', role === 'athlete');
-  // 선수는 검색/즐겨찾기 대신 '내 정보'가 기본
-  document.querySelectorAll('.tab').forEach(t => t.onclick = () => show(t.dataset.tab));
-  const lo = $('#logout-btn'); if (lo) lo.onclick = () => window.authLogout();
+  // 헤더 우측: 언어전환 + 로그아웃 + 크레딧
+  const hb = document.querySelector('.hbtns');
+  if (hb && !hb.querySelector('.lang-sel')) hb.insertBefore(window.langSelector(), hb.firstChild);
+  const lo = $('#logout-btn'); if (lo) { lo.textContent = t('로그아웃'); lo.onclick = () => window.authLogout(); }
+  const hwrap = document.querySelector('.hwrap');
+  if (hwrap && !hwrap.querySelector('.credit')) hwrap.appendChild(window.creditEl());
   initInfo();
   show(role === 'athlete' ? 'me' : 'athlete');
 };

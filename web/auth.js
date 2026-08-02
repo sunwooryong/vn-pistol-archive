@@ -9,6 +9,15 @@
   window.SB = sb;
   const $ = s => document.querySelector(s);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const T = s => window.t ? window.t(s) : s;
+  // 게이트 하단에 언어전환 + 만든이 크레딧
+  function mountGateExtras() {
+    const g = gate(); if (!g || g.querySelector('.gate-extras')) return;
+    const box = document.createElement('div'); box.className = 'gate-extras';
+    if (window.langSelector) box.appendChild(window.langSelector());
+    if (window.creditEl) box.appendChild(window.creditEl());
+    g.appendChild(box);
+  }
 
   let profile = null;
   window.CURRENT = { user: null, profile: null, role: null };
@@ -21,33 +30,37 @@
   function loginForm(msg) {
     showGate(`
       <div class="auth-card">
-        <h1>권총기록 아카이브</h1>
-        <p class="auth-sub">로그인하고 이용하세요</p>
+        <div class="auth-brand"></div>
+        <h1>${T('권총기록 아카이브')}</h1>
+        <p class="auth-sub">${T('로그인하고 이용하세요')}</p>
         ${msg ? `<div class="auth-msg">${esc(msg)}</div>` : ''}
-        <input id="au-email" type="email" placeholder="이메일" autocomplete="username">
-        <input id="au-pw" type="password" placeholder="비밀번호" autocomplete="current-password">
-        <button id="au-login" class="au-primary">로그인</button>
-        <div class="auth-alt">계정이 없으신가요? <button id="au-goSignup" class="au-link">회원가입</button></div>
+        <input id="au-email" type="email" placeholder="${T('이메일')}" autocomplete="username">
+        <input id="au-pw" type="password" placeholder="${T('비밀번호')}" autocomplete="current-password">
+        <button id="au-login" class="au-primary">${T('로그인')}</button>
+        <div class="auth-alt">${T('계정이 없으신가요?')} <button id="au-goSignup" class="au-link">${T('회원가입')}</button></div>
       </div>`);
     $('#au-login').onclick = doLogin;
     $('#au-pw').onkeydown = e => { if (e.key === 'Enter') doLogin(); };
     $('#au-goSignup').onclick = signupForm;
+    mountGateExtras();
   }
 
   function signupForm(msg) {
     showGate(`
       <div class="auth-card">
-        <h1>회원가입</h1>
-        <p class="auth-sub">선수/코치 계정을 만듭니다</p>
+        <div class="auth-brand"></div>
+        <h1>${T('회원가입')}</h1>
+        <p class="auth-sub">${T('선수/코치 계정을 만듭니다')}</p>
         ${msg ? `<div class="auth-msg">${esc(msg)}</div>` : ''}
-        <input id="au-name" type="text" placeholder="표시 이름(예: 홍길동)">
-        <input id="au-email" type="email" placeholder="이메일" autocomplete="username">
-        <input id="au-pw" type="password" placeholder="비밀번호(6자 이상)" autocomplete="new-password">
-        <button id="au-signup" class="au-primary">가입하기</button>
-        <div class="auth-alt">이미 계정이 있으신가요? <button id="au-goLogin" class="au-link">로그인</button></div>
+        <input id="au-name" type="text" placeholder="${T('표시 이름(예: 홍길동)')}">
+        <input id="au-email" type="email" placeholder="${T('이메일')}" autocomplete="username">
+        <input id="au-pw" type="password" placeholder="${T('비밀번호(6자 이상)')}" autocomplete="new-password">
+        <button id="au-signup" class="au-primary">${T('가입하기')}</button>
+        <div class="auth-alt">${T('이미 계정이 있으신가요?')} <button id="au-goLogin" class="au-link">${T('로그인')}</button></div>
       </div>`);
     $('#au-signup').onclick = doSignup;
     $('#au-goLogin').onclick = () => loginForm();
+    mountGateExtras();
   }
 
   async function doLogin() {
@@ -126,26 +139,28 @@
   function athletePending() {
     showGate(`
       <div class="auth-card">
-        <h1>승인 대기 중</h1>
-        <p class="auth-sub">코치가 본인 확인을 승인하면 내 기록을 볼 수 있습니다.</p>
-        <div class="auth-msg">신청한 선수: ${esc((profile.requested_key || '').split('|')[0] || '')}</div>
-        <button id="au-refresh" class="au-primary">새로고침</button>
-        <div class="auth-alt"><button id="au-logout" class="au-link">로그아웃</button></div>
+        <h1>${T('승인 대기 중')}</h1>
+        <p class="auth-sub">${T('코치가 본인 확인을 승인하면 내 기록을 볼 수 있습니다.')}</p>
+        <div class="auth-msg">${T('신청한 선수: ')}${esc((profile.requested_key || '').split('|')[0] || '')}</div>
+        <button id="au-refresh" class="au-primary">${T('새로고침')}</button>
+        <div class="auth-alt"><button id="au-logout" class="au-link">${T('로그아웃')}</button></div>
       </div>`);
     $('#au-refresh').onclick = boot;
     $('#au-logout').onclick = logout;
+    mountGateExtras();
   }
 
   async function athleteClaim() {
     showGate(`
       <div class="auth-card">
-        <h1>본인 선수 선택</h1>
-        <p class="auth-sub">기록에서 본인을 찾아 신청하세요. 코치 승인 후 내 정보가 열립니다.</p>
-        <input id="au-search" type="search" placeholder="이름 검색 (예: 홍길동)">
+        <h1>${T('본인 선수 선택')}</h1>
+        <p class="auth-sub">${T('기록에서 본인을 찾아 신청하세요. 코치 승인 후 내 정보가 열립니다.')}</p>
+        <input id="au-search" type="search" placeholder="${T('이름 검색 (예: 홍길동)')}">
         <div id="au-results" class="au-results"></div>
-        <div class="auth-alt"><button id="au-logout" class="au-link">로그아웃</button></div>
+        <div class="auth-alt"><button id="au-logout" class="au-link">${T('로그아웃')}</button></div>
       </div>`);
     $('#au-logout').onclick = logout;
+    mountGateExtras();
     const box = $('#au-search'), out = $('#au-results');
     let t;
     box.oninput = () => {
