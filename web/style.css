@@ -313,7 +313,31 @@ table.rank td i, .med-row i, .rank-avg i { color: var(--mut); font-style: normal
 @media (prefers-reduced-motion: reduce) { .credit-name { animation: none; color: var(--acc2); } }
 
 /* 로그인 화면 브랜드(과녁) + 게이트 하단 */
-#auth-gate { flex-direction: column; gap: 18px; }
+#auth-gate { flex-direction: column; gap: 18px; align-items: stretch; justify-content: flex-start; padding: 24px 16px calc(40px + var(--safe)); overflow-y: auto; }
+.landing { width: 100%; max-width: 920px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+.landing-hero { display: flex; align-items: center; gap: 12px; justify-content: center; text-align: center; }
+.landing-hero h1 { font-size: 22px; margin: 0; }
+.landing-hero .auth-brand { margin: 0; width: 46px; height: 46px; }
+.landing-main { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
+.landing .auth-card { margin: 0; max-width: none; }
+.sched-panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 14px 14px 8px; box-shadow: var(--sh); }
+.sched-panel h2 { font-size: 15px; margin: 0 0 10px; }
+#sched-list { display: flex; flex-direction: column; gap: 7px; max-height: 58vh; overflow-y: auto; }
+.sched-item { display: flex; gap: 10px; padding: 8px 6px; border-bottom: 1px dashed var(--line); }
+.sched-item:last-child { border-bottom: 0; }
+.sched-item.past { opacity: .5; }
+.sched-date { flex: 0 0 84px; display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
+.sd-range { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.sd-badge { font-size: 9.5px; padding: 1px 6px; border-radius: 999px; border: 1px solid var(--line); color: var(--mut); }
+.sd-badge.now { background: var(--dom); color: #fff; border-color: transparent; }
+.sd-badge.up { background: color-mix(in srgb, var(--acc) 18%, transparent); color: var(--acc2); border-color: transparent; }
+.sched-name { font-size: 13.5px; font-weight: 600; line-height: 1.35; }
+.sched-meta { font-size: 11.5px; color: var(--mut); margin-top: 2px; }
+/* 데스크톱/태블릿: 로그인 + 일정 나란히 */
+@media (min-width: 720px) {
+  .landing-main { grid-template-columns: 340px 1fr; }
+  .landing .auth-card { position: sticky; top: 0; }
+}
 .auth-brand { width: 56px; height: 56px; margin: 0 auto 2px; border-radius: 50%;
   background:
     radial-gradient(circle, var(--gold) 0 22%, transparent 23%),

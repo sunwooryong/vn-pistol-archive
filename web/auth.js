@@ -12,11 +12,35 @@
   const T = s => window.t ? window.t(s) : s;
   // 게이트 하단에 언어전환 + 만든이 크레딧
   function mountGateExtras() {
-    const g = gate(); if (!g || g.querySelector('.gate-extras')) return;
-    const box = document.createElement('div'); box.className = 'gate-extras';
+    const g = gate(); if (!g) return;
+    let box = g.querySelector('.gate-extras');
+    if (!box) { box = document.createElement('div'); box.className = 'gate-extras'; g.appendChild(box); }
+    if (box.childElementCount) return;
     if (window.langSelector) box.appendChild(window.langSelector());
     if (window.creditEl) box.appendChild(window.creditEl());
-    g.appendChild(box);
+  }
+
+  // 올해 대회 일정 (로그인 없이 공개 데이터에서)
+  async function renderSchedule(year) {
+    const out = document.querySelector('#sched-list'); if (!out) return;
+    let cs = [];
+    try { cs = await DB.competitions(String(year)); } catch (e) { }
+    if (!cs.length) { out.innerHTML = `<div class="muted">${T('일정 정보가 없습니다.')}</div>`; return; }
+    cs.sort((a, b) => (a.date_start || '').localeCompare(b.date_start || ''));   // 날짜순
+    const today = new Date().toISOString().slice(0, 10);
+    const fmt = d => d ? d.slice(5).replace('-', '.') : '';
+    const SCOPE = { domestic: T('국내'), international: T('국제') };
+    out.innerHTML = cs.map(c => {
+      const s = c.date_start, e = c.date_end || c.date_start;
+      const status = (e && e < today) ? 'past' : (s && s <= today ? 'now' : 'up');
+      const stLabel = status === 'now' ? T('진행중') : status === 'up' ? T('예정') : T('종료');
+      const period = s && e && s !== e ? `${fmt(s)}–${fmt(e)}` : fmt(s);
+      return `<div class="sched-item ${status}">
+        <div class="sched-date"><span class="sd-range">${period}</span><span class="sd-badge ${status}">${stLabel}</span></div>
+        <div class="sched-body"><div class="sched-name">${esc(c.name)}</div>
+          <div class="sched-meta">${esc(c.location || '')} <span class="scope ${c.scope}">${SCOPE[c.scope] || ''}</span></div></div>
+      </div>`;
+    }).join('');
   }
 
   let profile = null;
@@ -28,21 +52,37 @@
   function hideGate() { gate().hidden = true; $('#app-root').hidden = false; }
 
   function loginForm(msg) {
+    const year = new Date().getFullYear();
     showGate(`
-      <div class="auth-card">
-        <div class="auth-brand"></div>
-        <h1>${T('권총기록 아카이브')}</h1>
-        <p class="auth-sub">${T('로그인하고 이용하세요')}</p>
-        ${msg ? `<div class="auth-msg">${esc(msg)}</div>` : ''}
-        <input id="au-email" type="email" placeholder="${T('이메일')}" autocomplete="username">
-        <input id="au-pw" type="password" placeholder="${T('비밀번호')}" autocomplete="current-password">
-        <button id="au-login" class="au-primary">${T('로그인')}</button>
-        <div class="auth-alt">${T('계정이 없으신가요?')} <button id="au-goSignup" class="au-link">${T('회원가입')}</button></div>
+      <div class="landing">
+        <div class="landing-hero">
+          <div class="auth-brand"></div>
+          <div>
+            <h1>${T('권총기록 아카이브')}</h1>
+            <p class="auth-sub" style="text-align:left;margin:2px 0 0">${T('ISSF 권총 · 베트남 사격연맹')}</p>
+          </div>
+        </div>
+        <div class="landing-main">
+          <div class="auth-card">
+            <p class="auth-sub">${T('로그인하고 이용하세요')}</p>
+            ${msg ? `<div class="auth-msg">${esc(msg)}</div>` : ''}
+            <input id="au-email" type="email" placeholder="${T('이메일')}" autocomplete="username">
+            <input id="au-pw" type="password" placeholder="${T('비밀번호')}" autocomplete="current-password">
+            <button id="au-login" class="au-primary">${T('로그인')}</button>
+            <div class="auth-alt">${T('계정이 없으신가요?')} <button id="au-goSignup" class="au-link">${T('회원가입')}</button></div>
+          </div>
+          <div class="sched-panel">
+            <h2>${year} ${T('대회 일정')}</h2>
+            <div id="sched-list"><div class="muted">${T('불러오는 중…')}</div></div>
+          </div>
+        </div>
+        <div class="gate-extras"></div>
       </div>`);
     $('#au-login').onclick = doLogin;
     $('#au-pw').onkeydown = e => { if (e.key === 'Enter') doLogin(); };
     $('#au-goSignup').onclick = signupForm;
     mountGateExtras();
+    renderSchedule(year);
   }
 
   function signupForm(msg) {
