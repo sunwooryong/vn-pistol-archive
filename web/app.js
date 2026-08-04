@@ -54,6 +54,31 @@ function show(tab) {
 }
 const init = {};
 
+// 홈: 올해 대회 일정
+init.home = () => renderHome();
+async function renderHome() {
+  const box = $('#view-home'), year = new Date().getFullYear();
+  box.innerHTML = `<div class="home-head"><h2>${year} ${t('대회 일정')}</h2></div><div id="home-sched"><div class="muted">${t('불러오는 중…')}</div></div>`;
+  await buildSchedule($('#home-sched'), year);
+}
+async function buildSchedule(out, year) {
+  let cs = []; try { cs = await DB.competitions(String(year)); } catch (e) { }
+  if (!cs.length) { out.innerHTML = `<div class="muted">${t('일정 정보가 없습니다.')}</div>`; return; }
+  cs.sort((a, b) => (a.date_start || '').localeCompare(b.date_start || ''));
+  const today = new Date().toISOString().slice(0, 10);
+  const fmt = d => d ? d.slice(5).replace('-', '.') : '';
+  out.innerHTML = cs.map(c => {
+    const s = c.date_start, e = c.date_end || c.date_start;
+    const status = (e && e < today) ? 'past' : (s && s <= today ? 'now' : 'up');
+    const st = status === 'now' ? t('진행중') : status === 'up' ? t('예정') : t('종료');
+    const period = s && e && s !== e ? `${fmt(s)}–${fmt(e)}` : fmt(s);
+    return `<div class="sched-item ${status}"><div class="sched-date"><span class="sd-range">${period}</span><span class="sd-badge ${status}">${st}</span></div>
+      <div class="sched-body"><div class="sched-name">${esc(c.name)}</div>
+      <div class="sched-meta">${esc(c.location || '')} <span class="scope ${c.scope}">${SCOPE[c.scope] || ''}</span></div></div></div>`;
+  }).join('');
+}
+window.buildSchedule = buildSchedule;
+
 // 로그인한 선수 본인 대시보드
 async function renderMe() {
   const box = $('#view-me');
@@ -513,7 +538,7 @@ window.startApp = function (opts) {
   window.APP_ROLE = opts || { role: 'coach' };
   const role = window.APP_ROLE.role;
   // 다국어: 헤더·탭 라벨
-  const TABS = { me: '내 정보', athlete: '선수', comp: '대회별', medals: '입상실적', rank: '랭킹', admin: '관리' };
+  const TABS = { home: '홈', me: '내 정보', athlete: '선수', comp: '대회별', medals: '입상실적', rank: '랭킹', admin: '관리' };
   document.querySelectorAll('.tab').forEach(tab => {
     const k = TABS[tab.dataset.tab]; if (k) tab.textContent = t(k);
     tab.onclick = () => show(tab.dataset.tab);
@@ -533,7 +558,7 @@ window.startApp = function (opts) {
   const hwrap = document.querySelector('.hwrap');
   if (hwrap && !hwrap.querySelector('.credit')) hwrap.appendChild(window.creditEl());
   initInfo();
-  show(role === 'athlete' ? 'me' : 'athlete');
+  show('home');
 };
 
 // PWA 서비스워커 등록 (오프라인·홈화면 설치)

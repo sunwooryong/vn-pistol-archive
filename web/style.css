@@ -331,6 +331,9 @@ table.rank td i, .med-row i, .rank-avg i { color: var(--mut); font-style: normal
 .sd-badge { font-size: 9.5px; padding: 1px 6px; border-radius: 999px; border: 1px solid var(--line); color: var(--mut); }
 .sd-badge.now { background: var(--dom); color: #fff; border-color: transparent; }
 .sd-badge.up { background: color-mix(in srgb, var(--acc) 18%, transparent); color: var(--acc2); border-color: transparent; }
+.home-head h2 { font-size: 17px; margin: 2px 2px 12px; }
+#home-sched { display: flex; flex-direction: column; gap: 7px; }
+#home-sched .sched-item { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--sh); padding: 10px 12px; }
 .sched-name { font-size: 13.5px; font-weight: 600; line-height: 1.35; }
 .sched-meta { font-size: 11.5px; color: var(--mut); margin-top: 2px; }
 /* 데스크톱/태블릿: 로그인 + 일정 나란히 */
