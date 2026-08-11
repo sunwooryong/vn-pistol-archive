@@ -19,6 +19,7 @@
     '일정 정보가 없습니다.': 'Chưa có lịch thi đấu.',
     '다가오는 대회': 'Sắp diễn ra', '지난 대회': 'Đã qua', '홈': 'Trang chủ',
     '내 선수 참가 대회': 'Giải VĐV của tôi tham gia', '올해 참가 기록이 없습니다.': 'Chưa có tham gia năm nay.',
+    '경기일': 'Ngày thi đấu',
     '즐겨찾기 선수': 'VĐV yêu thích', '선수를 검색해 ☆로 저장하면 여기 모입니다.': 'Tìm VĐV và bấm ☆ để lưu vào đây.',
     '로그인': 'Đăng nhập', '회원가입': 'Đăng ký', '가입하기': 'Đăng ký',
     '계정이 없으신가요?': 'Chưa có tài khoản?', '이미 계정이 있으신가요?': 'Đã có tài khoản?',

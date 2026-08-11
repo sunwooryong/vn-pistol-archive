@@ -339,7 +339,9 @@ init.comp = async () => {
     panel.innerHTML = '';
     const bar = el('div', 'ev-tabs'), body = el('div', 'ev-panel');
     evs.forEach((e, i) => {
-      const t = el('button', 'ev-tab', esc(eventLabel(e)));
+      const dstr = e.match_date ? e.match_date.slice(5).replace('-', '.') + ((e.match_dates && e.match_dates.length > 1) ? '+' : '') : '';
+      const t = el('button', 'ev-tab');
+      t.innerHTML = `<span class="et-name">${esc(eventLabel(e))}</span>${dstr ? `<span class="et-date">${dstr}</span>` : ''}`;
       t.onclick = async () => {
         bar.querySelectorAll('.ev-tab').forEach(x => x.classList.remove('on')); t.classList.add('on');
         body.innerHTML = '<div class="muted">불러오는 중…</div>';
@@ -358,6 +360,15 @@ init.comp = async () => {
 // 종목 유형에 따라 결선(개인) 또는 단체 순위 + 개인 기록 표시
 function rankingBlock(rows, e) {
   const wrap = el('div');
+  // 종목 경기일시
+  const dts = [...new Set(rows.filter(r => r.match_date).map(r => r.match_date))].sort();
+  if (dts.length) {
+    const f = rows.find(r => r.match_date === dts[0]);
+    const label = dts.length > 1
+      ? `${dts[0].replace(/-/g, '.')} ~ ${dts[dts.length - 1].replace(/-/g, '.')}`
+      : dts[0].replace(/-/g, '.') + (f && f.match_time ? ' ' + f.match_time : '');
+    wrap.appendChild(el('div', 'ev-when', `📅 ${t('경기일')} ${label}`));
+  }
   const isTeam = e && e.team_type && e.team_type !== 'individual';
 
   if (isTeam) {

@@ -86,8 +86,13 @@
       async eventsOf(compId) {
         const d = await ensure();
         return d.events.filter(e => e.competition_id === +compId)
-          .map(e => ({ ...e, n: (d.resByEv.get(e.id) || []).length }))
-          .sort((a, b) => a.event_code.localeCompare(b.event_code));
+          .map(e => {
+            const rs = d.resByEv.get(e.id) || [];
+            const dates = [...new Set(rs.filter(r => r.match_date).map(r => r.match_date))].sort();
+            const first = rs.find(r => r.match_date === dates[0]);
+            return { ...e, n: rs.length, match_date: dates[0] || null, match_time: first ? first.match_time : null, match_dates: dates };
+          })
+          .sort((a, b) => (a.match_date || '').localeCompare(b.match_date || '') || a.event_code.localeCompare(b.event_code));
       },
       async eventRanking(eventId) {
         const d = await ensure();
