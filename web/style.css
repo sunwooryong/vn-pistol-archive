@@ -1,10 +1,13 @@
 :root {
-  --bg: #0c0f14; --bg2: #0f1319; --card: #161b23; --card2: #1d232d; --line: #2a323d;
-  --tx: #eef1f6; --mut: #8b96a5; --acc: #4c8dff; --acc2: #6ea3ff;
-  --gold: #f5c542; --silver: #c7ced8; --bronze: #d08a54;
-  --dom: #37b083; --intl: #8b7bec;
-  --maxw: 940px; --r: 12px; --r-lg: 16px;
-  --sh: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.22);
+  /* 밝고 고급스러운 다크 (elevated slate) */
+  --bg: #151a24; --bg2: #1a2130; --card: #212a38; --card2: #2a3444; --line: #384457;
+  --tx: #f3f6fb; --mut: #9fabbd; --acc: #5b9dff; --acc2: #93bbff;
+  --gold: #f7cf5a; --silver: #ced5df; --bronze: #d99666;
+  --dom: #3fbf94; --intl: #9b8cf0;
+  --maxw: 980px; --r: 14px; --r-lg: 18px;
+  --sh: 0 1px 2px rgba(0,0,0,.22), 0 8px 24px rgba(0,0,0,.28);
+  --sh-sm: 0 1px 3px rgba(0,0,0,.2);
+  --glow: 0 0 0 1px rgba(255,255,255,.03) inset;
   --safe: env(safe-area-inset-bottom, 0px);
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -382,3 +385,96 @@ table.rank td i, .med-row i, .rank-avg i { color: var(--mut); font-style: normal
   .fav-row .fav-mv { max-width: 100%; }
 }
 /* 폴드 펼침/태블릿 세로에서 로그인 카드 중앙 유지(이미 flex center) */
+
+/* =====================================================================
+   v2 — 밝고 고급스러운 테마 · 오륜기 · 국기 · 달력형 일정 · 즐겨찾기 대시보드
+   ===================================================================== */
+header { box-shadow: 0 1px 0 var(--line), 0 6px 20px rgba(0,0,0,.18); }
+.ath-item, .comp-item, .res, .med-row, .pb-cell, .ysec, .an-card, .rk-ev, .sched-item, .fav-card, .myath-row, .sched-panel, .auth-card, .finals {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--card) 100%, #fff 3%), var(--card));
+}
+
+/* 오륜기 + 제목 글로우 */
+header h1 { display: flex; align-items: center; gap: 9px; }
+svg.rings { height: 20px; width: auto; display: block; filter: drop-shadow(0 0 5px rgba(120,170,255,.45)); animation: ringpulse 3.4s ease-in-out infinite; }
+@keyframes ringpulse { 0%,100% { filter: drop-shadow(0 0 3px rgba(120,170,255,.3)); } 50% { filter: drop-shadow(0 0 11px rgba(120,170,255,.65)); } }
+.brand-title { font-weight: 800; letter-spacing: -.01em;
+  background: linear-gradient(100deg, var(--tx) 0 40%, #fff 48%, var(--acc2) 56%, var(--tx) 66% 100%);
+  background-size: 240% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: glowsweep 4s linear infinite; }
+@media (prefers-reduced-motion: reduce) { svg.rings, .brand-title { animation: none; } }
+
+/* 랜딩 히어로 */
+.landing-hero { flex-direction: column; gap: 8px; padding: 8px 0 4px; }
+.hero-rings svg.rings { height: 44px; }
+.landing-hero .brand-title { font-size: 26px; }
+.landing-hero .auth-sub { text-align: center; margin: 0; }
+
+/* 국기 언어선택 */
+.lang-sel { display: inline-flex; gap: 5px; background: transparent; border: 0; padding: 0; }
+.flag-btn { padding: 0; width: 34px; height: 24px; border: 1px solid var(--line); background: var(--card2); border-radius: 7px; display: grid; place-items: center; opacity: .5; overflow: hidden; transition: opacity .15s, box-shadow .15s; }
+.flag-btn.on { opacity: 1; border-color: var(--acc); box-shadow: 0 0 0 2px color-mix(in srgb, var(--acc) 35%, transparent); }
+.flag-btn svg.flag { width: 30px; height: 20px; display: block; }
+
+/* 홈 헤더 */
+.home-head { display: flex; align-items: center; gap: 8px; margin: 2px 0 12px; }
+.home-head svg.rings { height: 22px; }
+.home-head h2 { font-size: 17px; margin: 0; }
+
+/* 달력형 일정 */
+.sched-sec { font-weight: 800; font-size: 13px; margin: 16px 2px 9px; display: flex; align-items: center; gap: 7px; }
+.sched-sec.past { color: var(--mut); }
+.sched-n { font-size: 11px; color: var(--mut); font-weight: 700; background: var(--card2); border-radius: 999px; padding: 1px 8px; }
+.sched-grid { display: grid; grid-template-columns: 1fr; gap: 9px; }
+.sched-item { display: flex; gap: 12px; border: 1px solid var(--line); border-radius: var(--r); padding: 11px 12px; box-shadow: var(--sh-sm); }
+.sched-item.emph { border-color: color-mix(in srgb, var(--acc) 50%, var(--line)); box-shadow: 0 0 0 1px color-mix(in srgb, var(--acc) 22%, transparent), var(--sh); }
+.sched-item.past { opacity: .58; }
+.sched-cal { flex: 0 0 54px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; background: var(--card2); border-radius: 11px; padding: 7px 0; }
+.sched-cal.up { background: color-mix(in srgb, var(--acc) 20%, var(--card2)); }
+.sched-cal.now { background: var(--dom); }
+.dc-m { font-size: 10px; color: var(--mut); font-weight: 700; }
+.dc-d { font-size: 21px; font-weight: 800; line-height: 1; }
+.sched-cal.now .dc-m, .sched-cal.now .dc-d { color: #fff; }
+.sched-cal.up .dc-m, .sched-cal.up .dc-d { color: var(--acc2); }
+.sched-body { flex: 1; min-width: 0; }
+.sched-top { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.sd-badge { font-size: 9.5px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--mut); font-weight: 700; }
+.sd-badge.now { background: var(--dom); color: #fff; border-color: transparent; }
+.sd-badge.up { background: color-mix(in srgb, var(--acc) 20%, transparent); color: var(--acc2); border-color: transparent; }
+.dday { font-size: 10px; font-weight: 800; color: #fff; background: var(--acc); padding: 1px 7px; border-radius: 999px; }
+.sd-range { font-size: 11px; color: var(--mut); margin-left: auto; font-variant-numeric: tabular-nums; }
+.sched-name { font-weight: 700; font-size: 14px; line-height: 1.32; }
+.sched-meta { font-size: 11.5px; color: var(--mut); margin-top: 3px; }
+
+/* 내 선수 참가 대회 */
+.myath-row { border: 1px solid var(--line); border-left: 3px solid var(--acc); border-radius: var(--r); padding: 10px 12px; margin-bottom: 6px; box-shadow: var(--sh-sm); }
+.myath-c { display: flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; }
+.myath-date { margin-left: auto; color: var(--mut); font-size: 11.5px; font-weight: 400; }
+.myath-names { color: var(--acc2); font-size: 12px; margin-top: 3px; }
+
+/* 즐겨찾기 대시보드 카드 */
+.fav-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.fav-card { border: 1px solid var(--line); border-radius: var(--r); padding: 12px; box-shadow: var(--sh-sm); display: flex; flex-direction: column; gap: 9px; }
+.fav-card .fc-top { display: flex; align-items: flex-start; gap: 8px; }
+.fav-card .fc-id { flex: 1; min-width: 0; }
+.fav-card .fc-name { font-size: 15px; font-weight: 700; }
+.fav-card .fsub { display: block; color: var(--mut); font-size: 11.5px; margin-top: 2px; }
+.fav-card .fav-rm { background: none; border: 0; color: var(--mut); font-size: 13px; padding: 2px 4px; }
+.fav-card .fc-stats { font-size: 12px; }
+.fc-medals { display: flex; align-items: center; gap: 4px; }
+.fc-unit { color: var(--acc); margin-left: auto; font-size: 11px; }
+.fc-pbs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.fc-pb { font-size: 11px; color: var(--mut); background: var(--card2); border-radius: 6px; padding: 2px 8px; }
+.fc-pb b { color: var(--tx); }
+.fav-card .fc-actions { display: flex; gap: 6px; align-items: center; }
+.fav-card .fav-mv { flex: 1; background: var(--card2); color: var(--tx); border: 1px solid var(--line); border-radius: 8px; font-size: 12px; padding: 6px; }
+.fav-card .fav-open { background: var(--acc); color: #fff; border: 0; border-radius: 8px; padding: 7px 14px; font-size: 12.5px; font-weight: 600; }
+.fav-card .fav-chk { width: 18px; height: 18px; }
+
+/* 반응형 그리드 */
+@media (min-width: 560px) { .fav-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 640px) { .sched-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 960px) { .fav-grid { grid-template-columns: 1fr 1fr 1fr; } .sched-grid { grid-template-columns: 1fr 1fr 1fr; } }
+
+/* 랜딩 일정도 카드 그리드로 (auth #sched-list) */
+#sched-list .sched-grid { max-height: none; }

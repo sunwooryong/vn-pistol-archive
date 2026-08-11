@@ -58,24 +58,63 @@ const init = {};
 init.home = () => renderHome();
 async function renderHome() {
   const box = $('#view-home'), year = new Date().getFullYear();
-  box.innerHTML = `<div class="home-head"><h2>${year} ${t('대회 일정')}</h2></div><div id="home-sched"><div class="muted">${t('불러오는 중…')}</div></div>`;
+  const coach = window.APP_ROLE && window.APP_ROLE.role === 'coach' && window.Fav && Fav.count();
+  box.innerHTML =
+    (coach ? `<div id="home-myath" class="block"></div>` : '') +
+    `<div class="home-head">${window.ringsSVG || ''}<h2>${year} ${t('대회 일정')}</h2></div>
+     <div id="home-sched"><div class="muted">${t('불러오는 중…')}</div></div>`;
   await buildSchedule($('#home-sched'), year);
+  if (coach) renderMyAthletesComps($('#home-myath'), year);
 }
+async function renderMyAthletesComps(box, year) {
+  box.innerHTML = `<h3>${t('내 선수 참가 대회')}</h3><div class="muted">${t('불러오는 중…')}</div>`;
+  const byComp = new Map();
+  for (const it of Fav.list()) {
+    const a = await DB.athleteByKey(it.key); if (!a) continue;
+    (await DB.athleteCareer(a.id)).forEach(r => {
+      if (r.competition.year !== year) return;
+      const k = r.competition.name;
+      let o = byComp.get(k);
+      if (!o) { o = { name: r.competition.name, date: r.competition.date_start, scope: r.competition.scope, names: new Set() }; byComp.set(k, o); }
+      o.names.add(a.full_name);
+    });
+  }
+  if (!byComp.size) { box.innerHTML = `<h3>${t('내 선수 참가 대회')}</h3><div class="muted">${t('올해 참가 기록이 없습니다.')}</div>`; return; }
+  const arr = [...byComp.values()].sort((x, y) => (y.date || '').localeCompare(x.date || ''));
+  box.innerHTML = `<h3>${t('내 선수 참가 대회')} <span class="sub2">${arr.length}</span></h3>` + arr.map(c => `
+    <div class="myath-row"><div class="myath-c"><b>${esc(c.name)}</b> <span class="scope ${c.scope}">${SCOPE[c.scope] || ''}</span>
+      <span class="myath-date">${(c.date || '').replace(/-/g, '.')}</span></div>
+      <div class="myath-names">${[...c.names].map(n => esc(n)).join(', ')}</div></div>`).join('');
+}
+const MON = { ko: m => `${m}월`, vi: m => `Th.${m}` };
 async function buildSchedule(out, year) {
   let cs = []; try { cs = await DB.competitions(String(year)); } catch (e) { }
   if (!cs.length) { out.innerHTML = `<div class="muted">${t('일정 정보가 없습니다.')}</div>`; return; }
-  cs.sort((a, b) => (a.date_start || '').localeCompare(b.date_start || ''));
-  const today = new Date().toISOString().slice(0, 10);
-  const fmt = d => d ? d.slice(5).replace('-', '.') : '';
-  out.innerHTML = cs.map(c => {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const iso = today.toISOString().slice(0, 10);
+  const monLabel = MON[window.I18N.lang] || MON.ko;
+  const dchip = d => { const [Y, M, D] = d.split('-'); return `<span class="dc-m">${monLabel(+M)}</span><span class="dc-d">${+D}</span>`; };
+  const daysTo = d => Math.round((new Date(d + 'T00:00') - today) / 86400000);
+  const card = (c, emph) => {
     const s = c.date_start, e = c.date_end || c.date_start;
-    const status = (e && e < today) ? 'past' : (s && s <= today ? 'now' : 'up');
+    const status = (e && e < iso) ? 'past' : (s && s <= iso ? 'now' : 'up');
     const st = status === 'now' ? t('진행중') : status === 'up' ? t('예정') : t('종료');
-    const period = s && e && s !== e ? `${fmt(s)}–${fmt(e)}` : fmt(s);
-    return `<div class="sched-item ${status}"><div class="sched-date"><span class="sd-range">${period}</span><span class="sd-badge ${status}">${st}</span></div>
-      <div class="sched-body"><div class="sched-name">${esc(c.name)}</div>
-      <div class="sched-meta">${esc(c.location || '')} <span class="scope ${c.scope}">${SCOPE[c.scope] || ''}</span></div></div></div>`;
-  }).join('');
+    const range = s && e && s !== e ? `${s.slice(5).replace('-', '.')}–${e.slice(5).replace('-', '.')}` : (s || '').slice(5).replace('-', '.');
+    const dd = status === 'up' && s ? `<span class="dday">D-${daysTo(s)}</span>` : '';
+    return `<div class="sched-item ${status}${emph ? ' emph' : ''}">
+      <div class="sched-cal ${status}">${dchip(s || e)}</div>
+      <div class="sched-body">
+        <div class="sched-top"><span class="sd-badge ${status}">${st}</span>${dd}<span class="sd-range">${range}</span></div>
+        <div class="sched-name">${esc(c.name)}</div>
+        <div class="sched-meta">${esc(c.location || '')} <span class="scope ${c.scope}">${SCOPE[c.scope] || ''}</span></div>
+      </div></div>`;
+  };
+  const up = cs.filter(c => (c.date_end || c.date_start || '') >= iso).sort((a, b) => (a.date_start || '').localeCompare(b.date_start || ''));
+  const past = cs.filter(c => (c.date_end || c.date_start || '') < iso).sort((a, b) => (b.date_start || '').localeCompare(a.date_start || ''));
+  let h = '';
+  if (up.length) h += `<div class="sched-sec">${t('다가오는 대회')} <span class="sched-n">${up.length}</span></div><div class="sched-grid up">${up.map(c => card(c, true)).join('')}</div>`;
+  if (past.length) h += `<div class="sched-sec past">${t('지난 대회')} <span class="sched-n">${past.length}</span></div><div class="sched-grid">${past.map(c => card(c, false)).join('')}</div>`;
+  out.innerHTML = h;
 }
 window.buildSchedule = buildSchedule;
 
@@ -543,7 +582,7 @@ window.startApp = function (opts) {
     const k = TABS[tab.dataset.tab]; if (k) tab.textContent = t(k);
     tab.onclick = () => show(tab.dataset.tab);
   });
-  const h1 = document.querySelector('header h1'); if (h1) h1.textContent = t('권총기록 아카이브');
+  const h1 = document.querySelector('header h1'); if (h1) h1.innerHTML = `<span class="brand-rings">${window.ringsSVG || ''}</span><span class="brand-title">${t('권총기록 아카이브')}</span>`;
   const tag = document.querySelector('.tag'); if (tag) tag.textContent = t('ISSF 권총 · 베트남 사격연맹');
   document.querySelector('#ath-q')?.setAttribute('placeholder', t('선수명 검색 (예: Phạm Quang Huy)'));
   // 역할별 탭 노출

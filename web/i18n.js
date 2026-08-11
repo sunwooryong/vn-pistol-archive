@@ -17,6 +17,9 @@
     '로그인하고 이용하세요': 'Đăng nhập để sử dụng',
     '대회 일정': 'Lịch thi đấu', '진행중': 'Đang diễn ra', '예정': 'Sắp tới', '종료': 'Đã kết thúc',
     '일정 정보가 없습니다.': 'Chưa có lịch thi đấu.',
+    '다가오는 대회': 'Sắp diễn ra', '지난 대회': 'Đã qua', '홈': 'Trang chủ',
+    '내 선수 참가 대회': 'Giải VĐV của tôi tham gia', '올해 참가 기록이 없습니다.': 'Chưa có tham gia năm nay.',
+    '즐겨찾기 선수': 'VĐV yêu thích', '선수를 검색해 ☆로 저장하면 여기 모입니다.': 'Tìm VĐV và bấm ☆ để lưu vào đây.',
     '로그인': 'Đăng nhập', '회원가입': 'Đăng ký', '가입하기': 'Đăng ký',
     '계정이 없으신가요?': 'Chưa có tài khoản?', '이미 계정이 있으신가요?': 'Đã có tài khoản?',
     '선수/코치 계정을 만듭니다': 'Tạo tài khoản VĐV/HLV',
@@ -85,19 +88,39 @@
   };
   window.t = s => window.I18N.t(s);
 
-  // 언어 선택 버튼 (컨테이너에 KO/VI 토글 삽입)
+  // 국기 SVG (윈도우에서 이모지 국기가 안 나오므로 SVG 사용)
+  const FLAG = {
+    ko: `<svg viewBox="0 0 36 24" class="flag"><rect width="36" height="24" rx="3" fill="#fff"/>
+      <clipPath id="kc"><circle cx="18" cy="12" r="6"/></clipPath>
+      <g clip-path="url(#kc)"><rect x="12" y="6" width="12" height="12" fill="#cd2e3a"/>
+      <path d="M18 6a3 3 0 0 1 0 6 3 3 0 0 0 0 6 6 6 0 0 1 0-12z" fill="#0047a0"/></g>
+      <g stroke="#222" stroke-width="1"><path d="M6 6.5l3 1.7M6 8l3 1.7M6 9.5l3 1.7"/><path d="M30 14.6l-3 1.7M30 16.1l-3 1.7M30 17.6l-3 1.7"/></g></svg>`,
+    vi: `<svg viewBox="0 0 36 24" class="flag"><rect width="36" height="24" rx="3" fill="#da251d"/>
+      <path fill="#ff0" d="M18 6l1.76 5.42h5.7l-4.61 3.35 1.76 5.42L18 16.84l-4.61 3.35 1.76-5.42-4.61-3.35h5.7z"/></svg>`,
+  };
+  // 언어 선택 — 국기 클릭으로 전환
   window.langSelector = function () {
     const wrap = document.createElement('div');
     wrap.className = 'lang-sel';
     ['ko', 'vi'].forEach(l => {
       const b = document.createElement('button');
-      b.textContent = l === 'ko' ? '한국어' : 'Tiếng Việt';
-      b.className = 'lang-btn' + (lang === l ? ' on' : '');
+      b.className = 'flag-btn' + (lang === l ? ' on' : '');
+      b.title = l === 'ko' ? '한국어' : 'Tiếng Việt';
+      b.setAttribute('aria-label', b.title);
+      b.innerHTML = FLAG[l];
       b.onclick = () => { if (l !== lang) window.I18N.set(l); };
       wrap.appendChild(b);
     });
     return wrap;
   };
+
+  // 오륜기(올림픽 링) 마크 SVG
+  window.ringsSVG = `<svg viewBox="0 0 100 46" class="rings" aria-hidden="true">
+    <g fill="none" stroke-width="4">
+      <circle cx="22" cy="18" r="13" stroke="#0081c8"/><circle cx="50" cy="18" r="13" stroke="#000"/><circle cx="78" cy="18" r="13" stroke="#ee334e"/>
+      <circle cx="36" cy="30" r="13" stroke="#fcb131"/><circle cx="64" cy="30" r="13" stroke="#00a651"/>
+    </g></svg>`;
+  window.ringsEl = function () { const d = document.createElement('span'); d.className = 'rings-wrap'; d.innerHTML = window.ringsSVG; return d; };
 
   // 만든이 크레딧 (좌→우 글로우)
   window.creditEl = function () {

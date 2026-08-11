@@ -20,27 +20,11 @@
     if (window.creditEl) box.appendChild(window.creditEl());
   }
 
-  // 올해 대회 일정 (로그인 없이 공개 데이터에서)
+  // 올해 대회 일정 (로그인 없이 공개 데이터에서) — app.js 의 달력형 렌더 재사용
   async function renderSchedule(year) {
     const out = document.querySelector('#sched-list'); if (!out) return;
-    let cs = [];
-    try { cs = await DB.competitions(String(year)); } catch (e) { }
-    if (!cs.length) { out.innerHTML = `<div class="muted">${T('일정 정보가 없습니다.')}</div>`; return; }
-    cs.sort((a, b) => (a.date_start || '').localeCompare(b.date_start || ''));   // 날짜순
-    const today = new Date().toISOString().slice(0, 10);
-    const fmt = d => d ? d.slice(5).replace('-', '.') : '';
-    const SCOPE = { domestic: T('국내'), international: T('국제') };
-    out.innerHTML = cs.map(c => {
-      const s = c.date_start, e = c.date_end || c.date_start;
-      const status = (e && e < today) ? 'past' : (s && s <= today ? 'now' : 'up');
-      const stLabel = status === 'now' ? T('진행중') : status === 'up' ? T('예정') : T('종료');
-      const period = s && e && s !== e ? `${fmt(s)}–${fmt(e)}` : fmt(s);
-      return `<div class="sched-item ${status}">
-        <div class="sched-date"><span class="sd-range">${period}</span><span class="sd-badge ${status}">${stLabel}</span></div>
-        <div class="sched-body"><div class="sched-name">${esc(c.name)}</div>
-          <div class="sched-meta">${esc(c.location || '')} <span class="scope ${c.scope}">${SCOPE[c.scope] || ''}</span></div></div>
-      </div>`;
-    }).join('');
+    if (window.buildSchedule) return window.buildSchedule(out, year);
+    out.innerHTML = `<div class="muted">${T('불러오는 중…')}</div>`;
   }
 
   let profile = null;
@@ -56,11 +40,9 @@
     showGate(`
       <div class="landing">
         <div class="landing-hero">
-          <div class="auth-brand"></div>
-          <div>
-            <h1>${T('권총기록 아카이브')}</h1>
-            <p class="auth-sub" style="text-align:left;margin:2px 0 0">${T('ISSF 권총 · 베트남 사격연맹')}</p>
-          </div>
+          <div class="brand-rings hero-rings">${window.ringsSVG || ''}</div>
+          <h1 class="brand-title">${T('권총기록 아카이브')}</h1>
+          <p class="auth-sub">${T('ISSF 권총 · 베트남 사격연맹')}</p>
         </div>
         <div class="landing-main">
           <div class="auth-card">

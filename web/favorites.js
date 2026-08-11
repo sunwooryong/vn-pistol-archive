@@ -109,21 +109,43 @@ window.Fav = (function () {
       const delBtn = DEFAULT_GROUPS.includes(g) ? '' : `<button class="fav-delg" title="그룹 삭제">✕</button>`;
       sec.appendChild(el('div', 'fav-h', `${esc(g)} <span class="fc">${items.length}</span>${delBtn}`));
       if (delBtn) sec.querySelector('.fav-delg').onclick = () => { if (confirm(`'${g}' 그룹 삭제? (선수는 기타로 이동)`)) { deleteGroup(g); renderTab(container); } };
+      const grid = el('div', 'fav-grid');
+      const NOW = new Date().getFullYear();
       items.sort((a, b) => a.name.localeCompare(b.name)).forEach(it => {
-        const row = el('div', 'fav-row');
+        const card = el('div', 'fav-card');
         const chk = compareMode ? `<input type="checkbox" class="fav-chk" ${compareSel.has(it.key) ? 'checked' : ''}>` : '';
-        row.innerHTML = `${chk}
-          <span class="fn"><b>${esc(it.name)}</b>${it.gender ? ` <span class="g g-${it.gender}">${GENDER[it.gender]}</span>` : ''}
-            <span class="fsub">${it.birth_year ? it.birth_year + '년생' : ''}${it.is_foreign ? ' · ' + esc(it.nationality || '') : ''}</span></span>
-          <select class="fav-mv">${groups().map(x => `<option ${x === it.group ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>
-          <button class="fav-open">열기</button>
-          <button class="fav-rm">✕</button>`;
-        if (compareMode) row.querySelector('.fav-chk').onchange = e => { if (e.target.checked) compareSel.add(it.key); else compareSel.delete(it.key); runCompare(cmpOut); };
-        row.querySelector('.fav-mv').onchange = e => setGroup(it.key, e.target.value);
-        row.querySelector('.fav-open').onclick = async () => { const a = await DB.athleteByKey(it.key); if (a) openAthleteModal(a.id); else alert('현재 데이터에서 이 선수를 찾을 수 없습니다.'); };
-        row.querySelector('.fav-rm').onclick = () => { remove(it.key); renderTab(container); };
-        sec.appendChild(row);
+        const age = it.birth_year ? ` (${NOW - it.birth_year})` : '';
+        card.innerHTML = `
+          <div class="fc-top">${chk}
+            <div class="fc-id"><b class="fc-name">${esc(it.name)}</b>${it.gender ? ` <span class="g g-${it.gender}">${GENDER[it.gender]}</span>` : ''}
+              <span class="fsub">${it.birth_year ? it.birth_year + age : ''}${it.is_foreign ? ' · ' + esc(it.nationality || '') : ''}</span></div>
+            <button class="fav-rm" title="✕">✕</button></div>
+          <div class="fc-stats muted">…</div>
+          <div class="fc-actions">
+            <select class="fav-mv">${groups().map(x => `<option ${x === it.group ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>
+            <button class="fav-open">${window.t ? window.t('열기') : '열기'}</button></div>`;
+        if (compareMode) card.querySelector('.fav-chk').onchange = e => { if (e.target.checked) compareSel.add(it.key); else compareSel.delete(it.key); runCompare(cmpOut); };
+        card.querySelector('.fav-mv').onchange = e => setGroup(it.key, e.target.value);
+        card.querySelector('.fav-open').onclick = async () => { const a = await DB.athleteByKey(it.key); if (a) openAthleteModal(a.id); };
+        card.querySelector('.fav-rm').onclick = () => { remove(it.key); renderTab(container); };
+        grid.appendChild(card);
+        (async () => {
+          const a = await DB.athleteByKey(it.key);
+          const box = card.querySelector('.fc-stats');
+          if (!a) { box.textContent = '—'; return; }
+          const s = summarize(await DB.athleteCareer(a.id));
+          const T2 = k => window.t ? window.t(k) : k;
+          const best = Object.entries(s.perDisc).sort((x, y) => y[1].best - x[1].best).slice(0, 2)
+            .map(([d, v]) => `<span class="fc-pb">${(DISC[d] || d)} <b>${v.best}</b></span>`).join('');
+          box.classList.remove('muted');
+          box.innerHTML = `<div class="fc-medals"><span class="medal gold">${T2('금')}</span>${s.im.gold}
+              <span class="medal silver">${T2('은')}</span>${s.im.silver}
+              <span class="medal bronze">${T2('동')}</span>${s.im.bronze}
+              <span class="fc-unit">${esc(s.unit || '')}</span></div>
+            <div class="fc-pbs">${best || ''}</div>`;
+        })();
       });
+      sec.appendChild(grid);
       container.appendChild(sec);
     }
     if (compareMode) runCompare(cmpOut);
@@ -171,5 +193,6 @@ window.Fav = (function () {
     out.innerHTML = `<div class="cmp-h">선수 비교</div><div class="table-wrap"><table class="cmp"><thead><tr><th>항목</th>${th}</tr></thead><tbody>${rowsHtml.join('')}</tbody></table></div>`;
   }
 
-  return { starButton, renderTab, has, count, onChange, setCloud };
+  function list() { return Object.values(state.items); }
+  return { starButton, renderTab, has, count, onChange, setCloud, list };
 })();
