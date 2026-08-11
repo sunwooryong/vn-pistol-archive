@@ -7,7 +7,8 @@
   const VI = {
     // 공통 / 헤더
     '권총기록 아카이브': 'Kho dữ liệu súng ngắn',
-    'ISSF 권총 · 베트남 사격연맹': 'Súng ngắn ISSF · LĐ Bắn súng Việt Nam',
+    '권총 · 베트남 사격연맹': 'Súng ngắn · LĐ Bắn súng Việt Nam',
+    '4주 이내': 'Trong 4 tuần', '4주 이내 예정 대회가 없습니다.': 'Không có giải trong 4 tuần tới.',
     '로그아웃': 'Đăng xuất',
     '만든이': 'Tác giả',
     // 탭

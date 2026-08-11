@@ -95,28 +95,44 @@ async function buildSchedule(out, year) {
   const monLabel = MON[window.I18N.lang] || MON.ko;
   const dchip = d => { const [Y, M, D] = d.split('-'); return `<span class="dc-m">${monLabel(+M)}</span><span class="dc-d">${+D}</span>`; };
   const daysTo = d => Math.round((new Date(d + 'T00:00') - today) / 86400000);
+  const clickable = !!window.APP_ROLE;   // 앱(로그인) 상태에서만 상세 이동
   const card = (c, emph) => {
     const s = c.date_start, e = c.date_end || c.date_start;
     const status = (e && e < iso) ? 'past' : (s && s <= iso ? 'now' : 'up');
     const st = status === 'now' ? t('진행중') : status === 'up' ? t('예정') : t('종료');
     const range = s && e && s !== e ? `${s.slice(5).replace('-', '.')}–${e.slice(5).replace('-', '.')}` : (s || '').slice(5).replace('-', '.');
     const dd = status === 'up' && s ? `<span class="dday">D-${daysTo(s)}</span>` : '';
-    return `<div class="sched-item ${status}${emph ? ' emph' : ''}">
+    return `<div class="sched-item ${status}${emph ? ' emph' : ''}${clickable ? ' clickable' : ''}" data-cid="${c.id}">
       <div class="sched-cal ${status}">${dchip(s || e)}</div>
       <div class="sched-body">
         <div class="sched-top"><span class="sd-badge ${status}">${st}</span>${dd}<span class="sd-range">${range}</span></div>
         <div class="sched-name">${esc(c.name)}</div>
-        <div class="sched-meta">${esc(c.location || '')} <span class="scope ${c.scope}">${SCOPE[c.scope] || ''}</span></div>
+        <div class="sched-meta">${esc(c.location || '')} <span class="scope ${c.scope}">${SCOPE[c.scope] || ''}</span>${clickable ? '<span class="sched-go">›</span>' : ''}</div>
       </div></div>`;
   };
-  const up = cs.filter(c => (c.date_end || c.date_start || '') >= iso).sort((a, b) => (a.date_start || '').localeCompare(b.date_start || ''));
+  const in4w = new Date(today.getTime() + 28 * 86400000).toISOString().slice(0, 10);   // 4주 이내
+  const up = cs.filter(c => (c.date_end || c.date_start || '') >= iso && (c.date_start || c.date_end || '') <= in4w)
+    .sort((a, b) => (a.date_start || '').localeCompare(b.date_start || ''));
   const past = cs.filter(c => (c.date_end || c.date_start || '') < iso).sort((a, b) => (b.date_start || '').localeCompare(a.date_start || ''));
   let h = '';
-  if (up.length) h += `<div class="sched-sec">${t('다가오는 대회')} <span class="sched-n">${up.length}</span></div><div class="sched-grid up">${up.map(c => card(c, true)).join('')}</div>`;
+  h += `<div class="sched-sec">${t('다가오는 대회')} <span class="sched-n">${up.length}</span><span class="sched-hint">${t('4주 이내')}</span></div>`;
+  h += up.length ? `<div class="sched-grid up">${up.map(c => card(c, true)).join('')}</div>` : `<div class="muted" style="text-align:left">${t('4주 이내 예정 대회가 없습니다.')}</div>`;
   if (past.length) h += `<div class="sched-sec past">${t('지난 대회')} <span class="sched-n">${past.length}</span></div><div class="sched-grid">${past.map(c => card(c, false)).join('')}</div>`;
   out.innerHTML = h;
+  if (clickable) out.onclick = ev => { const it = ev.target.closest('.sched-item[data-cid]'); if (it && window.openCompetition) window.openCompetition(+it.dataset.cid); };
 }
 window.buildSchedule = buildSchedule;
+
+// 홈 일정 카드 클릭 → 대회별 탭에서 해당 대회 펼치기
+window.openCompetition = function (cid) {
+  show('comp');
+  const tryOpen = (n = 0) => {
+    const it = document.querySelector(`#comp-list .comp-item[data-cid="${cid}"]`);
+    if (it) { if (!it.classList.contains('on')) it.click(); it.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+    else if (n < 25) setTimeout(() => tryOpen(n + 1), 140);
+  };
+  tryOpen();
+};
 
 // 로그인한 선수 본인 대시보드
 async function renderMe() {
@@ -318,6 +334,7 @@ init.comp = async () => {
     cs.forEach(c => {
       const wrap = el('div', 'comp-wrap');
       const b = el('button', 'comp-item');
+      b.dataset.cid = c.id;
       b.innerHTML = `<span class="nm">${esc(c.name)}</span>
         <span class="sub">${periodText(c)} · ${esc(c.location || '')} <span class="scope ${c.scope}">${SCOPE[c.scope]}</span></span>`;
       const panel = el('div', 'comp-panel'); panel.hidden = true;
@@ -577,7 +594,7 @@ async function initInfo() {
     <div class="ip-row"><b>데이터 기준</b> ${esc(meta.generated_at || '-')} · ${DB_MODE === 'local' ? '로컬 미리보기' : 'Supabase'}</div>
     <div class="ip-row"><b>출처</b> 베트남 사격연맹 공개 기록시트</div>
     ${c.results ? `<div class="ip-row"><b>수록</b> 대회 ${c.competitions} · 선수 ${c.athletes} · 성적 ${c.results}</div>` : ''}
-    <div class="ip-row"><b>등위</b> 원본에 등위 컬럼이 없어 ISSF 규정 6.15.1로 <em>계산</em>한 값입니다(이너텐→마지막 시리즈 카운트백). 메달은 연맹 확정.</div>
+    <div class="ip-row"><b>등위</b> 원본에 등위 컬럼이 없어 국제 규정 6.15.1로 <em>계산</em>한 값입니다(이너텐→마지막 시리즈 카운트백). 메달은 연맹 확정.</div>
     <div class="ip-row"><b>완전성</b> 결선 점수·시리즈는 시트에 기재된 경우만 표시됩니다. 온전한 데이터는 2025년~.</div>`;
   $('#info-btn').onclick = () => { pop.hidden = !pop.hidden; };
   document.addEventListener('click', e => { if (!e.target.closest('#info-btn') && !e.target.closest('#info-pop')) pop.hidden = true; });
@@ -594,7 +611,7 @@ window.startApp = function (opts) {
     tab.onclick = () => show(tab.dataset.tab);
   });
   const h1 = document.querySelector('header h1'); if (h1) h1.innerHTML = `<span class="brand-rings">${window.ringsSVG || ''}</span><span class="brand-title">${t('권총기록 아카이브')}</span>`;
-  const tag = document.querySelector('.tag'); if (tag) tag.textContent = t('ISSF 권총 · 베트남 사격연맹');
+  const tag = document.querySelector('.tag'); if (tag) tag.textContent = t('권총 · 베트남 사격연맹');
   document.querySelector('#ath-q')?.setAttribute('placeholder', t('선수명 검색 (예: Phạm Quang Huy)'));
   // 역할별 탭 노출
   const showTab = (name, on) => { const el2 = document.querySelector(`.tab[data-tab="${name}"]`); if (el2) el2.hidden = !on; };

@@ -485,3 +485,11 @@ svg.rings { height: 20px; width: auto; display: block; filter: drop-shadow(0 0 5
 .et-date { font-size: 9.5px; color: var(--mut); font-weight: 700; font-variant-numeric: tabular-nums; }
 .ev-tab.on .et-date { color: rgba(255,255,255,.9); }
 .ev-when { font-size: 12px; color: var(--acc2); font-weight: 700; margin: 2px 2px 10px; }
+
+/* 클릭 가능한 일정 카드 */
+.sched-item.clickable { cursor: pointer; transition: border-color .15s, transform .05s; }
+.sched-item.clickable:hover { border-color: var(--acc); }
+.sched-item.clickable:active { transform: scale(.99); }
+.sched-meta { display: flex; align-items: center; gap: 6px; }
+.sched-go { margin-left: auto; color: var(--acc); font-weight: 800; font-size: 15px; }
+.sched-hint { font-size: 10px; color: var(--mut); font-weight: 600; background: var(--card2); border-radius: 999px; padding: 1px 8px; margin-left: 4px; }
