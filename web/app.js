@@ -417,6 +417,13 @@ function rankingBlock(rows, e) {
       : dts[0].replace(/-/g, '.') + (f && f.match_time ? ' ' + f.match_time : '');
     wrap.appendChild(el('div', 'ev-when', `📅 ${t('경기일')} ${label}`));
   }
+  // 결과 미입력(진행 예정/진행 중) 종목 → 순위표 대신 '출전 명단(결과 대기 중)'
+  const scored = rows.filter(r => !r.is_dnf && r.qual_total != null);
+  if (rows.length && scored.length === 0) {
+    wrap.appendChild(startList(rows));
+    return wrap;
+  }
+
   const isTeam = e && e.team_type && e.team_type !== 'individual';
 
   if (isTeam) {
@@ -473,6 +480,29 @@ function rankingBlock(rows, e) {
   wrap.appendChild(el('div', 'sub-h', '본선 순위'));
   wrap.appendChild(rankingTable(rows));
   return wrap;
+}
+
+// 출전 명단(결과 대기 중) — 아직 점수가 입력되지 않은 종목
+function startList(rows) {
+  const box = el('div', 'startlist');
+  box.appendChild(el('div', 'finals-h', `📋 ${t('출전 명단')} · ${t('결과 대기 중')} <span class="sl-n">${rows.length}${t('명 출전')}</span>`));
+  // 사수번호(있으면) 순, 없으면 이름순
+  const sorted = rows.slice().sort((a, b) => {
+    const fa = +(a.firing_point || a.bib || 0), fb = +(b.firing_point || b.bib || 0);
+    if (fa && fb && fa !== fb) return fa - fb;
+    return (a.athlete.full_name || '').localeCompare(b.athlete.full_name || '');
+  });
+  sorted.forEach(r => {
+    const pos = r.firing_point || r.bib || '';
+    const row = el('div', 'sl-row');
+    row.innerHTML =
+      `<span class="sl-pos">${pos ? esc(String(pos)) : '–'}</span>
+       <span class="sl-nm"><button class="lnk" data-aid="${r.athlete_id}">${esc(r.athlete.full_name)}</button>${r.athlete.gender ? ` <span class="g g-${r.athlete.gender}">${GENDER[r.athlete.gender]}</span>` : ''}</span>
+       <span class="sl-unit">${esc(r.unit_code || '')}</span>`;
+    if (window.Fav && r.athlete && r.athlete.identity_key) row.querySelector('.sl-nm').appendChild(Fav.starButton(r.athlete, { inline: true }));
+    box.appendChild(row);
+  });
+  return box;
 }
 
 function rankingTable(rows) {
