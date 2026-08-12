@@ -94,7 +94,9 @@ async function showFreshness() {
       const p = n => String(n).padStart(2, '0');
       when = `${vn.getUTCFullYear()}.${p(vn.getUTCMonth() + 1)}.${p(vn.getUTCDate())} ${p(vn.getUTCHours())}:${p(vn.getUTCMinutes())}`;
     }
-    box.innerHTML = `<span class="bc-dot"></span>${t('자동 갱신')} · ${t('기준')} ${when}`;
+    const sheet = window.APP_CONFIG && window.APP_CONFIG.sheetUrl;
+    box.innerHTML = `<span class="bc-fresh-chip"><span class="bc-dot"></span>${t('자동 갱신')} · ${t('기준')} ${when}</span>` +
+      (sheet ? `<a class="bc-sheet" href="${esc(sheet)}" target="_blank" rel="noopener noreferrer">📄 ${t('원본 시트')}</a>` : '');
   } catch (e) { box.remove(); }
 }
 async function renderMyAthletesComps(box, year) {
@@ -698,6 +700,7 @@ async function initInfo() {
     <div class="ip-row"><b>데이터 기준</b> ${esc(meta.generated_at || '-')} · ${DB_MODE === 'local' ? '로컬 미리보기' : 'Supabase'}</div>
     <div class="ip-row"><b>자동 갱신</b> 공개 시트를 주기적으로 자동 반영합니다(약 30분~1시간).</div>
     <div class="ip-row"><b>출처</b> 베트남 사격연맹 공개 기록시트</div>
+    ${(window.APP_CONFIG && window.APP_CONFIG.sheetUrl) ? `<a class="ip-sheet" href="${esc(window.APP_CONFIG.sheetUrl)}" target="_blank" rel="noopener noreferrer">📄 ${t('원본 시트 열기')}</a>` : ''}
     ${c.results ? `<div class="ip-row"><b>수록</b> 대회 ${c.competitions} · 선수 ${c.athletes} · 성적 ${c.results}</div>` : ''}
     <div class="ip-row"><b>등위</b> 원본에 등위 컬럼이 없어 국제 규정 6.15.1로 <em>계산</em>한 값입니다(이너텐→마지막 시리즈 카운트백). 메달은 연맹 확정.</div>
     <div class="ip-row"><b>완전성</b> 결선 점수·시리즈는 시트에 기재된 경우만 표시됩니다. 온전한 데이터는 2025년~.</div>`;
