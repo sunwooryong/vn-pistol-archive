@@ -90,6 +90,12 @@ async function main() {
     if (!pe.ok) { stats.nonPistol++; continue; }
     if (pe.isFinal) { stats.final++; continue; }
     if (pe.isPartial) { stats.partial++; continue; }
+    const idInfo = P.parseId(r[C.id]);
+    // "nam nữ"(남녀 통합 릴레이) → 선수 개인 성별로 남자부/여자부 분리
+    if (pe.bothGenders) {
+      if (idInfo.gender) P.setGender(pe, idInfo.gender);
+      else { stats.unclassified++; log('  ★통합종목 성별불명:', r[C.event], r[C.id]); continue; }
+    }
     if (!pe.classified) { stats.unclassified++; log('  ★미분류:', r[C.event]); continue; }
     const name = (r[C.ho] + ' ' + r[C.ten]).trim();
     if (!name) { stats.noName++; continue; }
@@ -97,7 +103,6 @@ async function main() {
     const series = C.s.map(c => P.num(r[c])).filter(v => v !== null);
     const total = P.num(r[C.cong]);
     const mdt = P.parseMatchDateTime(r[C.time]);
-    const idInfo = P.parseId(r[C.id]);
     const unit = (r[C.dvi] || '').trim();
     const comp = r[C.comp].trim();
     const intl = isIntlComp(comp);
