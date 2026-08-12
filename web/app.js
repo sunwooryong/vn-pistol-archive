@@ -98,24 +98,67 @@ async function showFreshness() {
   } catch (e) { box.remove(); }
 }
 async function renderMyAthletesComps(box, year) {
-  box.innerHTML = `<h3>${t('내 선수 참가 대회')}</h3><div class="muted">${t('불러오는 중…')}</div>`;
-  const byComp = new Map();
-  for (const it of Fav.list()) {
+  box.innerHTML = `<h3>${t('관리 선수 일정·기록')}</h3><div class="muted">${t('불러오는 중…')}</div>`;
+  const favs = Fav.list();
+  if (!favs.length) { box.innerHTML = `<h3>${t('관리 선수 일정·기록')}</h3><div class="muted">${t('관리 선수를 즐겨찾기(☆)로 등록하세요.')}</div>`; return; }
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const iso = today.toISOString().slice(0, 10);
+  const daysTo = d => Math.round((new Date(d + 'T00:00') - today) / 86400000);
+  const cards = [];
+  for (const it of favs) {
     const a = await DB.athleteByKey(it.key); if (!a) continue;
-    (await DB.athleteCareer(a.id)).forEach(r => {
-      if (r.competition.year !== year) return;
-      const k = r.competition.name;
-      let o = byComp.get(k);
-      if (!o) { o = { name: r.competition.name, date: r.competition.date_start, scope: r.competition.scope, names: new Set() }; byComp.set(k, o); }
-      o.names.add(a.full_name);
-    });
+    const rows = (await DB.athleteCareer(a.id));
+    const scored = r => !r.is_dnf && r.qual_total != null;
+    // 다가오는·진행 중: 점수 미입력 & 대회 종료일이 오늘 이후 (또는 오늘 진행)
+    const upcoming = rows.filter(r => !scored(r) && ((r.competition.date_end || r.competition.date_start || '') >= iso))
+      .sort((x, y) => (x.match_date || x.competition.date_start || '').localeCompare(y.match_date || y.competition.date_start || ''));
+    // 최근 기록: 올해 점수 있는 결과, 최신순
+    const recent = rows.filter(r => scored(r) && r.competition.year === year)
+      .sort((x, y) => (y.match_date || y.competition.date_start || '').localeCompare(x.match_date || x.competition.date_start || ''))
+      .slice(0, 4);
+    cards.push({ a, key: it.key, group: it.group, upcoming, recent });
   }
-  if (!byComp.size) { box.innerHTML = `<h3>${t('내 선수 참가 대회')}</h3><div class="muted">${t('올해 참가 기록이 없습니다.')}</div>`; return; }
-  const arr = [...byComp.values()].sort((x, y) => (y.date || '').localeCompare(x.date || ''));
-  box.innerHTML = `<h3>${t('내 선수 참가 대회')} <span class="sub2">${arr.length}</span></h3>` + arr.map(c => `
-    <div class="myath-row"><div class="myath-c"><b>${esc(c.name)}</b> <span class="scope ${c.scope}">${SCOPE[c.scope] || ''}</span>
-      <span class="myath-date">${(c.date || '').replace(/-/g, '.')}</span></div>
-      <div class="myath-names">${[...c.names].map(n => esc(n)).join(', ')}</div></div>`).join('');
+  // 다가오는 경기가 있는 선수를 위로
+  cards.sort((x, y) => (y.upcoming.length ? 1 : 0) - (x.upcoming.length ? 1 : 0));
+  const dateS = d => (d || '').slice(5).replace('-', '.');
+  const upItem = r => {
+    const d = r.match_date || r.competition.date_start;
+    const dd = d && d >= iso ? (daysTo(d) === 0 ? 'D-0' : `D-${daysTo(d)}`) : '';
+    const status = (r.competition.date_start && r.competition.date_start <= iso) ? t('결과 대기') : t('출전 예정');
+    return `<div class="ma-ev up"><span class="ma-when">${dateS(d)}${dd ? ` <b>${dd}</b>` : ''}</span>
+      <span class="ma-evn">${esc(eventLabel(r.event))}</span>
+      <span class="ma-cmp">${esc(r.competition.name)}</span>
+      <span class="ma-st">${status}</span></div>`;
+  };
+  const recItem = r => {
+    const md = r.medal ? medalBadge(r.medal) : '';
+    const pl = r.placement ? `${r.placement}${t('위')}` : '';
+    return `<div class="ma-ev rec"><span class="ma-when">${dateS(r.match_date || r.competition.date_start)}</span>
+      <span class="ma-evn">${esc(eventLabel(r.event))}</span>
+      <span class="ma-sc">${md}<b>${num(r.qual_total)}</b>${r.final_score != null ? ` · ${t('결선')} ${r.final_score}` : ''} ${pl}</span></div>`;
+  };
+  box.innerHTML = `<h3>${t('관리 선수 일정·기록')} <span class="sub2">${cards.length}</span></h3>` +
+    cards.map(c => `
+      <div class="ma-card">
+        <div class="ma-top">
+          <button class="lnk ma-name" data-akey="${esc(c.key || '')}">${esc(c.a.full_name)}</button>
+          ${c.a.gender ? `<span class="g g-${c.a.gender}">${GENDER[c.a.gender]}</span>` : ''}
+          ${c.group ? `<span class="ma-grp">${esc(t(c.group))}</span>` : ''}
+        </div>
+        <div class="ma-sec-l">📅 ${t('다가오는 경기')}</div>
+        ${c.upcoming.length ? c.upcoming.map(upItem).join('') : `<div class="ma-none">${t('예정된 경기 없음')}</div>`}
+        <div class="ma-sec-l">🎯 ${t('최근 기록')}</div>
+        ${c.recent.length ? c.recent.map(recItem).join('') : `<div class="ma-none">${t('올해 기록 없음')}</div>`}
+      </div>`).join('');
+  // 선수명 클릭 → 선수 상세로 이동
+  box.querySelectorAll('.ma-name[data-akey]').forEach(btn => {
+    btn.onclick = async () => {
+      const a = await DB.athleteByKey(btn.dataset.akey); if (!a) return;
+      show('athlete');
+      const detail = $('#ath-detail'), list = $('#ath-list');
+      renderCareer({ id: a.id, ...a }, detail, list);
+    };
+  });
 }
 const MON = { ko: m => `${m}월`, vi: m => `Th.${m}` };
 async function buildSchedule(out, year) {
