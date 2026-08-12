@@ -59,12 +59,43 @@ init.home = () => renderHome();
 async function renderHome() {
   const box = $('#view-home'), year = new Date().getFullYear();
   const coach = window.APP_ROLE && window.APP_ROLE.role === 'coach' && window.Fav && Fav.count();
+  const now = new Date();
+  const wd = (window.I18N.lang === 'vi')
+    ? ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][now.getDay()]
+    : ['일', '월', '화', '수', '목', '금', '토'][now.getDay()];
+  const dateStr = window.I18N.lang === 'vi'
+    ? `${now.getDate()}/${now.getMonth() + 1}/${year} · ${wd}`
+    : `${year}. ${now.getMonth() + 1}. ${now.getDate()} · ${wd}`;
   box.innerHTML =
+    `<div class="bc-hero">
+       <div class="bc-hero-rings">${window.ringsSVG || ''}</div>
+       <div class="bc-hero-txt">
+         <div class="bc-kicker">${t('권총 · 베트남 사격연맹')}</div>
+         <h2 class="bc-hero-title"><span class="bc-live"></span>${year} ${t('대회 일정')}</h2>
+         <div class="bc-hero-date">${dateStr}</div>
+         <div class="bc-fresh" id="bc-fresh"></div>
+       </div>
+     </div>` +
     (coach ? `<div id="home-myath" class="block"></div>` : '') +
-    `<div class="home-head">${window.ringsSVG || ''}<h2>${year} ${t('대회 일정')}</h2></div>
-     <div id="home-sched"><div class="muted">${t('불러오는 중…')}</div></div>`;
+    `<div id="home-sched"><div class="muted">${t('불러오는 중…')}</div></div>`;
+  showFreshness();
   await buildSchedule($('#home-sched'), year);
   if (coach) renderMyAthletesComps($('#home-myath'), year);
+}
+// 데이터 신선도(자동 갱신 기준 시각) — 베트남 시간(UTC+7)로 표시
+async function showFreshness() {
+  const box = $('#bc-fresh'); if (!box) return;
+  try {
+    const meta = await DB.meta();
+    const iso = meta.generated_at_full || (meta.generated_at ? meta.generated_at + 'T00:00:00Z' : null);
+    let when = meta.generated_at || '';
+    if (iso) {
+      const d = new Date(iso); const vn = new Date(d.getTime() + 7 * 3600000);
+      const p = n => String(n).padStart(2, '0');
+      when = `${vn.getUTCFullYear()}.${p(vn.getUTCMonth() + 1)}.${p(vn.getUTCDate())} ${p(vn.getUTCHours())}:${p(vn.getUTCMinutes())}`;
+    }
+    box.innerHTML = `<span class="bc-dot"></span>${t('자동 갱신')} · ${t('기준')} ${when}`;
+  } catch (e) { box.remove(); }
 }
 async function renderMyAthletesComps(box, year) {
   box.innerHTML = `<h3>${t('내 선수 참가 대회')}</h3><div class="muted">${t('불러오는 중…')}</div>`;
@@ -592,6 +623,7 @@ async function initInfo() {
   const pop = $('#info-pop');
   pop.innerHTML = `
     <div class="ip-row"><b>데이터 기준</b> ${esc(meta.generated_at || '-')} · ${DB_MODE === 'local' ? '로컬 미리보기' : 'Supabase'}</div>
+    <div class="ip-row"><b>자동 갱신</b> 공개 시트를 주기적으로 자동 반영합니다(약 30분~1시간).</div>
     <div class="ip-row"><b>출처</b> 베트남 사격연맹 공개 기록시트</div>
     ${c.results ? `<div class="ip-row"><b>수록</b> 대회 ${c.competitions} · 선수 ${c.athletes} · 성적 ${c.results}</div>` : ''}
     <div class="ip-row"><b>등위</b> 원본에 등위 컬럼이 없어 국제 규정 6.15.1로 <em>계산</em>한 값입니다(이너텐→마지막 시리즈 카운트백). 메달은 연맹 확정.</div>

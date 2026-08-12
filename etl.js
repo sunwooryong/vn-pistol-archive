@@ -430,6 +430,7 @@ async function main() {
     loaded_results: resultsArr.length, dropped_vie: vieDropped,
     min_year: MIN_YEAR,
     generated_at: new Date().toISOString().slice(0, 10),
+    generated_at_full: new Date().toISOString(),
     counts: { competitions: compArr.length, events: evArr.length, athletes: athArr.length,
       results: resultsArr.length, series: seriesArr.length },
   }, null, 2));

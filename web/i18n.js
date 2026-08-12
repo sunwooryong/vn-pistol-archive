@@ -9,6 +9,7 @@
     '권총기록 아카이브': 'Kho dữ liệu súng ngắn',
     '권총 · 베트남 사격연맹': 'Súng ngắn · LĐ Bắn súng Việt Nam',
     '4주 이내': 'Trong 4 tuần', '4주 이내 예정 대회가 없습니다.': 'Không có giải trong 4 tuần tới.',
+    '자동 갱신': 'Tự động cập nhật', '기준': 'Cập nhật', '30분마다 자동 갱신': 'Tự động cập nhật mỗi 30 phút',
     '로그아웃': 'Đăng xuất',
     '만든이': 'Tác giả',
     // 탭
