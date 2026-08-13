@@ -114,11 +114,17 @@ async function renderMyAthletesComps(box, year) {
     // 다가오는·진행 중: 점수 미입력 & 대회 종료일이 오늘 이후 (또는 오늘 진행)
     const upcoming = rows.filter(r => !scored(r) && ((r.competition.date_end || r.competition.date_start || '') >= iso))
       .sort((x, y) => (x.match_date || x.competition.date_start || '').localeCompare(y.match_date || y.competition.date_start || ''));
-    // 최근 기록: 올해 점수 있는 결과, 최신순
+    // 최근 기록: 올해 점수 있는 결과(개인+단체), 최신순
     const recent = rows.filter(r => scored(r) && r.competition.year === year)
       .sort((x, y) => (y.match_date || y.competition.date_start || '').localeCompare(x.match_date || x.competition.date_start || ''))
-      .slice(0, 4);
-    cards.push({ a, key: it.key, group: it.group, upcoming, recent });
+      .slice(0, 5);
+    // 시즌 메달 집계 (개인 medal + 단체 team_medal)
+    const M = { ig: 0, is: 0, ib: 0, tg: 0, ts: 0, tb: 0 };
+    rows.filter(r => r.competition.year === year).forEach(r => {
+      if (r.medal === 'gold') M.ig++; else if (r.medal === 'silver') M.is++; else if (r.medal === 'bronze') M.ib++;
+      if (r.team_medal === 'gold') M.tg++; else if (r.team_medal === 'silver') M.ts++; else if (r.team_medal === 'bronze') M.tb++;
+    });
+    cards.push({ a, key: it.key, group: it.group, upcoming, recent, medals: M });
   }
   // 다가오는 경기가 있는 선수를 위로
   cards.sort((x, y) => (y.upcoming.length ? 1 : 0) - (x.upcoming.length ? 1 : 0));
@@ -133,11 +139,23 @@ async function renderMyAthletesComps(box, year) {
       <span class="ma-st">${status}</span></div>`;
   };
   const recItem = r => {
-    const md = r.medal ? medalBadge(r.medal) : '';
+    const ind = r.medal ? medalBadge(r.medal) : '';
+    const team = r.team_medal ? `${medalBadge(r.team_medal)}<span class="ma-tm">${t('단체')}</span>` : '';
     const pl = r.placement ? `${r.placement}${t('위')}` : '';
     return `<div class="ma-ev rec"><span class="ma-when">${dateS(r.match_date || r.competition.date_start)}</span>
       <span class="ma-evn">${esc(eventLabel(r.event))}</span>
-      <span class="ma-sc">${md}<b>${num(r.qual_total)}</b>${r.final_score != null ? ` · ${t('결선')} ${r.final_score}` : ''} ${pl}</span></div>`;
+      <span class="ma-sc">${ind}${team}<b>${num(r.qual_total)}</b>${r.final_score != null ? ` · ${t('결선')} ${r.final_score}` : ''} ${pl}</span></div>`;
+  };
+  // 시즌 메달 집계 칩 (개인 · 단체)
+  const tallyChips = M => {
+    const grp = (g, s, b) => [['gold', g], ['silver', s], ['bronze', b]]
+      .filter(([, n]) => n > 0).map(([m, n]) => `${medalBadge(m)}${n}`).join(' ');
+    const ind = grp(M.ig, M.is, M.ib), team = grp(M.tg, M.ts, M.tb);
+    if (!ind && !team) return '';
+    return `<span class="ma-medals">` +
+      (ind ? `<span class="ma-mg"><i>${t('개인')}</i>${ind}</span>` : '') +
+      (team ? `<span class="ma-mg team"><i>${t('단체')}</i>${team}</span>` : '') +
+      `</span>`;
   };
   box.innerHTML = `<h3>${t('관리 선수 일정·기록')} <span class="sub2">${cards.length}</span></h3>` +
     cards.map(c => `
@@ -147,6 +165,7 @@ async function renderMyAthletesComps(box, year) {
           ${c.a.gender ? `<span class="g g-${c.a.gender}">${GENDER[c.a.gender]}</span>` : ''}
           ${c.group ? `<span class="ma-grp">${esc(t(c.group))}</span>` : ''}
         </div>
+        ${tallyChips(c.medals)}
         <div class="ma-sec-l">📅 ${t('다가오는 경기')}</div>
         ${c.upcoming.length ? c.upcoming.map(upItem).join('') : `<div class="ma-none">${t('예정된 경기 없음')}</div>`}
         <div class="ma-sec-l">🎯 ${t('최근 기록')}</div>
