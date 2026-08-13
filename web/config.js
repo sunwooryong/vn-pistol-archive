@@ -10,6 +10,6 @@ window.APP_CONFIG = {
   //   supabase → 항상 Supabase REST
   mode: 'auto',
 
-  // 원본 구글시트(연맹 공개 기록시트) — 사람이 볼 수 있는 뷰 URL
-  sheetUrl: 'https://docs.google.com/spreadsheets/d/1MATLspvOeL4MFObWUIiYqjKkw-PkEEQ7IqXCw-kRheQ/edit#gid=1558133737',
+  // 원본 페이지 — 베트남 사격연맹 공개 기록 웹페이지(대회 목록)
+  sourceUrl: 'https://mellifluous-raindrop-50eec8.netlify.app/cac-giai-dau/all-competition',
 };
