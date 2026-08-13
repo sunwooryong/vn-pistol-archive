@@ -101,7 +101,13 @@ async function main() {
     if (!name) { stats.noName++; continue; }
 
     const series = C.s.map(c => P.num(r[c])).filter(v => v !== null);
-    const total = P.num(r[C.cong]);
+    let total = P.num(r[C.cong]);
+    // 총점(Cộng) 칸이 비어 있지만 시리즈가 규정 개수만큼 입력된 경우 → 시리즈 합으로 본선점수 계산
+    //   (연맹이 시리즈만 입력하고 합계 칸을 비워둔 경우. 부분 시리즈만 있으면 진행중으로 간주해 계산하지 않음)
+    if (total === null && series.length >= (pe.nSeries || 6)) {
+      total = Math.round(series.reduce((a, b) => a + b, 0) * 10) / 10;
+      stats.totalFromSeries = (stats.totalFromSeries || 0) + 1;
+    }
     const mdt = P.parseMatchDateTime(r[C.time]);
     const unit = (r[C.dvi] || '').trim();
     const comp = r[C.comp].trim();
