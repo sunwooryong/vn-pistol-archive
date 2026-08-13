@@ -469,6 +469,26 @@ init.comp = async () => {
   load();
 };
 
+// 연맹 원본 이벤트 페이지 딥링크 (event-all.html?name=..&date=..&competition=..)
+function sourceEventUrl(rows, e) {
+  const base = window.APP_CONFIG && window.APP_CONFIG.sourceEventBase;
+  const r0 = rows && rows[0]; if (!base || !r0) return null;
+  const rawName = r0.raw_event_name, comp = r0.competition && r0.competition.name;
+  if (!rawName || !comp) return null;
+  const d = r0.match_date || (e && e.match_date) || '';
+  const date = d ? `${d.slice(8, 10)}.${d.slice(5, 7)}.${d.slice(0, 4)}` : '';
+  const year = (r0.competition && r0.competition.year) || (d ? d.slice(0, 4) : '');
+  const isTeam = e && e.team_type && e.team_type !== 'individual';
+  // 공백을 %20으로 인코딩(연맹 사이트 파서 호환) — URLSearchParams의 '+' 대신 encodeURIComponent 사용
+  const params = {
+    name: rawName, date, time: r0.match_time || '', year: String(year || ''),
+    competition: comp, hasFinal: (e && e.has_final) ? '1' : '0', pdfFinal: '',
+    openTab: isTeam ? 'Đồng đội' : 'Cá nhân',
+  };
+  const qs = Object.keys(params).map(k => `${k}=${encodeURIComponent(params[k])}`).join('&');
+  return `${base}?${qs}`;
+}
+
 // 종목 유형에 따라 결선(개인) 또는 단체 순위 + 개인 기록 표시
 function rankingBlock(rows, e) {
   const wrap = el('div');
@@ -480,6 +500,14 @@ function rankingBlock(rows, e) {
       ? `${dts[0].replace(/-/g, '.')} ~ ${dts[dts.length - 1].replace(/-/g, '.')}`
       : dts[0].replace(/-/g, '.') + (f && f.match_time ? ' ' + f.match_time : '');
     wrap.appendChild(el('div', 'ev-when', `📅 ${t('경기일')} ${label}`));
+  }
+  // 연맹 원본 이벤트 페이지 딥링크
+  const srcUrl = sourceEventUrl(rows, e);
+  if (srcUrl) {
+    const a = el('a', 'ev-src');
+    a.href = srcUrl; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    a.innerHTML = `🔗 ${t('연맹 원본에서 보기')}`;
+    wrap.appendChild(a);
   }
   // 결과 미입력(진행 예정/진행 중) 종목 → 순위표 대신 '출전 명단(결과 대기 중)'
   const scored = rows.filter(r => !r.is_dnf && r.qual_total != null);

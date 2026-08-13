@@ -12,4 +12,6 @@ window.APP_CONFIG = {
 
   // 원본 페이지 — 베트남 사격연맹 공개 기록 웹페이지(대회 목록)
   sourceUrl: 'https://mellifluous-raindrop-50eec8.netlify.app/cac-giai-dau/all-competition',
+  // 종목 상세 딥링크 base (event-all.html?name=..&date=..&competition=..)
+  sourceEventBase: 'https://mellifluous-raindrop-50eec8.netlify.app/cac-giai-dau/event-all.html',
 };

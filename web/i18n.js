@@ -11,6 +11,7 @@
     '4주 이내': 'Trong 4 tuần', '4주 이내 예정 대회가 없습니다.': 'Không có giải trong 4 tuần tới.',
     '자동 갱신': 'Tự động cập nhật', '기준': 'Cập nhật', '30분마다 자동 갱신': 'Tự động cập nhật mỗi 30 phút',
     '연맹 원본 페이지': 'Trang LĐ Bắn súng', '연맹 원본 페이지 열기': 'Mở trang LĐ Bắn súng',
+    '연맹 원본에서 보기': 'Xem trên trang LĐ',
     '출전 명단': 'Danh sách thi đấu', '결과 대기 중': 'Đang chờ kết quả', '사수': 'Vị trí', '명 출전': ' VĐV', '결과 입력 전입니다': 'Chưa nhập kết quả',
     '로그아웃': 'Đăng xuất',
     '만든이': 'Tác giả',
