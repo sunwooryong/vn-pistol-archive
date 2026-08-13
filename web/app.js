@@ -76,11 +76,30 @@ async function renderHome() {
          <div class="bc-fresh" id="bc-fresh"></div>
        </div>
      </div>` +
+    `<div id="home-news"></div>` +
     (coach ? `<div id="home-myath" class="block"></div>` : '') +
     `<div id="home-sched"><div class="muted">${t('불러오는 중…')}</div></div>`;
   showFreshness();
+  renderNews($('#home-news'));
   await buildSchedule($('#home-sched'), year);
   if (coach) renderMyAthletesComps($('#home-myath'), year);
+}
+// 베트남 사격연맹 공지/뉴스
+async function renderNews(box) {
+  if (!box) return;
+  let items = [];
+  try { items = await DB.news(); } catch (e) { }
+  if (!items || !items.length) { box.innerHTML = ''; return; }
+  const src = window.APP_CONFIG && window.APP_CONFIG.newsUrl;
+  const top = items.slice(0, 5);
+  box.innerHTML =
+    `<div class="news-card">
+       <div class="news-head"><span class="news-t">📢 ${t('연맹 공지')}</span>
+         ${src ? `<a class="news-more" href="${esc(src)}" target="_blank" rel="noopener noreferrer">${t('전체보기')} ›</a>` : ''}</div>
+       ${top.map(n => `<a class="news-item" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">
+         <span class="news-date">${esc(n.date || '')}</span>
+         <span class="news-title">${esc(n.title)}</span></a>`).join('')}
+     </div>`;
 }
 // 데이터 신선도(자동 갱신 기준 시각) — 베트남 시간(UTC+7)로 표시
 async function showFreshness() {

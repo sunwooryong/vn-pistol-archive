@@ -14,4 +14,6 @@ window.APP_CONFIG = {
   sourceUrl: 'https://mellifluous-raindrop-50eec8.netlify.app/cac-giai-dau/all-competition',
   // 종목 상세 딥링크 base (event-all.html?name=..&date=..&competition=..)
   sourceEventBase: 'https://mellifluous-raindrop-50eec8.netlify.app/cac-giai-dau/event-all.html',
+  // 연맹 공지/뉴스 페이지(전체보기)
+  newsUrl: 'https://mellifluous-raindrop-50eec8.netlify.app/news.html',
 };

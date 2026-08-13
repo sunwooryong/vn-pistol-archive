@@ -60,6 +60,7 @@
           .sort((x, y) => (x.competition.date_start || '').localeCompare(y.competition.date_start || ''));
       },
       async meta() { await ensure(); return metaCache; },
+      async news() { return fetch(DATA_BASE + 'news.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : []).catch(() => []); },
       async athleteByKey(key) { const d = await ensure(); return d.athByKey.get(key) || null; },
       // 종목·성별 선수별 최고점 (국제 백분위 벤치마크). 국내+국제 전체.
       async eventScores({ discipline, gender } = {}) {
@@ -173,6 +174,7 @@
         const m = r[0] || {};
         return { generated_at: (m.started_at || '').slice(0, 10), source: m.source_url, loaded_results: m.loaded_rows, counts: {} };
       },
+      async news() { return fetch(DATA_BASE + 'news.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : []).catch(() => []); },
       async eventScores({ discipline, gender } = {}) {
         const f = [`discipline=eq.${discipline}`];
         if (gender) f.push(`event_gender=eq.${gender}`);

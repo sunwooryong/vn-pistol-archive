@@ -19,6 +19,9 @@ const R = require('./lib/rank');
 
 const SHEET_URL =
   'https://docs.google.com/spreadsheets/d/1MATLspvOeL4MFObWUIiYqjKkw-PkEEQ7IqXCw-kRheQ/export?format=csv&gid=1558133737';
+// 연맹 공지/뉴스 시트 (제목·날짜·링크·이미지)
+const NEWS_URL =
+  'https://docs.google.com/spreadsheets/d/1dY2xP9LB2jeMeneAY0anZQrMlMtnV7za_C18Slw1tJ8/export?format=csv&gid=823135258';
 const DEFAULT_CSV = path.join(__dirname, 'data', 'shooting.csv');
 const BUILD = path.join(__dirname, 'build');
 // 시트에 있는 실데이터는 2024(전국선수권)·2025·2026 + 2015/2016 잔여분.
@@ -35,14 +38,16 @@ const MEDAL = { V: 'gold', B: 'silver', D: 'bronze' };
 
 function fetchCSV(url) {
   return new Promise((resolve, reject) => {
-    https.get(url, res => {
+    const req = https.get(url, res => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
         return fetchCSV(res.headers.location).then(resolve, reject);
       }
       if (res.statusCode !== 200) return reject(new Error('HTTP ' + res.statusCode));
       let d = ''; res.setEncoding('utf8');
       res.on('data', c => d += c); res.on('end', () => resolve(d));
-    }).on('error', reject);
+    });
+    req.setTimeout(60000, () => req.destroy(new Error('timeout')));
+    req.on('error', reject);
   });
 }
 
@@ -450,6 +455,25 @@ async function main() {
   fs.writeFileSync(path.join(BUILD, 'qa-report.txt'), rep, 'utf8');
   console.log(rep);
   console.log('\n[build/ 에 레코드셋 + qa-report.txt 저장 완료]');
+
+  await buildNews();
+}
+
+// 연맹 공지/뉴스 시트 → build/news.json (실패해도 본 빌드는 유지)
+async function buildNews() {
+  try {
+    const raw = await fetchCSV(NEWS_URL);
+    const iso = d => { const m = (d || '').match(/(\d{2})\.(\d{2})\.(\d{4})/); return m ? `${m[3]}-${m[2]}-${m[1]}` : ''; };
+    const items = P.parseCSV(raw).slice(1)
+      .map(r => ({ title: (r[0] || '').trim(), date: (r[1] || '').trim(), link: (r[2] || '').trim(), image: (r[3] || '').trim() }))
+      .filter(n => n.title && n.link)
+      .map(n => ({ ...n, iso: iso(n.date) }))
+      .sort((a, b) => (b.iso || '').localeCompare(a.iso || ''));
+    fs.writeFileSync(path.join(BUILD, 'news.json'), JSON.stringify(items, null, 0));
+    console.log(`[news.json 저장: ${items.length}건]`);
+  } catch (e) {
+    console.log('[news 가져오기 실패(건너뜀):', e.message + ']');
+  }
 }
 
 main().catch(e => { console.error(e); process.exit(1); });
