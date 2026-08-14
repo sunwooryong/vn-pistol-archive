@@ -178,6 +178,33 @@ svg.scale .rt { fill: var(--intl); font-size: 7px; text-anchor: middle; }
 svg.scale .me { fill: var(--acc); stroke: var(--bg); stroke-width: 1.5; }
 svg.scale .mt { fill: var(--tx); font-size: 8px; text-anchor: middle; font-weight: 700; }
 
+/* 종목 통계 요약행 */
+.an-h .an-tag { font-size: 12px; margin-left: 4px; color: var(--acc); }
+.an-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 4px 0 8px; }
+.an-stats span { display: flex; flex-direction: column; background: var(--card2); border: 1px solid var(--line); border-radius: 7px; padding: 5px 8px; }
+.an-stats i { font-style: normal; font-size: 9.5px; color: var(--mut); font-weight: 700; }
+.an-stats b { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+/* 연도별 성장 곡선 */
+svg.growth { width: 250px; max-width: 62%; height: 70px; overflow: visible; }
+svg.growth .garea { fill: color-mix(in srgb, var(--dom) 12%, transparent); stroke: none; }
+svg.growth .gline { fill: none; stroke: var(--dom); stroke-width: 2; }
+svg.growth .gd { fill: var(--dom); }
+svg.growth .gv { fill: var(--tx); font-size: 8px; text-anchor: middle; font-weight: 700; }
+svg.growth .gx { fill: var(--mut); font-size: 7.5px; text-anchor: middle; }
+
+/* 종목별 강점 레이더 */
+.radar-card { text-align: center; }
+.radar-wrap { display: flex; justify-content: center; margin: 4px 0 2px; }
+svg.radar { width: 190px; height: 190px; overflow: visible; }
+svg.radar .rg { fill: none; stroke: var(--line); stroke-width: 1; }
+svg.radar .rax { stroke: var(--line); stroke-width: 1; }
+svg.radar .rl { fill: var(--mut); font-size: 8.5px; font-weight: 700; }
+svg.radar .rarea { fill: color-mix(in srgb, var(--acc) 22%, transparent); stroke: var(--acc); stroke-width: 2; }
+svg.radar .rd { fill: var(--acc); stroke: var(--card); stroke-width: 1; }
+.radar-leg { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 12px; font-size: 11px; color: var(--mut); margin-top: 4px; }
+.radar-leg b { color: var(--tx); }
+
 /* 연도 랭킹 */
 .rk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
 .rk-ev { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
