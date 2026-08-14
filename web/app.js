@@ -152,9 +152,10 @@ async function renderMyAthletesComps(box, year) {
     const d = r.match_date || r.competition.date_start;
     const dd = d && d >= iso ? (daysTo(d) === 0 ? 'D-0' : `D-${daysTo(d)}`) : '';
     const status = (r.competition.date_start && r.competition.date_start <= iso) ? t('결과 대기') : t('출전 예정');
+    const meta = slotMeta(r);
     return `<div class="ma-ev up"><span class="ma-when">${dateS(d)}${dd ? ` <b>${dd}</b>` : ''}</span>
       <span class="ma-evn">${esc(eventLabel(r.event))}</span>
-      <span class="ma-cmp">${esc(r.competition.name)}</span>
+      <span class="ma-cmp">${esc(r.competition.name)}${meta ? ` <span class="ma-slot">${meta}</span>` : ''}</span>
       <span class="ma-st">${status}</span></div>`;
   };
   const recItem = r => {
@@ -593,11 +594,30 @@ function rankingBlock(rows, e) {
   return wrap;
 }
 
+// 경기구분 코드 해석: C=개인전, C1~=단체전, K=번외
+function partInfo(code) {
+  if (!code) return null;
+  if (code === 'C') return { label: t('개인전'), cls: 'c' };
+  if (/^C[1-9]/.test(code)) return { label: t('단체전'), cls: 'c1' };
+  if (code === 'K') return { label: t('번외'), cls: 'k' };
+  return { label: code, cls: 'x' };
+}
+// 조·사대·경기구분 칩
+function slotMeta(r, opts = {}) {
+  const out = [];
+  if (r.relay) out.push(`<span class="slot-chip">${t('조')} ${esc(String(r.relay))}</span>`);
+  if (!opts.skipFiring && r.firing_point) out.push(`<span class="slot-chip">${t('사대')} ${esc(String(r.firing_point))}</span>`);
+  const pi = partInfo(r.part_code);
+  if (pi) out.push(`<span class="part-badge ${pi.cls}">${pi.label}</span>`);
+  return out.join('');
+}
+
 // 출전 명단(결과 대기 중) — 아직 점수가 입력되지 않은 종목
 function startList(rows) {
   const box = el('div', 'startlist');
   box.appendChild(el('div', 'finals-h', `📋 ${t('출전 명단')} · ${t('결과 대기 중')} <span class="sl-n">${rows.length}${t('명 출전')}</span>`));
-  // 사수번호(있으면) 순, 없으면 이름순
+  box.appendChild(el('div', 'sl-head', `<span>${t('사대')}</span><span>${t('선수')}</span><span>${t('소속')}</span>`));
+  // 사대번호(있으면) 순, 없으면 이름순
   const sorted = rows.slice().sort((a, b) => {
     const fa = +(a.firing_point || a.bib || 0), fb = +(b.firing_point || b.bib || 0);
     if (fa && fb && fa !== fb) return fa - fb;
@@ -605,12 +625,13 @@ function startList(rows) {
   });
   sorted.forEach(r => {
     const pos = r.firing_point || r.bib || '';
+    const meta = slotMeta(r, { skipFiring: true });
     const row = el('div', 'sl-row');
     row.innerHTML =
       `<span class="sl-pos">${pos ? esc(String(pos)) : '–'}</span>
-       <span class="sl-nm"><button class="lnk" data-aid="${r.athlete_id}">${esc(r.athlete.full_name)}</button>${r.athlete.gender ? ` <span class="g g-${r.athlete.gender}">${GENDER[r.athlete.gender]}</span>` : ''}</span>
+       <span class="sl-nm"><span class="sl-nmline"><button class="lnk" data-aid="${r.athlete_id}">${esc(r.athlete.full_name)}</button>${r.athlete.gender ? ` <span class="g g-${r.athlete.gender}">${GENDER[r.athlete.gender]}</span>` : ''}</span>${meta ? `<span class="sl-meta">${meta}</span>` : ''}</span>
        <span class="sl-unit">${esc(r.unit_code || '')}</span>`;
-    if (window.Fav && r.athlete && r.athlete.identity_key) row.querySelector('.sl-nm').appendChild(Fav.starButton(r.athlete, { inline: true }));
+    if (window.Fav && r.athlete && r.athlete.identity_key) row.querySelector('.sl-nmline').appendChild(Fav.starButton(r.athlete, { inline: true }));
     box.appendChild(row);
   });
   return box;

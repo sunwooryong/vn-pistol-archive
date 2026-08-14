@@ -31,7 +31,7 @@ const MIN_YEAR = 2000;
 // CSV 컬럼 인덱스
 const C = {
   year: 0, dates: 1, loc: 2, comp: 3, time: 4, event: 5, dot: 6, be: 7, so: 8,
-  id: 10, ho: 11, ten: 12, sinh: 13, dvi: 14, tt: 16,
+  id: 10, ho: 11, ten: 12, sinh: 13, dvi: 14, part: 15, tt: 16,
   s: [17, 18, 19, 20, 21, 22], x: 23, diemK: 25, hcCN: 29, hcDD: 30, cong: 32,
 };
 const MEDAL = { V: 'gold', B: 'silver', D: 'bronze' };
@@ -128,6 +128,7 @@ async function main() {
       sinh: P.num(r[C.sinh]),
       idInfo,
       relay: r[C.dot].trim(), firingPoint: r[C.be].trim(), bib: r[C.so].trim(),
+      partCode: (r[C.part] || '').trim(),
       matchDate: mdt.date, matchTime: mdt.time,
       series, total,
       innerTens: P.num(r[C.x]),
@@ -374,6 +375,7 @@ async function main() {
       athlete_id: athId.get(x.athleteKey),
       unit_code: x.unit || null,
       relay: x.relay || null, firing_point: x.firingPoint || null, bib: x.bib || null,
+      part_code: x.partCode || null,
       match_date: x.matchDate, match_time: x.matchTime,
       qual_total: x.total, inner_tens: x.innerTens, final_score: x.finalScore,
       medal: x.medal, team_medal: x.teamMedal, team_medal_no: x.teamMedalNo, qual_rank: x.qual_rank, final_rank: x.final_rank,

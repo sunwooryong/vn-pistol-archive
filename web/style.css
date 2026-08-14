@@ -557,12 +557,26 @@ svg.rings { height: 19px; width: auto; display: block; }
   background: color-mix(in srgb, var(--acc) 5%, var(--card)); }
 .startlist .finals-h { color: var(--acc2); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .startlist .sl-n { font-size: 11px; font-weight: 700; color: var(--mut); background: var(--card2); border-radius: 999px; padding: 1px 8px; }
+.sl-head { display: grid; grid-template-columns: 34px 1fr auto; gap: 8px; padding: 2px 2px 5px; border-bottom: 1.5px solid var(--line);
+  font-size: 9.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--mut); }
+.sl-head span:first-child { text-align: center; }
 .sl-row { display: grid; grid-template-columns: 34px 1fr auto; gap: 8px; align-items: center; padding: 6px 2px; border-bottom: 1px dashed var(--line); }
 .sl-row:last-child { border-bottom: 0; }
 .sl-pos { text-align: center; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--acc2);
   background: var(--card2); border-radius: 7px; padding: 3px 0; font-size: 12px; }
-.sl-nm { font-weight: 600; min-width: 0; }
-.sl-unit { color: var(--acc); font-size: 12px; }
+.sl-nm { font-weight: 600; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.sl-nmline { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.sl-meta { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.sl-unit { color: var(--acc); font-size: 12px; align-self: center; }
+/* 조·사대 칩 + 경기구분 배지 */
+.slot-chip { font-size: 10px; font-weight: 700; color: var(--mut); background: var(--card2);
+  border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; font-variant-numeric: tabular-nums; }
+.part-badge { font-size: 9.5px; font-weight: 800; border-radius: 5px; padding: 1px 6px; letter-spacing: .02em; }
+.part-badge.c { color: #0a5ca8; background: rgba(11,92,171,.12); }
+.part-badge.c1 { color: #6d54d6; background: rgba(109,84,214,.14); }
+.part-badge.k { color: #b06a3a; background: rgba(176,106,58,.14); }
+.part-badge.x { color: var(--mut); background: var(--card2); border: 1px solid var(--line); }
+.ma-slot { display: inline-flex; gap: 4px; flex-wrap: wrap; margin-left: 4px; vertical-align: middle; }
 
 /* 연맹 공지/뉴스 */
 .news-card { border: 1px solid var(--line); border-radius: var(--r); background: var(--card);
