@@ -46,6 +46,10 @@ window.Analytics = (function () {
   }
 
   const SHORT = { air: '10m공기', rapid_fire: '25m속사', sport: '25m스포츠', standard: '25m표준', centre_fire: '25m센터', pistol_50: '50m' };
+  const T = (typeof window !== 'undefined' && window.t) ? window.t : (s => s);
+  // 쉬운 말: 잘하는 정도 / 폼 방향
+  const GRADE = top => top <= 10 ? [T('아주 잘해요'), '🔥', 'top'] : top <= 25 ? [T('잘하는 편'), '👍', 'good'] : top <= 50 ? [T('보통'), '🙂', 'mid'] : [T('더 힘내요'), '🌱', 'low'];
+  const FORM = s => s > 0.15 ? [T('올라가는 중'), '📈', 'up'] : s < -0.15 ? [T('내려가는 중'), '📉', 'dn'] : [T('비슷하게 유지'), '➡️', 'flat'];
 
   // 종목별 강점 레이더 (값 0~100)
   function radar(items, size = 190) {
@@ -135,13 +139,12 @@ window.Analytics = (function () {
       const fins = list.filter(r => r.final_score != null);
       if (fins.length) {
         const finAvg = mean(fins.map(r => r.final_score)), finBest = Math.max(...fins.map(r => r.final_score));
-        finalTxt = `<div class="an-line"><span class="al">결선 평균</span> <b>${fmt(finAvg, 1)}</b> <span class="al2">최고 ${fmt(finBest, 1)} · ${fins.length}회 진출</span></div>`;
+        finalTxt = `<div class="an-line"><span class="al">${T('결선(마지막판)')}</span> <b>${fmt(finAvg, 1)}</b>${T('점')} <span class="al2">${T('최고')} ${fmt(finBest, 1)} · ${fins.length}${T('번 올라감')}</span></div>`;
         const fin2 = fins.filter(r => r.final_rank);
         if (disc === 'air' && fin2.length) {
           const qps = mean(fin2.map(r => r.qual_total / 60)), fps = mean(fin2.map(r => r.final_score / airShots(r.final_rank))), dl = fps - qps;
-          clutch = `<div class="an-line"><span class="al">결선 전환력</span> 본선 <b>${fmt(qps, 2)}</b>/발 → 결선 <b>${fmt(fps, 2)}</b>/발
-            <span class="delta ${dl >= 0 ? 'up' : 'dn'}">${dl >= 0 ? '▲' : '▼'}${fmt(Math.abs(dl), 2)}</span>
-            <span class="al2">${dl >= 0.1 ? '결선 강함' : dl <= -0.1 ? '결선 약세' : '유지'}</span></div>`;
+          clutch = `<div class="an-line"><span class="al">${T('결선에서는')}</span> <b>${dl >= 0.1 ? '💪 ' + T('더 잘 쏴요') : dl <= -0.1 ? '😅 ' + T('조금 약해져요') : '👌 ' + T('비슷해요')}</b>
+            <span class="al2">${T('한 발당')} ${T('본선')} ${fmt(qps, 2)} → ${T('결선')} ${fmt(fps, 2)}</span></div>`;
         }
       }
 
@@ -153,27 +156,35 @@ window.Analytics = (function () {
       const intlBelow = foreign.length ? Math.round(foreign.filter(v => v < myBest).length / foreign.length * 100) : null;
       if (pct != null) radarItems.push({ short: SHORT[disc] || disc, v: 100 - pct, top: pct });
 
+      const [fword, femoji, fcls] = FORM(s);
+      const gg = yoY == null ? null : (yoY > 1.5 ? [T('실력이 늘고 있어요'), '📈', 'up'] : yoY < -1.5 ? [T('조금 떨어졌어요'), '📉', 'dn'] : [T('비슷하게 유지'), '➡️', 'flat']);
+      const [wgword, wgemoji] = pct != null ? GRADE(pct) : ['', ''];
+
       cards.push(`<div class="an-card">
-        <div class="an-h">${esc(DISC[disc] || disc)}<span class="an-tag">${arrow}</span> <span class="an-n">${list.length}경기</span></div>
+        <div class="an-h">${esc(DISC[disc] || disc)} <span class="an-n">${list.length}${T('경기')}</span></div>
         <div class="an-stats">
-          <span><i>평균</i><b>${fmt(avg, 1)}</b></span><span><i>최고</i><b>${myBest}</b></span>
-          <span><i>최저</i><b>${myWorst}</b></span><span><i>편차 σ</i><b>${fmt(sd, 1)}</b></span></div>
-        <div class="an-line"><span class="al">추이</span> ${spark(vals)} <span class="al2">${arrow} 기울기 ${fmt(s, 2)}/경기${vals.length >= 4 ? ` · 최근3−초반3 ${recent >= 0 ? '+' : ''}${fmt(recent, 1)}` : ''}</span></div>
-        ${yearly.length >= 2 ? `<div class="an-line"><span class="al">연도별 성장</span> ${growth(yearly)} <span class="al2">${yearly[0].year}→${yearly[yearly.length - 1].year} 평균 ${yoY >= 0 ? '+' : ''}${fmt(yoY, 1)}</span></div>` : ''}
-        ${hasSeries ? `<div class="an-line"><span class="al">시리즈</span> ${seriesBars(sAvg)} <span class="al2">${weakTxt}${is25 ? ' · 1~3정밀/4~6속사' : ''}</span></div>` : ''}
+          <span><i>${T('평균')}</i><b>${fmt(avg, 1)}</b></span><span><i>${T('최고')}</i><b>${myBest}</b></span>
+          <span><i>${T('최저')}</i><b>${myWorst}</b></span><span><i>${T('안정도')}</i><b>${fmt(sd, 1)}</b></span></div>
+        <div class="an-line"><span class="al">${T('요즘 폼')}</span> ${spark(vals)} <span class="al2 form-${fcls}"><b>${femoji} ${fword}</b>${vals.length >= 4 ? ` · ${T('최근이 처음보다')} ${recent >= 0 ? '+' : ''}${fmt(recent, 1)}${T('점')}` : ''}</span></div>
+        ${yearly.length >= 2 ? `<div class="an-line"><span class="al">${T('해마다 실력')}</span> ${growth(yearly)} <span class="al2 form-${gg[2]}"><b>${gg[1]} ${gg[0]}</b> <span class="an-dim">(${yearly[0].year}→${yearly[yearly.length - 1].year} ${yoY >= 0 ? '+' : ''}${fmt(yoY, 1)}${T('점')})</span></span></div>` : ''}
+        <div class="an-line"><span class="al">${T('점수 안정')}</span> <b>${fmt(sd, 1)}</b> <span class="al2">${T('작을수록 늘 비슷하게 잘 쏴요')}</span></div>
+        ${hasSeries ? `<div class="an-line"><span class="al">${T('시리즈')}</span> ${seriesBars(sAvg)} <span class="al2">${weakTxt}${is25 ? ' · 1~3정밀/4~6속사' : ''}</span></div>` : ''}
         ${finalTxt}${clutch}
-        <div class="an-line"><span class="al">국제대비</span> ${scaleBar(myBest, pool)} <span class="al2">최고 ${myBest} · 상위 ${pct != null ? pct + '%' : '–'}${intlBelow != null ? ` · 국제 상위 ${100 - intlBelow}%권` : ''}</span></div>
+        <div class="an-line"><span class="al">${T('세계 비교')}</span> ${scaleBar(myBest, pool)} <span class="al2"><b>${wgemoji} ${wgword}</b> · ${T('상위')} ${pct != null ? pct + '%' : '–'}</span></div>
       </div>`);
     }
 
     // 종목별 강점 레이더 (3종목 이상)
     let radarCard = '';
     if (radarItems.length >= 3) {
-      radarCard = `<div class="an-card radar-card"><div class="an-h">종목별 강점 <span class="an-n">국내 백분위</span></div>
+      const bestItem = radarItems.slice().sort((x, y) => x.top - y.top)[0];
+      radarCard = `<div class="an-card radar-card"><div class="an-h">🎯 ${T('종목별 강점 한눈에')}</div>
+        <div class="rgn-help">${T('별이 바깥으로 클수록 그 종목을 잘하는 거예요.')}</div>
         <div class="radar-wrap">${radar(radarItems)}</div>
-        <div class="radar-leg">${radarItems.map(it => `<span><b>${esc(it.short)}</b> 상위 ${it.top}%</span>`).join('')}</div></div>`;
+        <div class="radar-leg">${radarItems.map(it => { const [w, e] = GRADE(it.top); return `<span><b>${esc(it.short)}</b> ${e} ${w} <i>(${T('상위')} ${it.top}%)</i></span>`; }).join('')}</div>
+        ${bestItem ? `<div class="radar-best">${T('제일 잘하는 종목')}: <b>${esc(bestItem.short)}</b> 🔥</div>` : ''}</div>`;
     }
-    box.innerHTML = '<h3>심화 분석 <span class="sub2">종목별 폼 · 성장 · 결선 · 국제대비</span></h3>' + radarCard + cards.join('');
+    box.innerHTML = `<h3>${T('심화 분석')} <span class="sub2">${T('종목별 폼 · 성장 · 결선 · 세계 비교')}</span></h3>` + radarCard + cards.join('');
   }
 
   return { render };
