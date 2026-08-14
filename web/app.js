@@ -335,6 +335,11 @@ async function buildCareer(a, rows, detail) {
   detail.appendChild(rankBox);
   renderRankings(a, rows, rankBox);
 
+  // 지역(소속) 분석: 지역 내/전국 등위 · 라이벌 · 지역 강도 · 백분위
+  const regionBox = el('div', 'block');
+  detail.appendChild(regionBox);
+  renderRegional(a, regionBox);
+
   // 심화 분석 (추이·일관성·시리즈피로·결선전환·국제백분위)
   if (window.Analytics) Analytics.render(a, rows, detail);
 
@@ -393,6 +398,60 @@ function yearlyStats(rows) {
 }
 
 // 해당 연도 랭킹(전체·연령별 × 평균·최고) — 국내 종목별
+// 소속코드 → 지역 표기
+const REGION = { HAP: '하이퐁', HCM: '호치민', HAN: '하노이', DAN: '다낭', QUD: '군', CAD: '경찰', CAN: '경찰', QNI: '꽝닌', DON: '동나이', DAL: '닥락', THH: '타인호아', PHU: '푸토', BAC: '박닌', VPH: '빈푹' };
+const regionShort = u => (REGION[u] ? t(REGION[u]) : u);
+const regionLabel = u => (REGION[u] ? `${t(REGION[u])} (${esc(u)})` : esc(u));
+
+// 지역(소속) 분석 렌더
+async function renderRegional(a, box) {
+  box.innerHTML = `<h3>${t('지역 분석')} <span class="sub2">${t('소속 기준 · 전국 대비')}</span></h3><div class="muted">${t('계산 중…')}</div>`;
+  let R = null;
+  try { R = await DB.regionalAnalysis(a.id, RANK_YEAR); } catch (e) { }
+  if (!R || !R.disciplines.length) { box.innerHTML = ''; return; }
+  const posBar = (rank, n) => { const p = n > 1 ? Math.round((n - rank) / (n - 1) * 100) : 100; return `<div class="posbar"><i style="width:${p}%"></i><div class="me" style="left:${p}%"></div></div>`; };
+  let h = '';
+  // 지역 내 등위
+  h += `<div class="rgn-card newf"><div class="rgn-h">🏳 ${t('지역 내 등위')} · <b>${regionLabel(R.region)}</b></div>`;
+  R.disciplines.forEach(dz => {
+    h += `<div class="rrow">
+      <div class="rrow-h"><span class="rrow-disc">${DISC[dz.disc] || dz.disc}${GENDER[dz.gender] ? ` <span class="gsm">${GENDER[dz.gender]}</span>` : ''}</span>
+        <span class="rrow-score">${t('본선 최고')} <b>${dz.my}</b>${dz.regionTop > dz.my ? ` <i>(${t('지역 최고')} ${dz.regionTop})</i>` : ''}</span></div>
+      <div class="ranks">
+        <span class="rankchip reg">${regionShort(R.region)} <span class="big">${dz.regRank}</span><span class="of">/ ${dz.regN}${t('명')}</span></span>
+        <span class="rankchip nat">${t('전국')} <span class="big">${dz.natRank}</span><span class="of">/ ${dz.natN}${t('명')}</span></span>
+      </div>${posBar(dz.regRank, dz.regN)}</div>`;
+  });
+  h += `</div>`;
+  // 지역 라이벌 (주 종목)
+  const main = R.disciplines[0];
+  if (main.rivals.length > 1) {
+    h += `<div class="rgn-card newf"><div class="rgn-h">${t('지역 라이벌')} <span class="sub2">${regionShort(R.region)} · ${DISC[main.disc] || main.disc}</span></div>`;
+    main.rivals.forEach(rv => {
+      h += `<div class="rival${rv.isMe ? ' me' : ''}"><span class="pos">${rv.rank}</span><span>${esc(rv.name)}${rv.isMe ? `<span class="tagme">${t('본인')}</span>` : ''}</span><span class="q">${rv.q}</span></div>`;
+    });
+    h += `</div>`;
+  }
+  // 지역 강도 비교
+  if (R.strength && R.strength.regions.length > 1) {
+    const rs = R.strength.regions, max = rs[0].best, min = Math.min(...rs.map(x => x.best)), span = Math.max(1, max - min);
+    h += `<div class="rgn-card newf"><div class="rgn-h">${t('지역 강도 비교')} <span class="sub2">${DISC[R.strength.disc] || R.strength.disc} · ${t('지역별 최고')}</span></div>`;
+    rs.forEach(x => {
+      const w = 40 + Math.round((x.best - min) / span * 60);
+      h += `<div class="sbar"><span class="nm${x.isMine ? ' me' : ''}">${regionShort(x.unit)}</span><span class="tk${x.isMine ? ' me' : ''}"><i style="width:${w}%"></i></span><span class="v">${x.best}</span></div>`;
+    });
+    h += `</div>`;
+  }
+  // 전국 백분위
+  h += `<div class="rgn-card"><div class="rgn-h">${t('전국 백분위')} <span class="sub2">${t('국내 선수 대비')}</span></div>`;
+  R.disciplines.forEach(dz => {
+    const topPct = Math.max(1, Math.round(dz.natRank / dz.natN * 100));
+    h += `<div class="pct"><div class="pct-h"><span>${DISC[dz.disc] || dz.disc}</span><b>${t('상위')} ${topPct}%</b></div><div class="pct-bar"><i style="width:${100 - topPct}%"></i></div></div>`;
+  });
+  h += `</div>`;
+  box.innerHTML = h;
+}
+
 async function renderRankings(a, rows, box) {
   const evs = new Map();
   rows.forEach(r => { if (r.competition.year !== RANK_YEAR || r.event.team_type !== 'individual' || r.is_dnf || r.qual_total == null) return; if (r.competition.scope !== 'domestic') return; evs.set(evKey(r.event), r.event); });

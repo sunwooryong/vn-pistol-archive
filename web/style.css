@@ -578,6 +578,49 @@ svg.rings { height: 19px; width: auto; display: block; }
 .part-badge.x { color: var(--mut); background: var(--card2); border: 1px solid var(--line); }
 .ma-slot { display: inline-flex; gap: 4px; flex-wrap: wrap; margin-left: 4px; vertical-align: middle; }
 
+/* 지역(소속) 분석 */
+.rgn-card { background: var(--card); border: 1px solid var(--line); border-radius: 11px; box-shadow: var(--sh-sm); padding: 12px 14px; margin: 10px 0; }
+.rgn-card.newf { border-color: color-mix(in srgb, var(--gold) 40%, var(--line)); }
+.rgn-h { font-size: 12px; font-weight: 800; color: var(--navy); margin-bottom: 9px; padding-left: 11px; position: relative; }
+.rgn-h::before { content: ""; position: absolute; left: 0; top: 1px; bottom: 1px; width: 4px; border-radius: 3px; background: linear-gradient(180deg, var(--acc), var(--acc2)); }
+.rgn-card.newf .rgn-h::before { background: linear-gradient(180deg, var(--gold2), var(--gold)); }
+.rgn-h b { color: var(--dom); }
+.rgn-h .sub2 { font-weight: 500; color: var(--mut); font-size: 11px; }
+.rrow { padding: 8px 0; border-bottom: 1px dashed var(--line2); }
+.rrow:last-child { border-bottom: 0; }
+.rrow-h { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+.rrow-disc { font-weight: 700; font-size: 13.5px; }
+.rrow-disc .gsm { font-size: 10px; font-weight: 700; color: var(--acc2); background: rgba(11,92,171,.12); border-radius: 5px; padding: 1px 5px; }
+.rrow-score { margin-left: auto; font-size: 11.5px; color: var(--mut); }
+.rrow-score b { color: var(--tx); font-size: 15px; font-weight: 800; }
+.rrow-score i { font-style: normal; font-size: 10.5px; }
+.ranks { display: flex; gap: 8px; flex-wrap: wrap; }
+.rankchip { display: inline-flex; align-items: baseline; gap: 5px; border-radius: 8px; padding: 4px 10px; font-size: 12px; font-weight: 700; }
+.rankchip.reg { background: rgba(10,128,90,.12); color: var(--dom); border: 1px solid rgba(10,128,90,.28); }
+.rankchip.nat { background: rgba(11,92,171,.1); color: var(--acc2); border: 1px solid rgba(11,92,171,.24); }
+.rankchip .big { font-size: 16px; font-weight: 800; }
+.rankchip .of { font-size: 10px; color: var(--mut); font-weight: 600; }
+.posbar { height: 7px; border-radius: 4px; background: var(--card2); margin-top: 8px; position: relative; overflow: hidden; border: 1px solid var(--line); }
+.posbar > i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 4px; background: linear-gradient(90deg, var(--dom), #12b07f); }
+.posbar > .me { position: absolute; top: -3px; width: 3px; height: 13px; border-radius: 2px; background: var(--navy); box-shadow: 0 0 0 2px var(--card); }
+.rival { display: grid; grid-template-columns: 26px 1fr auto; gap: 8px; align-items: center; padding: 5px 0; border-bottom: 1px dashed var(--line2); font-size: 13px; }
+.rival:last-child { border-bottom: 0; }
+.rival.me { background: rgba(11,92,171,.07); border-radius: 7px; padding: 6px 8px; border-bottom: 0; font-weight: 700; }
+.rival .pos { text-align: center; font-weight: 800; color: var(--acc2); }
+.rival .q { font-weight: 800; font-variant-numeric: tabular-nums; }
+.rival .tagme { font-size: 9px; font-weight: 800; color: #fff; background: var(--acc); border-radius: 4px; padding: 1px 5px; margin-left: 6px; }
+.sbar { display: grid; grid-template-columns: 68px 1fr 42px; gap: 8px; align-items: center; padding: 4px 0; font-size: 12.5px; }
+.sbar .nm { font-weight: 700; } .sbar .nm.me { color: var(--dom); }
+.sbar .tk { height: 14px; border-radius: 4px; background: var(--card2); position: relative; overflow: hidden; border: 1px solid var(--line); }
+.sbar .tk > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: linear-gradient(90deg, var(--acc), var(--acc2)); }
+.sbar .tk.me > i { background: linear-gradient(90deg, var(--dom), #12b07f); }
+.sbar .v { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.pct { margin: 8px 0; }
+.pct-h { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 4px; }
+.pct-h b { font-weight: 800; }
+.pct-bar { height: 9px; border-radius: 5px; background: var(--card2); overflow: hidden; border: 1px solid var(--line); }
+.pct-bar > i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, var(--gold2), var(--gold)); }
+
 /* 연맹 공지/뉴스 */
 .news-card { border: 1px solid var(--line); border-radius: var(--r); background: var(--card);
   box-shadow: var(--sh-sm); padding: 10px 13px; margin-bottom: 16px; }

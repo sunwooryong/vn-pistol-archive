@@ -15,6 +15,15 @@
     '연맹 공지': 'Tin tức Liên đoàn', '전체보기': 'Xem tất cả',
     '출전 명단': 'Danh sách thi đấu', '결과 대기 중': 'Đang chờ kết quả', '사수': 'Vị trí', '명 출전': ' VĐV', '결과 입력 전입니다': 'Chưa nhập kết quả',
     '개인전': 'Cá nhân', '단체전': 'Đồng đội', '번외': 'Ngoại lệ', '조': 'Đợt', '사대': 'Bệ',
+    // 지역 분석
+    '지역 분석': 'Phân tích theo đơn vị', '소속 기준 · 전국 대비': 'Theo đơn vị · so toàn quốc',
+    '지역 내 등위': 'Xếp hạng trong đơn vị', '본선 최고': 'Điểm loại cao nhất', '지역 최고': 'Cao nhất đơn vị',
+    '전국': 'Toàn quốc', '지역 라이벌': 'Đối thủ cùng đơn vị', '지역 강도 비교': 'So sánh sức mạnh đơn vị',
+    '지역별 최고': 'Điểm cao nhất theo đơn vị', '전국 백분위': 'Bách phân vị toàn quốc', '국내 선수 대비': 'So với VĐV trong nước',
+    '상위': 'Top', '본인': 'Bạn', '명': 'VĐV',
+    '하이퐁': 'Hải Phòng', '호치민': 'TP.HCM', '하노이': 'Hà Nội', '다낭': 'Đà Nẵng', '군': 'Quân đội',
+    '경찰': 'Công an', '꽝닌': 'Quảng Ninh', '동나이': 'Đồng Nai', '닥락': 'Đắk Lắk', '타인호아': 'Thanh Hóa',
+    '푸토': 'Phú Thọ', '박닌': 'Bắc Ninh', '빈푹': 'Vĩnh Phúc',
     '로그아웃': 'Đăng xuất',
     '만든이': 'Tác giả',
     // 탭

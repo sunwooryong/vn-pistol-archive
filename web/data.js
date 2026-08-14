@@ -61,6 +61,55 @@
       },
       async meta() { await ensure(); return metaCache; },
       async news() { return fetch(DATA_BASE + 'news.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : []).catch(() => []); },
+      // 지역(소속) 분석: 소속 내/전국 등위 · 라이벌 · 지역 강도 · 백분위
+      async regionalAnalysis(athleteId, year) {
+        const d = await ensure();
+        // 국내 소속 집합(국내 대회에 등장한 unit)
+        const domUnits = new Set();
+        d.results.forEach(r => { const e = d.evById.get(r.event_id); const c = e && d.compById.get(e.competition_id); if (c && c.scope === 'domestic' && r.unit_code) domUnits.add(r.unit_code); });
+        const homeCache = new Map();
+        const homeRegion = aid => {
+          if (homeCache.has(aid)) return homeCache.get(aid);
+          const cnt = {}; (d.resByAth.get(aid) || []).forEach(r => { if (r.unit_code && domUnits.has(r.unit_code)) cnt[r.unit_code] = (cnt[r.unit_code] || 0) + 1; });
+          let best = null, bn = 0; for (const u in cnt) if (cnt[u] > bn) { bn = cnt[u]; best = u; }
+          homeCache.set(aid, best); return best;
+        };
+        const myHome = homeRegion(athleteId);
+        if (!myHome) return null;
+        // (종목|성별) → 선수별 연도 최고 본선점수 (개인전, 국내선수)
+        const byDG = new Map();
+        d.results.forEach(r => {
+          const e = d.evById.get(r.event_id); if (!e || e.team_type !== 'individual') return;
+          const c = d.compById.get(e.competition_id); if (!c || c.year !== year) return;
+          if (r.is_dnf || r.qual_total == null) return;
+          const a = d.athById.get(r.athlete_id); if (!a || a.is_foreign) return;
+          const home = homeRegion(r.athlete_id); if (!home) return;
+          const k = e.discipline + '|' + e.gender;
+          let m = byDG.get(k); if (!m) { m = new Map(); byDG.set(k, m); }
+          const prev = m.get(r.athlete_id);
+          if (!prev || r.qual_total > prev.q) m.set(r.athlete_id, { q: r.qual_total, region: home, name: a.full_name, aid: r.athlete_id });
+        });
+        const disciplines = [...byDG.entries()].filter(([, m]) => m.has(athleteId)).map(([k, m]) => {
+          const [disc, gender] = k.split('|');
+          const arr = [...m.values()].sort((a, b) => b.q - a.q);
+          const natN = arr.length, natRank = arr.findIndex(x => x.aid === athleteId) + 1;
+          const reg = arr.filter(x => x.region === myHome);
+          const regN = reg.length, regRank = reg.findIndex(x => x.aid === athleteId) + 1;
+          const my = m.get(athleteId).q, regionTop = reg[0] ? reg[0].q : my;
+          const pct = Math.round((natN - natRank + 1) / natN * 100);
+          const rivals = reg.slice(0, 6).map((x, i) => ({ rank: i + 1, name: x.name, q: x.q, isMe: x.aid === athleteId }));
+          return { disc, gender, my, natRank, natN, regRank, regN, regionTop, pct, rivals };
+        }).sort((a, b) => b.natN - a.natN);
+        let strength = null;
+        if (disciplines.length) {
+          const main = disciplines[0]; const m = byDG.get(main.disc + '|' + main.gender);
+          const byReg = {}; for (const v of m.values()) (byReg[v.region] = byReg[v.region] || []).push(v.q);
+          const regions = Object.entries(byReg).map(([u, qs]) => ({ unit: u, best: Math.max(...qs), avg: +(qs.reduce((a, b) => a + b, 0) / qs.length).toFixed(1), n: qs.length, isMine: u === myHome }))
+            .sort((a, b) => b.best - a.best).slice(0, 8);
+          strength = { disc: main.disc, gender: main.gender, regions };
+        }
+        return { region: myHome, disciplines, strength };
+      },
       async athleteByKey(key) { const d = await ensure(); return d.athByKey.get(key) || null; },
       // 종목·성별 선수별 최고점 (국제 백분위 벤치마크). 국내+국제 전체.
       async eventScores({ discipline, gender } = {}) {
@@ -175,6 +224,7 @@
         return { generated_at: (m.started_at || '').slice(0, 10), source: m.source_url, loaded_results: m.loaded_rows, counts: {} };
       },
       async news() { return fetch(DATA_BASE + 'news.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : []).catch(() => []); },
+      async regionalAnalysis() { return null; },
       async eventScores({ discipline, gender } = {}) {
         const f = [`discipline=eq.${discipline}`];
         if (gender) f.push(`event_gender=eq.${gender}`);
