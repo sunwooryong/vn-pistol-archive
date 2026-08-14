@@ -21,6 +21,12 @@
     '전국': 'Toàn quốc', '지역 라이벌': 'Đối thủ cùng đơn vị', '지역 강도 비교': 'So sánh sức mạnh đơn vị',
     '지역별 최고': 'Điểm cao nhất theo đơn vị', '전국 백분위': 'Bách phân vị toàn quốc', '국내 선수 대비': 'So với VĐV trong nước',
     '상위': 'Top', '본인': 'Bạn', '명': 'VĐV',
+    // 지역 분석 — 쉬운 말
+    '종목별 순위': 'Xếp hạng theo nội dung', '같은 지역 선수 중 몇 등, 전국에서 몇 등인지 쉽게 보여줘요.': 'Hạng trong đơn vị và toàn quốc, dễ xem.',
+    '최고점': 'Điểm cao nhất', '점': ' điểm', '명 중': ' VĐV', '제일 잘함': 'Giỏi nhất', '마지막': 'Cuối', '나': 'Tôi', '100명이면': 'Nếu 100 người thì',
+    '우리 지역 잘하는 친구들': 'Bạn giỏi cùng đơn vị', '같은 지역·같은 종목 선수를 점수 순으로 줄 세웠어요.': 'Xếp theo điểm, cùng đơn vị & nội dung.', '바로 나': 'Chính tôi',
+    '우리 지역은 얼마나 셀까?': 'Đơn vị mình mạnh cỡ nào?', '지역마다 제일 잘하는 선수의 점수를 비교했어요.': 'So điểm VĐV giỏi nhất mỗi đơn vị.', '우리 지역': 'Đơn vị mình',
+    '아주 잘해요': 'Rất giỏi', '잘하는 편': 'Khá giỏi', '보통': 'Trung bình', '더 힘내요': 'Cố lên nhé',
     '하이퐁': 'Hải Phòng', '호치민': 'TP.HCM', '하노이': 'Hà Nội', '다낭': 'Đà Nẵng', '군': 'Quân đội',
     '경찰': 'Công an', '꽝닌': 'Quảng Ninh', '동나이': 'Đồng Nai', '닥락': 'Đắk Lắk', '타인호아': 'Thanh Hóa',
     '푸토': 'Phú Thọ', '박닌': 'Bắc Ninh', '빈푹': 'Vĩnh Phúc',

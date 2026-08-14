@@ -403,52 +403,68 @@ const REGION = { HAP: '하이퐁', HCM: '호치민', HAN: '하노이', DAN: '다
 const regionShort = u => (REGION[u] ? t(REGION[u]) : u);
 const regionLabel = u => (REGION[u] ? `${t(REGION[u])} (${esc(u)})` : esc(u));
 
-// 지역(소속) 분석 렌더
+// 지역(소속) 분석 렌더 — 초등학생도 한눈에 이해되게 쉬운 말·그림으로
 async function renderRegional(a, box) {
   box.innerHTML = `<h3>${t('지역 분석')} <span class="sub2">${t('소속 기준 · 전국 대비')}</span></h3><div class="muted">${t('계산 중…')}</div>`;
   let R = null;
   try { R = await DB.regionalAnalysis(a.id, RANK_YEAR); } catch (e) { }
   if (!R || !R.disciplines.length) { box.innerHTML = ''; return; }
-  const posBar = (rank, n) => { const p = n > 1 ? Math.round((n - rank) / (n - 1) * 100) : 100; return `<div class="posbar"><i style="width:${p}%"></i><div class="me" style="left:${p}%"></div></div>`; };
+  // 등수 → 쉬운 말/이모지
+  const grade = (rank, n) => { const p = rank / n; return p <= 0.1 ? ['아주 잘해요', '🔥', 'top'] : p <= 0.25 ? ['잘하는 편', '👍', 'good'] : p <= 0.5 ? ['보통', '🙂', 'mid'] : ['더 힘내요', '🌱', 'low']; };
+  // 1등~꼴찌 눈금에 내 위치 표시
+  const rankLine = (rank, n) => {
+    const pos = n > 1 ? Math.round((rank - 1) / (n - 1) * 100) : 0;
+    return `<div class="rankline">
+      <span class="rl-end">🥇1${t('등')}<i>${t('제일 잘함')}</i></span>
+      <div class="rl-track"><span class="rl-me" style="left:${pos}%">${t('나')} ${rank}${t('등')}</span></div>
+      <span class="rl-end">${n}${t('등')}<i>${t('마지막')}</i></span></div>`;
+  };
+  const region = regionShort(R.region);
   let h = '';
-  // 지역 내 등위
-  h += `<div class="rgn-card newf"><div class="rgn-h">🏳 ${t('지역 내 등위')} · <b>${regionLabel(R.region)}</b></div>`;
+
+  // 1) 종목별 순위 (지역 & 전국)
+  h += `<div class="rgn-card newf"><div class="rgn-h">🏆 ${t('종목별 순위')} · <b>${regionLabel(R.region)}</b></div>
+    <div class="rgn-help">${t('같은 지역 선수 중 몇 등, 전국에서 몇 등인지 쉽게 보여줘요.')}</div>`;
   R.disciplines.forEach(dz => {
-    h += `<div class="rrow">
-      <div class="rrow-h"><span class="rrow-disc">${DISC[dz.disc] || dz.disc}${GENDER[dz.gender] ? ` <span class="gsm">${GENDER[dz.gender]}</span>` : ''}</span>
-        <span class="rrow-score">${t('본선 최고')} <b>${dz.my}</b>${dz.regionTop > dz.my ? ` <i>(${t('지역 최고')} ${dz.regionTop})</i>` : ''}</span></div>
-      <div class="ranks">
-        <span class="rankchip reg">${regionShort(R.region)} <span class="big">${dz.regRank}</span><span class="of">/ ${dz.regN}${t('명')}</span></span>
-        <span class="rankchip nat">${t('전국')} <span class="big">${dz.natRank}</span><span class="of">/ ${dz.natN}${t('명')}</span></span>
-      </div>${posBar(dz.regRank, dz.regN)}</div>`;
+    const [word, emoji, cls] = grade(dz.natRank, dz.natN);
+    const topPct = Math.max(1, Math.round(dz.natRank / dz.natN * 100));
+    h += `<div class="rk2">
+      <div class="rk2-h"><span class="rk2-disc">${DISC[dz.disc] || dz.disc}${GENDER[dz.gender] ? ` <span class="gsm">${GENDER[dz.gender]}</span>` : ''}</span>
+        <span class="rk2-best">${t('최고점')} <b>${dz.my}</b>${t('점')}</span></div>
+      <div class="rk2-cards">
+        <div class="rk2-stat reg"><span class="rk2-ic">🏅</span><span class="rk2-lab">${region}</span><span class="rk2-big"><b>${dz.regRank}</b>${t('등')}</span><span class="rk2-of">${dz.regN}${t('명 중')}</span></div>
+        <div class="rk2-stat nat"><span class="rk2-ic">🇻🇳</span><span class="rk2-lab">${t('전국')}</span><span class="rk2-big"><b>${dz.natRank}</b>${t('등')}</span><span class="rk2-of">${dz.natN}${t('명 중')}</span></div>
+      </div>
+      ${rankLine(dz.regRank, dz.regN)}
+      <div class="rk2-tag ${cls}">${emoji} ${word} · ${t('전국')} ${t('상위')} ${topPct}% <span class="rk2-plain">(${t('100명이면')} ${topPct}${t('등')})</span></div>
+    </div>`;
   });
   h += `</div>`;
-  // 지역 라이벌 (주 종목)
+
+  // 2) 지역 라이벌 (주 종목)
   const main = R.disciplines[0];
   if (main.rivals.length > 1) {
-    h += `<div class="rgn-card newf"><div class="rgn-h">${t('지역 라이벌')} <span class="sub2">${regionShort(R.region)} · ${DISC[main.disc] || main.disc}</span></div>`;
+    h += `<div class="rgn-card newf"><div class="rgn-h">🤝 ${t('우리 지역 잘하는 친구들')} <span class="sub2">${region} · ${DISC[main.disc] || main.disc}</span></div>
+      <div class="rgn-help">${t('같은 지역·같은 종목 선수를 점수 순으로 줄 세웠어요.')}</div>`;
     main.rivals.forEach(rv => {
-      h += `<div class="rival${rv.isMe ? ' me' : ''}"><span class="pos">${rv.rank}</span><span>${esc(rv.name)}${rv.isMe ? `<span class="tagme">${t('본인')}</span>` : ''}</span><span class="q">${rv.q}</span></div>`;
+      const badge = rv.rank <= 3 ? ['🥇', '🥈', '🥉'][rv.rank - 1] : rv.rank;
+      h += `<div class="rival${rv.isMe ? ' me' : ''}"><span class="pos">${badge}</span><span>${esc(rv.name)}${rv.isMe ? `<span class="tagme">${t('바로 나')}</span>` : ''}</span><span class="q">${rv.q}${t('점')}</span></div>`;
     });
     h += `</div>`;
   }
-  // 지역 강도 비교
+
+  // 3) 우리 지역은 얼마나 셀까 (지역 강도)
   if (R.strength && R.strength.regions.length > 1) {
-    const rs = R.strength.regions, max = rs[0].best, min = Math.min(...rs.map(x => x.best)), span = Math.max(1, max - min);
-    h += `<div class="rgn-card newf"><div class="rgn-h">${t('지역 강도 비교')} <span class="sub2">${DISC[R.strength.disc] || R.strength.disc} · ${t('지역별 최고')}</span></div>`;
-    rs.forEach(x => {
-      const w = 40 + Math.round((x.best - min) / span * 60);
-      h += `<div class="sbar"><span class="nm${x.isMine ? ' me' : ''}">${regionShort(x.unit)}</span><span class="tk${x.isMine ? ' me' : ''}"><i style="width:${w}%"></i></span><span class="v">${x.best}</span></div>`;
+    const rs = R.strength.regions;
+    const myRank = rs.findIndex(x => x.isMine) + 1;
+    h += `<div class="rgn-card newf"><div class="rgn-h">🏙️ ${t('우리 지역은 얼마나 셀까?')}</div>
+      <div class="rgn-help">${t('지역마다 제일 잘하는 선수의 점수를 비교했어요.')} · ${DISC[R.strength.disc] || R.strength.disc}${myRank ? ` · <b class="hl">${region} ${t('전국')} ${myRank}${t('등')}</b>` : ''}</div>`;
+    rs.forEach((x, i) => {
+      const badge = i < 3 ? ['🥇', '🥈', '🥉'][i] : `${i + 1}`;
+      h += `<div class="str2${x.isMine ? ' me' : ''}"><span class="str2-rk">${badge}</span><span class="str2-nm">${regionShort(x.unit)}${x.isMine ? ` <span class="str2-me">${t('우리 지역')}</span>` : ''}</span><span class="str2-v">${x.best}${t('점')}</span></div>`;
     });
     h += `</div>`;
   }
-  // 전국 백분위
-  h += `<div class="rgn-card"><div class="rgn-h">${t('전국 백분위')} <span class="sub2">${t('국내 선수 대비')}</span></div>`;
-  R.disciplines.forEach(dz => {
-    const topPct = Math.max(1, Math.round(dz.natRank / dz.natN * 100));
-    h += `<div class="pct"><div class="pct-h"><span>${DISC[dz.disc] || dz.disc}</span><b>${t('상위')} ${topPct}%</b></div><div class="pct-bar"><i style="width:${100 - topPct}%"></i></div></div>`;
-  });
-  h += `</div>`;
   box.innerHTML = h;
 }
 

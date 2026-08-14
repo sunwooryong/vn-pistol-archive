@@ -612,41 +612,57 @@ svg.rings { height: 19px; width: auto; display: block; }
 .rgn-h::before { content: ""; position: absolute; left: 0; top: 1px; bottom: 1px; width: 4px; border-radius: 3px; background: linear-gradient(180deg, var(--acc), var(--acc2)); }
 .rgn-card.newf .rgn-h::before { background: linear-gradient(180deg, var(--gold2), var(--gold)); }
 .rgn-h b { color: var(--dom); }
+.rgn-h b.hl { color: var(--acc2); }
 .rgn-h .sub2 { font-weight: 500; color: var(--mut); font-size: 11px; }
-.rrow { padding: 8px 0; border-bottom: 1px dashed var(--line2); }
-.rrow:last-child { border-bottom: 0; }
-.rrow-h { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
-.rrow-disc { font-weight: 700; font-size: 13.5px; }
-.rrow-disc .gsm { font-size: 10px; font-weight: 700; color: var(--acc2); background: rgba(11,92,171,.12); border-radius: 5px; padding: 1px 5px; }
-.rrow-score { margin-left: auto; font-size: 11.5px; color: var(--mut); }
-.rrow-score b { color: var(--tx); font-size: 15px; font-weight: 800; }
-.rrow-score i { font-style: normal; font-size: 10.5px; }
-.ranks { display: flex; gap: 8px; flex-wrap: wrap; }
-.rankchip { display: inline-flex; align-items: baseline; gap: 5px; border-radius: 8px; padding: 4px 10px; font-size: 12px; font-weight: 700; }
-.rankchip.reg { background: rgba(10,128,90,.12); color: var(--dom); border: 1px solid rgba(10,128,90,.28); }
-.rankchip.nat { background: rgba(11,92,171,.1); color: var(--acc2); border: 1px solid rgba(11,92,171,.24); }
-.rankchip .big { font-size: 16px; font-weight: 800; }
-.rankchip .of { font-size: 10px; color: var(--mut); font-weight: 600; }
-.posbar { height: 7px; border-radius: 4px; background: var(--card2); margin-top: 8px; position: relative; overflow: hidden; border: 1px solid var(--line); }
-.posbar > i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 4px; background: linear-gradient(90deg, var(--dom), #12b07f); }
-.posbar > .me { position: absolute; top: -3px; width: 3px; height: 13px; border-radius: 2px; background: var(--navy); box-shadow: 0 0 0 2px var(--card); }
-.rival { display: grid; grid-template-columns: 26px 1fr auto; gap: 8px; align-items: center; padding: 5px 0; border-bottom: 1px dashed var(--line2); font-size: 13px; }
+/* 쉬운 설명 한 줄 */
+.rgn-help { font-size: 11.5px; color: var(--mut); background: var(--card2); border-radius: 7px; padding: 6px 9px; margin-bottom: 10px; line-height: 1.4; }
+.rgn-help b.hl { color: var(--acc2); }
+/* 종목별 순위 블록 */
+.rk2 { padding: 10px 0; border-bottom: 1px dashed var(--line2); }
+.rk2:last-child { border-bottom: 0; }
+.rk2-h { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.rk2-disc { font-weight: 800; font-size: 14px; }
+.rk2-disc .gsm { font-size: 10px; font-weight: 700; color: var(--acc2); background: rgba(11,92,171,.12); border-radius: 5px; padding: 1px 5px; }
+.rk2-best { margin-left: auto; font-size: 11.5px; color: var(--mut); }
+.rk2-best b { color: var(--tx); font-size: 15px; font-weight: 800; }
+.rk2-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.rk2-stat { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 3px 7px; border-radius: 10px; padding: 8px 11px; }
+.rk2-stat.reg { background: rgba(10,128,90,.1); border: 1px solid rgba(10,128,90,.26); }
+.rk2-stat.nat { background: rgba(11,92,171,.09); border: 1px solid rgba(11,92,171,.22); }
+.rk2-ic { font-size: 17px; grid-row: 1 / span 2; }
+.rk2-lab { font-size: 11px; font-weight: 700; color: var(--mut); }
+.rk2-big { font-size: 12px; color: var(--mut); font-weight: 700; text-align: right; }
+.rk2-big b { font-size: 22px; font-weight: 800; }
+.rk2-stat.reg .rk2-big b { color: var(--dom); } .rk2-stat.nat .rk2-big b { color: var(--acc2); }
+.rk2-of { grid-column: 2 / span 2; font-size: 10.5px; color: var(--mut); }
+/* 1등~꼴찌 눈금 */
+.rankline { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; margin: 12px 0 8px; }
+.rl-end { font-size: 10px; font-weight: 800; color: var(--mut); text-align: center; line-height: 1.2; }
+.rl-end i { display: block; font-style: normal; font-size: 8.5px; font-weight: 600; opacity: .8; }
+.rl-track { position: relative; height: 8px; border-radius: 5px; background: linear-gradient(90deg, color-mix(in srgb, var(--dom) 55%, var(--card2)), var(--card2)); border: 1px solid var(--line); }
+.rl-me { position: absolute; top: 50%; transform: translate(-50%, -50%); white-space: nowrap; font-size: 10px; font-weight: 800; color: #fff; background: var(--navy); border-radius: 999px; padding: 3px 9px; box-shadow: 0 1px 4px rgba(16,25,42,.3); }
+/* 쉬운 평가 태그 */
+.rk2-tag { margin-top: 4px; font-size: 12px; font-weight: 700; border-radius: 8px; padding: 5px 10px; display: inline-block; }
+.rk2-tag .rk2-plain { font-weight: 600; opacity: .8; }
+.rk2-tag.top { color: #b5480a; background: rgba(214,120,40,.14); }
+.rk2-tag.good { color: var(--dom); background: rgba(10,128,90,.12); }
+.rk2-tag.mid { color: var(--acc2); background: rgba(11,92,171,.1); }
+.rk2-tag.low { color: var(--mut); background: var(--card2); }
+/* 라이벌 */
+.rival { display: grid; grid-template-columns: 30px 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--line2); font-size: 13.5px; }
 .rival:last-child { border-bottom: 0; }
-.rival.me { background: rgba(11,92,171,.07); border-radius: 7px; padding: 6px 8px; border-bottom: 0; font-weight: 700; }
-.rival .pos { text-align: center; font-weight: 800; color: var(--acc2); }
+.rival.me { background: rgba(11,92,171,.08); border-radius: 8px; padding: 7px 9px; border-bottom: 0; font-weight: 800; }
+.rival .pos { text-align: center; font-weight: 800; color: var(--acc2); font-size: 15px; }
 .rival .q { font-weight: 800; font-variant-numeric: tabular-nums; }
-.rival .tagme { font-size: 9px; font-weight: 800; color: #fff; background: var(--acc); border-radius: 4px; padding: 1px 5px; margin-left: 6px; }
-.sbar { display: grid; grid-template-columns: 68px 1fr 42px; gap: 8px; align-items: center; padding: 4px 0; font-size: 12.5px; }
-.sbar .nm { font-weight: 700; } .sbar .nm.me { color: var(--dom); }
-.sbar .tk { height: 14px; border-radius: 4px; background: var(--card2); position: relative; overflow: hidden; border: 1px solid var(--line); }
-.sbar .tk > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: linear-gradient(90deg, var(--acc), var(--acc2)); }
-.sbar .tk.me > i { background: linear-gradient(90deg, var(--dom), #12b07f); }
-.sbar .v { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
-.pct { margin: 8px 0; }
-.pct-h { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 4px; }
-.pct-h b { font-weight: 800; }
-.pct-bar { height: 9px; border-radius: 5px; background: var(--card2); overflow: hidden; border: 1px solid var(--line); }
-.pct-bar > i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, var(--gold2), var(--gold)); }
+.rival .tagme { font-size: 9px; font-weight: 800; color: #fff; background: var(--acc); border-radius: 4px; padding: 1px 6px; margin-left: 6px; }
+/* 지역 강도 */
+.str2 { display: grid; grid-template-columns: 30px 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--line2); font-size: 13.5px; }
+.str2:last-child { border-bottom: 0; }
+.str2.me { background: rgba(10,128,90,.1); border-radius: 8px; padding: 7px 9px; border-bottom: 0; }
+.str2-rk { text-align: center; font-weight: 800; font-size: 15px; color: var(--mut); }
+.str2-nm { font-weight: 700; } .str2.me .str2-nm { color: var(--dom); font-weight: 800; }
+.str2-me { font-size: 9px; font-weight: 800; color: #fff; background: var(--dom); border-radius: 4px; padding: 1px 6px; margin-left: 5px; }
+.str2-v { font-weight: 800; font-variant-numeric: tabular-nums; }
 
 /* 연맹 공지/뉴스 */
 .news-card { border: 1px solid var(--line); border-radius: var(--r); background: var(--card);
