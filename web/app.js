@@ -123,8 +123,9 @@ async function renderMyAthletesComps(box, year) {
   const favs = Fav.list();
   if (!favs.length) { box.innerHTML = `<h3>${t('관리 선수 일정·기록')}</h3><div class="muted">${t('관리 선수를 즐겨찾기(☆)로 등록하세요.')}</div>`; return; }
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const iso = today.toISOString().slice(0, 10);
-  const daysTo = d => Math.round((new Date(d + 'T00:00') - today) / 86400000);
+  const p2 = n => String(n).padStart(2, '0');
+  const iso = `${today.getFullYear()}-${p2(today.getMonth() + 1)}-${p2(today.getDate())}`;
+  const daysTo = d => Math.round((new Date(d + 'T00:00:00') - today) / 86400000);
   const cards = [];
   for (const it of favs) {
     const a = await DB.athleteByKey(it.key); if (!a) continue;
@@ -150,12 +151,15 @@ async function renderMyAthletesComps(box, year) {
   const dateS = d => (d || '').slice(5).replace('-', '.');
   const upItem = r => {
     const d = r.match_date || r.competition.date_start;
-    const dd = d && d >= iso ? (daysTo(d) === 0 ? 'D-0' : `D-${daysTo(d)}`) : '';
+    const nd = d ? daysTo(d) : null;
+    const dd = (d && d >= iso && nd >= 0) ? (nd === 0 ? 'D-0' : `D-${nd}`) : '';
     const status = (r.competition.date_start && r.competition.date_start <= iso) ? t('결과 대기') : t('출전 예정');
     const meta = slotMeta(r);
-    return `<div class="ma-ev up"><span class="ma-when">${dateS(d)}${dd ? ` <b>${dd}</b>` : ''}</span>
+    const time = r.match_time ? ` <span class="ma-time">${esc(r.match_time)}</span>` : '';
+    const loc = r.competition.location ? `<span class="ma-loc">📍 ${esc(r.competition.location)}</span>` : '';
+    return `<div class="ma-ev up"><span class="ma-when">${dateS(d)}${time}${dd ? ` <b>${dd}</b>` : ''}</span>
       <span class="ma-evn">${esc(eventLabel(r.event))}</span>
-      <span class="ma-cmp">${esc(r.competition.name)}${meta ? ` <span class="ma-slot">${meta}</span>` : ''}</span>
+      <span class="ma-cmp">${esc(r.competition.name)}${loc ? ` · ${loc}` : ''}${meta ? ` <span class="ma-slot">${meta}</span>` : ''}</span>
       <span class="ma-st">${status}</span></div>`;
   };
   const recItem = r => {
@@ -206,10 +210,11 @@ async function buildSchedule(out, year) {
   let cs = []; try { cs = await DB.competitions(String(year)); } catch (e) { }
   if (!cs.length) { out.innerHTML = `<div class="muted">${t('일정 정보가 없습니다.')}</div>`; return; }
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const iso = today.toISOString().slice(0, 10);
+  const p2 = n => String(n).padStart(2, '0');
+  const iso = `${today.getFullYear()}-${p2(today.getMonth() + 1)}-${p2(today.getDate())}`;
   const monLabel = MON[window.I18N.lang] || MON.ko;
   const dchip = d => { const [Y, M, D] = d.split('-'); return `<span class="dc-m">${monLabel(+M)}</span><span class="dc-d">${+D}</span>`; };
-  const daysTo = d => Math.round((new Date(d + 'T00:00') - today) / 86400000);
+  const daysTo = d => Math.round((new Date(d + 'T00:00:00') - today) / 86400000);
   const clickable = !!window.APP_ROLE;   // 앱(로그인) 상태에서만 상세 이동
   const card = (c, emph) => {
     const s = c.date_start, e = c.date_end || c.date_start;
@@ -225,7 +230,8 @@ async function buildSchedule(out, year) {
         <div class="sched-meta">${esc(c.location || '')} <span class="scope ${c.scope}">${SCOPE[c.scope] || ''}</span>${clickable ? '<span class="sched-go">›</span>' : ''}</div>
       </div></div>`;
   };
-  const in4w = new Date(today.getTime() + 28 * 86400000).toISOString().slice(0, 10);   // 4주 이내
+  const i4 = new Date(today.getTime() + 28 * 86400000);
+  const in4w = `${i4.getFullYear()}-${p2(i4.getMonth() + 1)}-${p2(i4.getDate())}`;   // 4주 이내
   const up = cs.filter(c => (c.date_end || c.date_start || '') >= iso && (c.date_start || c.date_end || '') <= in4w)
     .sort((a, b) => (a.date_start || '').localeCompare(b.date_start || ''));
   const past = cs.filter(c => (c.date_end || c.date_start || '') < iso).sort((a, b) => (b.date_start || '').localeCompare(a.date_start || ''));

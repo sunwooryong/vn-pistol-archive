@@ -700,6 +700,8 @@ svg.rings { height: 19px; width: auto; display: block; }
 .ma-ev:last-child { border-bottom: 0; }
 .ma-when { font-variant-numeric: tabular-nums; color: var(--mut); font-size: 11.5px; white-space: nowrap; }
 .ma-when b { color: #fff; background: var(--acc); border-radius: 999px; padding: 0 6px; font-size: 10px; margin-left: 2px; }
+.ma-time { font-weight: 800; color: var(--acc2); font-variant-numeric: tabular-nums; }
+.ma-loc { color: var(--dom); font-weight: 700; white-space: nowrap; }
 .ma-evn { font-weight: 700; min-width: 0; }
 .ma-cmp { grid-column: 2; color: var(--mut); font-size: 11px; }
 .ma-st { grid-row: 1; grid-column: 3; font-size: 10px; font-weight: 800; color: var(--acc2);
