@@ -5,6 +5,11 @@
 const DISC = { air: t('10m 공기권총'), rapid_fire: t('25m 속사권총'), sport: t('25m 스포츠권총'),
   standard: t('25m 표준권총'), centre_fire: t('25m 센터파이어'), pistol_50: t('50m 권총') };
 const AGE = { senior: '', junior: t('주니어'), youth: t('유소년'), u16: 'U16', u18: 'U18' };
+// 대회 유형 배지: 전체연령(개방) vs 연령부
+const ageChip = e => {
+  const open = !e || !e.age_category || e.age_category === 'senior';
+  return `<span class="age-chip ${open ? 'open' : 'grp'}">${open ? t('전체연령') : t('연령부')}</span>`;
+};
 const MEDAL = { gold: t('금'), silver: t('은'), bronze: t('동') };
 const SCOPE = { domestic: t('국내'), international: t('국제') };
 const GENDER = { M: t('남'), W: t('여') };
@@ -558,7 +563,7 @@ function yearlyStats(rows) {
           <span class="eg-sc">${med}${t('본선')} <b>${num(r.qual_total)}</b>${x}${fin} ${plc}</span>${ser}</div>`;
       };
       const row = el('div', 'ev-stat');
-      row.innerHTML = `<div class="es-h">${esc(eventLabel(e))} <span class="es-n">${list.length}${t('경기')}</span></div>
+      row.innerHTML = `<div class="es-h">${esc(eventLabel(e))} ${ageChip(e)} <span class="es-n">${list.length}${t('경기')}</span></div>
         <div class="es-line">${t('평균')} <b>${avg.toFixed(1)}</b> · ${t('최고')} ${best} · ${t('최저')} ${worst}${finN ? ` · ${t('결선')} ${finN}${t('회')}${perShot}` : ''}</div>
         <div class="es-series">${t('시리즈 평균')} ${sAvg.join(' / ')}</div>
         <div class="es-games">${games.map(gameLine).join('')}</div>`;
@@ -703,7 +708,7 @@ function resultRow(r) {
   const tm = r.team_medal ? ` <span class="medal ${r.team_medal}" title="${t('단체')}">${MEDAL[r.team_medal]}</span><span class="tmlbl">${t('단체')}</span>` : '';
   row.innerHTML = `
     <div class="res-top">
-      <div class="res-ev">${esc(eventLabel(r.event))}${md ? `<span class="md">${md}</span>` : ''}</div>
+      <div class="res-ev">${esc(eventLabel(r.event))} ${ageChip(r.event)}${md ? `<span class="md">${md}</span>` : ''}</div>
       <div class="res-place">${placementCell(r)}</div>
     </div>
     <div class="res-scores">
