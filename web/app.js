@@ -544,10 +544,24 @@ function yearlyStats(rows) {
         const ps = finRows.map(r => r.final_score / airShots(r.final_rank));
         perShot = ` · ${t('한발당')} ${(ps.reduce((s, v) => s + v, 0) / ps.length).toFixed(2)}`;
       }
+      // 경기별 세부 기록 (최신순)
+      const games = list.slice().sort((x, y) => ((y.match_date || y.competition.date_start || '') + '').localeCompare((x.match_date || x.competition.date_start || '') + ''));
+      const gameLine = r => {
+        const d = (r.match_date || r.competition.date_start || '').slice(5).replace('-', '.');
+        const med = r.medal ? medalBadge(r.medal) : '';
+        const plc = r.placement ? `<span class="eg-plc">${r.placement}${t('위')}</span>` : '';
+        const x = r.inner_tens != null ? ` <span class="eg-x">X${r.inner_tens}</span>` : '';
+        const fin = r.final_score != null ? ` · ${t('결선')} <b>${r.final_score}</b>` : '';
+        const ser = (r.series && r.series.length) ? `<div class="eg-ser">${r.series.map(s => s.score).join(' · ')}</div>` : '';
+        return `<div class="es-game"><span class="eg-d">${d}</span>
+          <span class="eg-c">${esc(r.competition.name)}</span>
+          <span class="eg-sc">${med}${t('본선')} <b>${num(r.qual_total)}</b>${x}${fin} ${plc}</span>${ser}</div>`;
+      };
       const row = el('div', 'ev-stat');
       row.innerHTML = `<div class="es-h">${esc(eventLabel(e))} <span class="es-n">${list.length}${t('경기')}</span></div>
         <div class="es-line">${t('평균')} <b>${avg.toFixed(1)}</b> · ${t('최고')} ${best} · ${t('최저')} ${worst}${finN ? ` · ${t('결선')} ${finN}${t('회')}${perShot}` : ''}</div>
-        <div class="es-series">${t('시리즈 평균')} ${sAvg.join(' / ')}</div>`;
+        <div class="es-series">${t('시리즈 평균')} ${sAvg.join(' / ')}</div>
+        <div class="es-games">${games.map(gameLine).join('')}</div>`;
       ysec.appendChild(row);
     });
     box.appendChild(ysec);
