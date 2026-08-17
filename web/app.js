@@ -58,7 +58,7 @@ const init = {};
 init.home = () => renderHome();
 async function renderHome() {
   const box = $('#view-home'), year = new Date().getFullYear();
-  const coach = window.APP_ROLE && window.APP_ROLE.role === 'coach' && window.Fav && Fav.count();
+  const coach = !!(window.APP_ROLE && window.APP_ROLE.role === 'coach');
   const now = new Date();
   const wd = (window.I18N.lang === 'vi')
     ? ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][now.getDay()]
@@ -121,7 +121,13 @@ async function showFreshness() {
 async function renderMyAthletesComps(box, year) {
   box.innerHTML = `<h3>${t('관리 선수 일정·기록')}</h3><div class="muted">${t('불러오는 중…')}</div>`;
   const favs = Fav.list();
-  if (!favs.length) { box.innerHTML = `<h3>${t('관리 선수 일정·기록')}</h3><div class="muted">${t('관리 선수를 즐겨찾기(☆)로 등록하세요.')}</div>`; return; }
+  if (!favs.length) {
+    box.innerHTML = `<h3>${t('관리 선수 일정·기록')}
+        <button class="report-btn" id="coach-report-btn">🖨️ ${t('지도 실적 증명')}</button></h3>
+      <div class="muted">${t('관리 선수를 즐겨찾기(☆)로 등록하세요.')}</div>`;
+    const rb0 = $('#coach-report-btn'); if (rb0) rb0.onclick = () => openCoachReport(year);
+    return;
+  }
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const p2 = n => String(n).padStart(2, '0');
   const iso = `${today.getFullYear()}-${p2(today.getMonth() + 1)}-${p2(today.getDate())}`;
