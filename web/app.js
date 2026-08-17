@@ -496,6 +496,11 @@ async function buildCareer(a, rows, detail) {
   // 심화 분석 (추이·일관성·시리즈피로·결선전환·국제백분위)
   if (window.Analytics) Analytics.render(a, rows, detail);
 
+  // 25m 단계 분석 (완사/속사·시간단계)
+  const stageBox = el('div', 'block');
+  detail.appendChild(stageBox);
+  render25mStages(a, stageBox);
+
   // 연도별 성적
   detail.appendChild(yearlyStats(rows));
 
@@ -619,6 +624,42 @@ async function renderRegional(a, box) {
     h += `</div>`;
   }
   box.innerHTML = h;
+}
+
+// 25m 단계 분석 (완사·속사 / 150″·20″·10″ / 8″·6″·4″)
+async function render25mStages(a, box) {
+  box.innerHTML = `<h3>${t('25m 단계 분석')} <span class="sub2">${t('완사·속사·시간단계')}</span></h3><div class="muted">${t('계산 중…')}</div>`;
+  let data = [];
+  try { data = await DB.stageAnalysis(a.id, RANK_YEAR); } catch (e) { }
+  if (!data.length) { box.innerHTML = ''; return; }
+  const spark = vals => {
+    if (vals.length < 2) return '';
+    const mn = Math.min(...vals), mx = Math.max(...vals), rng = mx - mn || 1, W = 88, H = 22;
+    const pts = vals.map((v, i) => `${(i * W / (vals.length - 1)).toFixed(1)},${(2 + (1 - (v - mn) / rng) * (H - 4)).toFixed(1)}`).join(' ');
+    return `<svg class="stg-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><polyline points="${pts}"/><circle cx="${W}" cy="${(2 + (1 - (vals[vals.length - 1] - mn) / rng) * (H - 4)).toFixed(1)}" r="2"/></svg>`;
+  };
+  let h = '';
+  data.forEach(dz => {
+    const avgs = dz.stages.map(s => s.avg), worst = Math.min(...avgs), best = Math.max(...avgs), gap = best - worst;
+    const lo = Math.min(...avgs) - 2, hi = Math.max(...avgs) + 2, span = (hi - lo) || 1;
+    h += `<div class="stg-card"><div class="rgn-h">🎯 ${esc(DISC[dz.disc] || dz.disc)} <span class="sub2">${dz.games}${t('경기')}</span></div>`;
+    dz.stages.forEach(s => {
+      const weak = s.avg === worst && dz.stages.length > 1;
+      const w = 30 + ((s.avg - lo) / span) * 70;
+      h += `<div class="stg-row${weak ? ' weak' : ''}">
+        <span class="stg-k">${t(s.key)}${weak ? ` <span class="stg-tag">${t('약함')}</span>` : ''}</span>
+        <span class="stg-bar"><i style="width:${w.toFixed(0)}%"></i></span>
+        <span class="stg-v">${s.avg.toFixed(1)}</span>
+        <span class="stg-spk">${spark(s.vals)}</span>
+        <span class="stg-nat">${t('전국')} ${s.natRank}/${s.natN}</span></div>`;
+    });
+    if (dz.stages.length > 1) {
+      const ws = dz.stages.find(s => s.avg === worst);
+      h += `<div class="stg-gap">${t('단계 격차')} <b>${gap.toFixed(1)}${t('점')}</b> · <span class="hl">${t(ws.key)} ${t('보강 필요')}</span></div>`;
+    }
+    h += `</div>`;
+  });
+  box.innerHTML = `<h3>${t('25m 단계 분석')} <span class="sub2">${t('완사·속사·시간단계')}</span></h3><div class="rgn-help">${t('한 종목 안에서 시간·방식이 다른 단계로 나눠 강약을 봐요. (10발 평균)')}</div>` + h;
 }
 
 async function renderRankings(a, rows, box) {

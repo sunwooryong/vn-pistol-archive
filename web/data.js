@@ -110,6 +110,51 @@
         }
         return { region: myHome, disciplines, strength };
       },
+      // 25m 단계 분석: 완사/속사, 150″/20″/10″, 8″/6″/4″ — 단계 평균·추이·전국순위
+      async stageAnalysis(athleteId, year) {
+        const d = await ensure();
+        const STAGES = {
+          sport: [['완사', [0, 1, 2]], ['속사', [3, 4, 5]]],
+          centre_fire: [['완사', [0, 1, 2]], ['속사', [3, 4, 5]]],
+          standard: [['150″', [0, 1]], ['20″', [2, 3]], ['10″', [4, 5]]],
+          rapid_fire: [['8″', [0, 3]], ['6″', [1, 4]], ['4″', [2, 5]]],
+        };
+        const serScores = r => (d.serByRes.get(r.id) || []).slice().sort((a, b) => a.series_no - b.series_no).map(s => s.score);
+        const stageVals = (disc, ss) => { const cfg = STAGES[disc]; if (!cfg || ss.length < 6) return null; return cfg.map(([k, idx]) => ({ key: k, avg: idx.reduce((s, i) => s + ss[i], 0) / idx.length })); };
+        // 국내 선수별·종목별·단계별 최고 단계평균 (전국 순위용)
+        const bank = {};
+        d.results.forEach(r => {
+          const e = d.evById.get(r.event_id); if (!e || e.team_type !== 'individual' || !STAGES[e.discipline]) return;
+          const c = d.compById.get(e.competition_id); if (!c || c.year !== year) return;
+          if (r.is_dnf || r.qual_total == null) return;
+          const a = d.athById.get(r.athlete_id); if (!a || a.is_foreign) return;
+          const sv = stageVals(e.discipline, serScores(r)); if (!sv) return;
+          const db = bank[e.discipline] || (bank[e.discipline] = {});
+          sv.forEach(s => { const m = db[s.key] || (db[s.key] = new Map()); const p = m.get(r.athlete_id); if (p == null || s.avg > p) m.set(r.athlete_id, s.avg); });
+        });
+        // 대상 선수
+        const byDisc = new Map();
+        (d.resByAth.get(athleteId) || []).forEach(r => {
+          const e = d.evById.get(r.event_id); if (!e || e.team_type !== 'individual' || !STAGES[e.discipline]) return;
+          const c = d.compById.get(e.competition_id); if (!c || c.year !== year) return;
+          if (r.is_dnf || r.qual_total == null) return;
+          const sv = stageVals(e.discipline, serScores(r)); if (!sv) return;
+          (byDisc.get(e.discipline) || byDisc.set(e.discipline, []).get(e.discipline)).push({ date: (c.date_start || '') + (r.match_date || ''), stages: sv, qual: r.qual_total });
+        });
+        const out = [];
+        for (const [disc, games] of byDisc) {
+          games.sort((a, b) => a.date.localeCompare(b.date));
+          const stages = STAGES[disc].map(([k]) => {
+            const vals = games.map(g => g.stages.find(s => s.key === k).avg);
+            const avg = vals.reduce((s, v) => s + v, 0) / vals.length, best = Math.max(...vals);
+            const m = (bank[disc] || {})[k] || new Map();
+            const natRank = [...m.values()].filter(v => v > best).length + 1, natN = m.size;
+            return { key: k, avg, best, vals, natRank, natN };
+          });
+          out.push({ disc, games: games.length, stages });
+        }
+        return out;
+      },
       async athleteByKey(key) { const d = await ensure(); return d.athByKey.get(key) || null; },
       // 종목·성별 선수별 최고점 (국제 백분위 벤치마크). 국내+국제 전체.
       async eventScores({ discipline, gender } = {}) {
@@ -225,6 +270,7 @@
       },
       async news() { return fetch(DATA_BASE + 'news.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : []).catch(() => []); },
       async regionalAnalysis() { return null; },
+      async stageAnalysis() { return []; },
       async eventScores({ discipline, gender } = {}) {
         const f = [`discipline=eq.${discipline}`];
         if (gender) f.push(`event_gender=eq.${gender}`);

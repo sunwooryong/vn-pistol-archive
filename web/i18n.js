@@ -73,6 +73,10 @@
     '개인 종목 기록이 없습니다.': 'Chưa có KQ cá nhân.', '분석 중…': 'Đang phân tích…',
     '10m공기': '10m hơi', '25m속사': '25m nhanh', '25m스포츠': '25m TT', '25m표준': '25m TC', '25m센터': '25m ổ quay', '50m': '50m',
     '시리즈 평균': 'Loạt TB',
+    // 25m 단계 분석
+    '25m 단계 분석': 'Phân tích giai đoạn 25m', '완사·속사·시간단계': 'Chậm·Nhanh·giai đoạn', '완사': 'Chậm', '속사': 'Nhanh',
+    '약함': 'Yếu', '단계 격차': 'Chênh lệch', '보강 필요': 'Cần cải thiện',
+    '한 종목 안에서 시간·방식이 다른 단계로 나눠 강약을 봐요. (10발 평균)': 'Chia 1 nội dung thành các giai đoạn để xem mạnh/yếu. (TB 10 phát)',
     // 즐겨찾기 화면
     '즐겨찾기': 'Yêu thích', '즐겨찾기 해제': 'Bỏ yêu thích', '그룹': 'Nhóm', '새 그룹 이름': 'Tên nhóm mới',
     '아직 저장한 선수가 없습니다. 선수 검색 → ☆ 를 눌러 그룹에 저장하세요.': 'Chưa lưu VĐV nào. Tìm VĐV → bấm ☆ để lưu.',
