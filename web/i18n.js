@@ -55,6 +55,7 @@
     '지도자': 'HLV', '지도 선수': 'VĐV phụ trách', '참가 대회': 'Giải tham gia', '개인 메달': 'HC cá nhân', '단체 메달': 'HC đồng đội', '결선 진출': 'Vào chung kết',
     '대표 성적': 'Thành tích tiêu biểu', '본 증명서는 베트남 사격연맹 공개 기록을 기준으로 자동 집계되었습니다.': 'Chứng nhận tổng hợp tự động từ dữ liệu công khai của LĐ Bắn súng Việt Nam.', '발급일': 'Ngày cấp', '작성': 'Lập bởi',
     '개인전만': 'Chỉ cá nhân', '개인+단체': 'Cá nhân + đồng đội',
+    '관리 선수 명단': 'Danh sách VĐV phụ trách', '2026 기록': 'KQ 2026', '기록 없음': 'Chưa có KQ',
     // 전수 번역 보강
     '년생': ' sinh', '세': ' tuổi', '생년 미상': 'Không rõ năm sinh', '기록없음': 'Không có KQ', '만': '', '베트남': 'Việt Nam',
     '총': 'Tổng', '전': ' trận', '메달': 'HC', '랭킹': 'Xếp hạng', '국내 대회 · 종목별': 'Giải trong nước · theo nội dung',

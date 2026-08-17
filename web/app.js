@@ -257,22 +257,54 @@ async function openCoachReport(year) {
     });
     const rankMap = {};
     try { const R = await DB.regionalAnalysis(a.id, year); if (R) R.disciplines.forEach(dz => rankMap[dz.disc] = { nat: dz.natRank, natN: dz.natN, reg: dz.regRank, regN: dz.regN }); } catch (e) { }
-    athletes.push({ name: a.full_name, gender: a.gender, group: it.group, ind, teamMed, rankMap });
+    const im = { g: 0, s: 0, b: 0 }, tmv = { g: 0, s: 0, b: 0 };
+    ind.forEach(o => { im.g += o.g; im.s += o.s; im.b += o.b; });
+    teamMed.forEach(o => { tmv.g += o.tg; tmv.s += o.ts; tmv.b += o.tb; });
+    athletes.push({ name: a.full_name, gender: a.gender, group: it.group || t('기타'), ind, teamMed, rankMap, im, tmv, has: ind.size > 0 || teamMed.size > 0 });
   }
   const now = new Date();
   const dstr = `${now.getFullYear()}. ${now.getMonth() + 1}. ${now.getDate()}`;
   const medStr = (g, s, b) => [g && `${medalBadge('gold')}${g}`, s && `${medalBadge('silver')}${s}`, b && `${medalBadge('bronze')}${b}`].filter(Boolean).join(' ') || '–';
-  const nmCell = x => `${esc(x.name)}${x.gender ? ` <span class="g g-${x.gender}">${GENDER[x.gender]}</span>` : ''}${x.group ? `<i>${esc(t(x.group))}</i>` : ''}`;
+  const gbadge = x => x.gender ? ` <span class="g g-${x.gender}">${GENDER[x.gender]}</span>` : '';
+  const nmCell = x => `${esc(x.name)}${gbadge(x)}${x.group ? `<i>${esc(t(x.group))}</i>` : ''}`;
+
+  // 그룹 선택 필터 (기본 전체 선택) — 관심 선수 포함/제외를 코치가 직접 선택
+  const allGroups = [...new Set(athletes.map(x => x.group))];
+  const activeGroups = new Set(allGroups);
+  let curMode = 'ind';
+  if (allGroups.length) {
+    const gc = el('div', 'rv-groups no-print');
+    gc.innerHTML = `<span class="rv-glab">${t('그룹')}:</span>` + allGroups.map(g => `<button class="rv-g on" data-g="${esc(g)}">${esc(t(g))}</button>`).join('');
+    view.querySelector('.rv-bar').insertBefore(gc, view.querySelector('.rv-print'));
+    gc.querySelectorAll('.rv-g').forEach(b => b.onclick = () => {
+      const g = b.dataset.g;
+      if (activeGroups.has(g)) { activeGroups.delete(g); b.classList.remove('on'); } else { activeGroups.add(g); b.classList.add('on'); }
+      renderDoc(curMode);
+    });
+  }
 
   function renderDoc(mode) {
+    curMode = mode;
     const team = mode === 'all';
+    const list = athletes.filter(x => activeGroups.has(x.group));
+    const compSet = new Set();
+    list.forEach(x => { x.ind.forEach(o => o.comps.forEach(c => compSet.add(c))); x.teamMed.forEach(o => o.comps.forEach(c => compSet.add(c))); });
     // 합계
     const tot = { g: 0, s: 0, b: 0, tg: 0, ts: 0, tb: 0, fin: 0 };
-    athletes.forEach(x => { x.ind.forEach(o => { tot.g += o.g; tot.s += o.s; tot.b += o.b; tot.fin += o.fin; }); x.teamMed.forEach(o => { tot.tg += o.tg; tot.ts += o.ts; tot.tb += o.tb; }); });
+    list.forEach(x => { x.ind.forEach(o => { tot.g += o.g; tot.s += o.s; tot.b += o.b; tot.fin += o.fin; }); x.teamMed.forEach(o => { tot.tg += o.tg; tot.ts += o.ts; tot.tb += o.tb; }); });
+    // 관리 선수 명단 (모든 선수 반드시 표시 — 그룹별)
+    let roster = '';
+    const byG = new Map(); list.forEach(x => { (byG.get(x.group) || byG.set(x.group, []).get(x.group)).push(x); });
+    for (const g of allGroups) {
+      const arr = byG.get(g); if (!arr) continue;
+      const rows = arr.map(x => `<tr><td class="rc-nm">${esc(x.name)}${gbadge(x)}</td><td class="rc-md">${medStr(x.im.g, x.im.s, x.im.b)}</td>${team ? `<td class="rc-md">${medStr(x.tmv.g, x.tmv.s, x.tmv.b)}</td>` : ''}<td>${x.has ? '✓' : `<span class="rc-nod">${t('기록 없음')}</span>`}</td></tr>`).join('');
+      roster += `<div class="rc-disc"><div class="rc-disc-h">${esc(t(g))} <span class="rc-gn">(${arr.length})</span></div>
+        <table class="rc-tab"><thead><tr><th>${t('선수')}</th><th>${t('개인 메달')}</th>${team ? `<th>${t('단체 메달')}</th>` : ''}<th>${t('2026 기록')}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    }
     // 개인전 — 종목별 섹션
     let indSecs = '';
     DORDER.forEach(d => {
-      const rows = athletes.filter(x => x.ind.has(d)).map(x => { const o = x.ind.get(d), rk = x.rankMap[d];
+      const rows = list.filter(x => x.ind.has(d)).map(x => { const o = x.ind.get(d), rk = x.rankMap[d];
         return `<tr><td class="rc-nm">${nmCell(x)}</td><td><b>${o.best}</b></td><td>${rk ? `${rk.nat}/${rk.natN}` : '–'}</td><td class="rc-md">${medStr(o.g, o.s, o.b)}</td><td>${o.comps.size}</td></tr>`;
       }).join('');
       if (rows) indSecs += `<div class="rc-disc"><div class="rc-disc-h">🎯 ${esc(DISC[d] || d)}</div>
@@ -281,9 +313,9 @@ async function openCoachReport(year) {
     // 단체전 — 종목별 섹션 (선택)
     let teamSecs = '';
     if (team) {
-      const td = new Set(); athletes.forEach(x => x.teamMed.forEach((_, d) => td.add(d)));
+      const td = new Set(); list.forEach(x => x.teamMed.forEach((_, d) => td.add(d)));
       DORDER.filter(d => td.has(d)).forEach(d => {
-        const rows = athletes.filter(x => x.teamMed.has(d)).map(x => { const o = x.teamMed.get(d);
+        const rows = list.filter(x => x.teamMed.has(d)).map(x => { const o = x.teamMed.get(d);
           return `<tr><td class="rc-nm">${nmCell(x)}</td><td class="rc-md">${medStr(o.tg, o.ts, o.tb)}</td><td>${o.comps.size}</td></tr>`;
         }).join('');
         if (rows) teamSecs += `<div class="rc-disc"><div class="rc-disc-h">👥 ${esc(DISC[d] || d)} ${t('단체')}</div>
@@ -291,7 +323,7 @@ async function openCoachReport(year) {
       });
       if (teamSecs) teamSecs = `<div class="rc-sech">👥 ${t('단체전')}</div>` + teamSecs;
     }
-    const empty = !indSecs && !teamSecs;
+    const empty = !list.length;
     document.getElementById('rv-doc').innerHTML = `
       <div class="rc-head">
         <div class="rc-rings">${window.ringsSVG || ''}</div>
@@ -300,13 +332,14 @@ async function openCoachReport(year) {
         <div class="rc-coach">${t('지도자')}: <b>${esc(coach)}</b> · <span class="rc-scope">${team ? t('개인+단체') : t('개인전만')}</span></div>
       </div>
       <div class="rc-sum">
-        <div><i>${t('지도 선수')}</i><b>${athletes.length}${t('명')}</b></div>
-        <div><i>${t('참가 대회')}</i><b>${comps.size}</b></div>
+        <div><i>${t('지도 선수')}</i><b>${list.length}${t('명')}</b></div>
+        <div><i>${t('참가 대회')}</i><b>${compSet.size}</b></div>
         <div class="hl"><i>${t('개인 메달')}</i><b>${tot.g + tot.s + tot.b}</b><span>${medStr(tot.g, tot.s, tot.b)}</span></div>
         ${team ? `<div><i>${t('단체 메달')}</i><b>${tot.tg + tot.ts + tot.tb}</b><span>${medStr(tot.tg, tot.ts, tot.tb)}</span></div>` : ''}
         <div><i>${t('결선 진출')}</i><b>${tot.fin}${t('회')}</b></div>
       </div>
-      ${empty ? `<div class="muted" style="padding:24px;text-align:center">${t('관리 선수를 즐겨찾기(☆)로 등록하세요.')}</div>` : `<div class="rc-sech">🎯 ${t('개인전')}</div>${indSecs}${teamSecs}`}
+      ${empty ? `<div class="muted" style="padding:24px;text-align:center">${t('관리 선수를 즐겨찾기(☆)로 등록하세요.')}</div>`
+        : `<div class="rc-sech">📋 ${t('관리 선수 명단')}</div>${roster}${indSecs ? `<div class="rc-sech">🎯 ${t('개인전')}</div>${indSecs}` : ''}${teamSecs}`}
       <div class="rc-foot">
         <div class="rc-note">${t('본 증명서는 베트남 사격연맹 공개 기록을 기준으로 자동 집계되었습니다.')} · ${t('발급일')} ${dstr}</div>
         <div class="rc-sign"><span class="rc-signname">RYONG</span><span class="rc-signlab">${t('작성')}</span></div>
