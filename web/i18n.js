@@ -50,6 +50,11 @@
     '다가오는 대회': 'Sắp diễn ra', '지난 대회': 'Đã qua', '홈': 'Trang chủ',
     '내 선수 참가 대회': 'Giải VĐV của tôi tham gia', '올해 참가 기록이 없습니다.': 'Chưa có tham gia năm nay.',
     '관리 선수 일정·기록': 'Lịch·Kết quả VĐV của tôi', '다가오는 경기': 'Sắp thi đấu', '최근 기록': 'Kết quả gần đây',
+    // 지도 실적 증명서
+    '지도 실적 증명': 'Chứng nhận HLV', '지도 실적 증명서': 'Chứng nhận thành tích huấn luyện', '인쇄': 'In', '닫기': 'Đóng',
+    '지도자': 'HLV', '지도 선수': 'VĐV phụ trách', '참가 대회': 'Giải tham gia', '개인 메달': 'HC cá nhân', '단체 메달': 'HC đồng đội', '결선 진출': 'Vào chung kết',
+    '대표 성적': 'Thành tích tiêu biểu', '본 증명서는 베트남 사격연맹 공개 기록을 기준으로 자동 집계되었습니다.': 'Chứng nhận tổng hợp tự động từ dữ liệu công khai của LĐ Bắn súng Việt Nam.', '발급일': 'Ngày cấp', '작성': 'Lập bởi',
+    '개인전만': 'Chỉ cá nhân', '개인+단체': 'Cá nhân + đồng đội',
     '출전 예정': 'Sẽ thi đấu', '결과 대기': 'Chờ kết quả', '관리 선수를 즐겨찾기(☆)로 등록하세요.': 'Hãy thêm VĐV vào yêu thích (☆).',
     '예정된 경기 없음': 'Không có lịch sắp tới', '올해 기록 없음': 'Chưa có kết quả năm nay',
     '경기일': 'Ngày thi đấu',
