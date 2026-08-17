@@ -628,9 +628,9 @@ async function renderRegional(a, box) {
 
 // 25m 단계 분석 (완사·속사 / 150″·20″·10″ / 8″·6″·4″)
 async function render25mStages(a, box) {
-  box.innerHTML = `<h3>${t('25m 단계 분석')} <span class="sub2">${t('완사·속사·시간단계')}</span></h3><div class="muted">${t('계산 중…')}</div>`;
+  box.innerHTML = `<h3>${t('25m 단계 분석')} <span class="sub2">${t('완사·속사·시간단계')} · ${t('전체 기간')}</span></h3><div class="muted">${t('계산 중…')}</div>`;
   let data = [];
-  try { data = await DB.stageAnalysis(a.id, RANK_YEAR); } catch (e) { }
+  try { data = await DB.stageAnalysis(a.id); } catch (e) { }
   if (!data.length) { box.innerHTML = ''; return; }
   const spark = vals => {
     if (vals.length < 2) return '';
@@ -659,7 +659,7 @@ async function render25mStages(a, box) {
     }
     h += `</div>`;
   });
-  box.innerHTML = `<h3>${t('25m 단계 분석')} <span class="sub2">${t('완사·속사·시간단계')}</span></h3><div class="rgn-help">${t('한 종목 안에서 시간·방식이 다른 단계로 나눠 강약을 봐요. (10발 평균)')}</div>` + h;
+  box.innerHTML = `<h3>${t('25m 단계 분석')} <span class="sub2">${t('완사·속사·시간단계')} · ${t('전체 기간')}</span></h3><div class="rgn-help">${t('한 종목 안에서 시간·방식이 다른 단계로 나눠 강약을 봐요. (10발 평균)')}</div>` + h;
 }
 
 async function renderRankings(a, rows, box) {

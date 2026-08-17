@@ -125,7 +125,7 @@
         const bank = {};
         d.results.forEach(r => {
           const e = d.evById.get(r.event_id); if (!e || e.team_type !== 'individual' || !STAGES[e.discipline]) return;
-          const c = d.compById.get(e.competition_id); if (!c || c.year !== year) return;
+          const c = d.compById.get(e.competition_id); if (!c || (year && c.year !== year)) return;
           if (r.is_dnf || r.qual_total == null) return;
           const a = d.athById.get(r.athlete_id); if (!a || a.is_foreign) return;
           const sv = stageVals(e.discipline, serScores(r)); if (!sv) return;
@@ -136,7 +136,7 @@
         const byDisc = new Map();
         (d.resByAth.get(athleteId) || []).forEach(r => {
           const e = d.evById.get(r.event_id); if (!e || e.team_type !== 'individual' || !STAGES[e.discipline]) return;
-          const c = d.compById.get(e.competition_id); if (!c || c.year !== year) return;
+          const c = d.compById.get(e.competition_id); if (!c || (year && c.year !== year)) return;
           if (r.is_dnf || r.qual_total == null) return;
           const sv = stageVals(e.discipline, serScores(r)); if (!sv) return;
           (byDisc.get(e.discipline) || byDisc.set(e.discipline, []).get(e.discipline)).push({ date: (c.date_start || '') + (r.match_date || ''), stages: sv, qual: r.qual_total });
