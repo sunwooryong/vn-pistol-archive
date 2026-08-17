@@ -5,6 +5,7 @@
 // =====================================================================
 window.Fav = (function () {
   const LS = 'vpa_fav_v1';
+  const t = k => (window.t ? window.t(k) : k);
   const DEFAULT_GROUPS = ['국가대표', '청소년 국가대표', '후보 선수', '관심 선수', '기타'];
   let state = load();
   const listeners = [];
@@ -63,7 +64,7 @@ window.Fav = (function () {
     const wrap = el('span', 'fav-star' + (opts && opts.inline ? ' inline' : ''));
     const render = () => {
       const on = has(s.key);
-      wrap.innerHTML = `<button class="star-btn ${on ? 'on' : ''}" title="즐겨찾기">${on ? '★' : '☆'}</button>`;
+      wrap.innerHTML = `<button class="star-btn ${on ? 'on' : ''}" title="${t('즐겨찾기')}">${on ? '★' : '☆'}</button>`;
     };
     render();
     wrap.addEventListener('click', e => {
@@ -72,8 +73,8 @@ window.Fav = (function () {
       const cur = get(s.key);
       menu.innerHTML =
         `<div class="sm-h">${esc(s.name)}</div>` +
-        groups().map(g => `<button class="sm-g ${cur && cur.group === g ? 'sel' : ''}" data-g="${esc(g)}">${cur && cur.group === g ? '● ' : ''}${esc(g)}</button>`).join('') +
-        (has(s.key) ? `<button class="sm-rm">✕ 즐겨찾기 해제</button>` : '');
+        groups().map(g => `<button class="sm-g ${cur && cur.group === g ? 'sel' : ''}" data-g="${esc(g)}">${cur && cur.group === g ? '● ' : ''}${esc(t(g))}</button>`).join('') +
+        (has(s.key) ? `<button class="sm-rm">✕ ${t('즐겨찾기 해제')}</button>` : '');
       document.body.appendChild(menu);
       const r = wrap.getBoundingClientRect();
       menu.style.top = (r.bottom + window.scrollY + 4) + 'px';
@@ -92,23 +93,23 @@ window.Fav = (function () {
   async function renderTab(container) {
     container.innerHTML = '';
     const bar = el('div', 'fav-bar');
-    bar.innerHTML = `<button id="fav-cmp" class="${compareMode ? 'on' : ''}">비교 모드</button>
-      <button id="fav-addg">+ 그룹</button>
-      <span class="count">${count()}명 저장됨</span>`;
+    bar.innerHTML = `<button id="fav-cmp" class="${compareMode ? 'on' : ''}">${t('비교 모드')}</button>
+      <button id="fav-addg">+ ${t('그룹')}</button>
+      <span class="count">${count()}${t('명')} ${t('저장됨')}</span>`;
     container.appendChild(bar);
     bar.querySelector('#fav-cmp').onclick = () => { compareMode = !compareMode; compareSel.clear(); renderTab(container); };
-    bar.querySelector('#fav-addg').onclick = () => { const n = prompt('새 그룹 이름'); if (n) { addGroup(n); renderTab(container); } };
+    bar.querySelector('#fav-addg').onclick = () => { const n = prompt(t('새 그룹 이름')); if (n) { addGroup(n); renderTab(container); } };
 
     const cmpOut = el('div', 'cmp-out'); container.appendChild(cmpOut);
 
-    if (!count()) { container.appendChild(el('div', 'muted', '아직 저장한 선수가 없습니다. 선수 검색 → ☆ 를 눌러 그룹에 저장하세요.')); return; }
+    if (!count()) { container.appendChild(el('div', 'muted', t('아직 저장한 선수가 없습니다. 선수 검색 → ☆ 를 눌러 그룹에 저장하세요.'))); return; }
 
     for (const [g, items] of byGroup()) {
       if (!items.length && !DEFAULT_GROUPS.includes(g)) continue;
       const sec = el('div', 'fav-sec');
-      const delBtn = DEFAULT_GROUPS.includes(g) ? '' : `<button class="fav-delg" title="그룹 삭제">✕</button>`;
-      sec.appendChild(el('div', 'fav-h', `${esc(g)} <span class="fc">${items.length}</span>${delBtn}`));
-      if (delBtn) sec.querySelector('.fav-delg').onclick = () => { if (confirm(`'${g}' 그룹 삭제? (선수는 기타로 이동)`)) { deleteGroup(g); renderTab(container); } };
+      const delBtn = DEFAULT_GROUPS.includes(g) ? '' : `<button class="fav-delg" title="${t('그룹 삭제')}">✕</button>`;
+      sec.appendChild(el('div', 'fav-h', `${esc(t(g))} <span class="fc">${items.length}</span>${delBtn}`));
+      if (delBtn) sec.querySelector('.fav-delg').onclick = () => { if (confirm(`'${t(g)}' ` + t('그룹 삭제? (선수는 기타로 이동)'))) { deleteGroup(g); renderTab(container); } };
       const grid = el('div', 'fav-grid');
       const NOW = new Date().getFullYear();
       items.sort((a, b) => a.name.localeCompare(b.name)).forEach(it => {
@@ -122,7 +123,7 @@ window.Fav = (function () {
             <button class="fav-rm" title="✕">✕</button></div>
           <div class="fc-stats muted">…</div>
           <div class="fc-actions">
-            <select class="fav-mv">${groups().map(x => `<option ${x === it.group ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>
+            <select class="fav-mv">${groups().map(x => `<option value="${esc(x)}" ${x === it.group ? 'selected' : ''}>${esc(t(x))}</option>`).join('')}</select>
             <button class="fav-open">${window.t ? window.t('열기') : '열기'}</button></div>`;
         if (compareMode) card.querySelector('.fav-chk').onchange = e => { if (e.target.checked) compareSel.add(it.key); else compareSel.delete(it.key); runCompare(cmpOut); };
         card.querySelector('.fav-mv').onchange = e => setGroup(it.key, e.target.value);
@@ -172,8 +173,8 @@ window.Fav = (function () {
   }
   async function runCompare(out) {
     const keys = [...compareSel];
-    if (keys.length < 2) { out.innerHTML = compareMode ? '<div class="muted">비교할 선수를 2명 이상 선택하세요.</div>' : ''; return; }
-    out.innerHTML = '<div class="muted">비교 계산 중…</div>';
+    if (keys.length < 2) { out.innerHTML = compareMode ? `<div class="muted">${t('비교할 선수를 2명 이상 선택하세요.')}</div>` : ''; return; }
+    out.innerHTML = `<div class="muted">${t('비교 계산 중…')}</div>`;
     const cols = [];
     for (const key of keys.slice(0, 4)) {
       const it = get(key), a = await DB.athleteByKey(key);
@@ -184,13 +185,13 @@ window.Fav = (function () {
     const discs = [...new Set(cols.flatMap(c => Object.keys(c.sum.perDisc)))];
     const th = cols.map(c => `<th>${esc(c.it.name)}<span class="cby">${c.it.birth_year || ''}</span></th>`).join('');
     const rowsHtml = [];
-    rowsHtml.push(`<tr><td>소속</td>${cols.map(c => `<td>${esc(c.sum.unit || '-')}</td>`).join('')}</tr>`);
-    rowsHtml.push(`<tr><td>개인메달(금·은·동)</td>${cols.map(c => `<td>${c.sum.im.gold}·${c.sum.im.silver}·${c.sum.im.bronze}</td>`).join('')}</tr>`);
-    rowsHtml.push(`<tr><td>결선진출</td>${cols.map(c => `<td>${c.sum.fin}회</td>`).join('')}</tr>`);
+    rowsHtml.push(`<tr><td>${t('소속')}</td>${cols.map(c => `<td>${esc(c.sum.unit || '-')}</td>`).join('')}</tr>`);
+    rowsHtml.push(`<tr><td>${t('개인메달')}(${t('금')}·${t('은')}·${t('동')})</td>${cols.map(c => `<td>${c.sum.im.gold}·${c.sum.im.silver}·${c.sum.im.bronze}</td>`).join('')}</tr>`);
+    rowsHtml.push(`<tr><td>${t('결선진출')}</td>${cols.map(c => `<td>${c.sum.fin}${t('회')}</td>`).join('')}</tr>`);
     discs.forEach(d => {
-      rowsHtml.push(`<tr class="drow"><td>${esc(DISC[d] || d)} 최고/평균</td>${cols.map(c => { const p = c.sum.perDisc[d]; return `<td>${p ? `<b>${p.best}</b> / ${p.avg}` : '–'}</td>`; }).join('')}</tr>`);
+      rowsHtml.push(`<tr class="drow"><td>${esc(DISC[d] || d)} ${t('최고')}/${t('평균')}</td>${cols.map(c => { const p = c.sum.perDisc[d]; return `<td>${p ? `<b>${p.best}</b> / ${p.avg}` : '–'}</td>`; }).join('')}</tr>`);
     });
-    out.innerHTML = `<div class="cmp-h">선수 비교</div><div class="table-wrap"><table class="cmp"><thead><tr><th>항목</th>${th}</tr></thead><tbody>${rowsHtml.join('')}</tbody></table></div>`;
+    out.innerHTML = `<div class="cmp-h">${t('선수 비교')}</div><div class="table-wrap"><table class="cmp"><thead><tr><th>${t('항목')}</th>${th}</tr></thead><tbody>${rowsHtml.join('')}</tbody></table></div>`;
   }
 
   function list() { return Object.values(state.items); }

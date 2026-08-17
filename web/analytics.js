@@ -45,8 +45,8 @@ window.Analytics = (function () {
     }).join('') + `</svg>`;
   }
 
-  const SHORT = { air: '10m공기', rapid_fire: '25m속사', sport: '25m스포츠', standard: '25m표준', centre_fire: '25m센터', pistol_50: '50m' };
   const T = (typeof window !== 'undefined' && window.t) ? window.t : (s => s);
+  const SHORT = { air: T('10m공기'), rapid_fire: T('25m속사'), sport: T('25m스포츠'), standard: T('25m표준'), centre_fire: T('25m센터'), pistol_50: T('50m') };
   // 쉬운 말: 잘하는 정도 / 폼 방향
   const GRADE = top => top <= 10 ? [T('아주 잘해요'), '🔥', 'top'] : top <= 25 ? [T('잘하는 편'), '👍', 'good'] : top <= 50 ? [T('보통'), '🙂', 'mid'] : [T('더 힘내요'), '🌱', 'low'];
   const FORM = s => s > 0.15 ? [T('올라가는 중'), '📈', 'up'] : s < -0.15 ? [T('내려가는 중'), '📉', 'dn'] : [T('비슷하게 유지'), '➡️', 'flat'];
@@ -92,20 +92,20 @@ window.Analytics = (function () {
     const fMark = foreign.length ? foreign[Math.floor(foreign.length * 0.9)] : null; // 국제 상위10% 라인
     return `<svg class="scale" viewBox="0 0 ${W} ${H}">
       <line class="track" x1="4" y1="${H / 2}" x2="${W - 4}" y2="${H / 2}"/>
-      ${fMark != null ? `<line class="ref" x1="${fx(fMark).toFixed(1)}" y1="4" x2="${fx(fMark).toFixed(1)}" y2="${H - 4}"/><text class="rt" x="${fx(fMark).toFixed(1)}" y="${H - 1}">국제상위</text>` : ''}
+      ${fMark != null ? `<line class="ref" x1="${fx(fMark).toFixed(1)}" y1="4" x2="${fx(fMark).toFixed(1)}" y2="${H - 4}"/><text class="rt" x="${fx(fMark).toFixed(1)}" y="${H - 1}">${T('국제상위')}</text>` : ''}
       <circle class="me" cx="${fx(myVal).toFixed(1)}" cy="${H / 2}" r="4.5"/>
       <text class="mt" x="${fx(myVal).toFixed(1)}" y="9">${myVal}</text>
     </svg>`;
   }
 
   async function render(a, rows, container) {
-    const box = el('div', 'block', '<h3>심화 분석 <span class="sub2">종목별 폼 · 성장 · 결선 · 국제대비</span></h3><div class="muted">분석 중…</div>');
+    const box = el('div', 'block', `<h3>${T('심화 분석')} <span class="sub2">${T('종목별 폼 · 성장 · 결선 · 세계 비교')}</span></h3><div class="muted">${T('분석 중…')}</div>`);
     container.appendChild(box);
 
     // 개인 종목별 그룹
     const byDisc = new Map();
     rows.forEach(r => { if (r.event.team_type !== 'individual' || r.is_dnf || r.qual_total == null) return; (byDisc.get(r.event.discipline) || byDisc.set(r.event.discipline, []).get(r.event.discipline)).push(r); });
-    if (!byDisc.size) { box.querySelector('.muted').textContent = '개인 종목 기록이 없습니다.'; return; }
+    if (!byDisc.size) { box.querySelector('.muted').textContent = T('개인 종목 기록이 없습니다.'); return; }
 
     const radarItems = [], cards = [];
     for (const [disc, list] of byDisc) {
@@ -131,7 +131,7 @@ window.Analytics = (function () {
       const sAvg = sSum.map((v, i) => sCnt[i] ? v / sCnt[i] : null);
       const hasSeries = sAvg.every(v => v != null);
       let weakTxt = '';
-      if (hasSeries) { const m = mean(sAvg); const weak = sAvg.map((v, i) => v < m - 0.3 ? i + 1 : null).filter(Boolean); weakTxt = weak.length ? `${weak.join('·')}시리즈 약세` : '시리즈 편차 작음(안정)'; }
+      if (hasSeries) { const m = mean(sAvg); const weak = sAvg.map((v, i) => v < m - 0.3 ? i + 1 : null).filter(Boolean); weakTxt = weak.length ? `${weak.join('·')}${T('시리즈 약세')}` : T('시리즈 편차 작음(안정)'); }
       const is25 = ['sport', 'standard', 'centre_fire'].includes(disc);
 
       // 결선 평균 + 전환력
@@ -168,7 +168,7 @@ window.Analytics = (function () {
         <div class="an-line"><span class="al">${T('요즘 폼')}</span> ${spark(vals)} <span class="al2 form-${fcls}"><b>${femoji} ${fword}</b>${vals.length >= 4 ? ` · ${T('최근이 처음보다')} ${recent >= 0 ? '+' : ''}${fmt(recent, 1)}${T('점')}` : ''}</span></div>
         ${yearly.length >= 2 ? `<div class="an-line"><span class="al">${T('해마다 실력')}</span> ${growth(yearly)} <span class="al2 form-${gg[2]}"><b>${gg[1]} ${gg[0]}</b> <span class="an-dim">(${yearly[0].year}→${yearly[yearly.length - 1].year} ${yoY >= 0 ? '+' : ''}${fmt(yoY, 1)}${T('점')})</span></span></div>` : ''}
         <div class="an-line"><span class="al">${T('점수 안정')}</span> <b>${fmt(sd, 1)}</b> <span class="al2">${T('작을수록 늘 비슷하게 잘 쏴요')}</span></div>
-        ${hasSeries ? `<div class="an-line"><span class="al">${T('시리즈')}</span> ${seriesBars(sAvg)} <span class="al2">${weakTxt}${is25 ? ' · 1~3정밀/4~6속사' : ''}</span></div>` : ''}
+        ${hasSeries ? `<div class="an-line"><span class="al">${T('시리즈')}</span> ${seriesBars(sAvg)} <span class="al2">${weakTxt}${is25 ? ' · ' + T('1~3정밀/4~6속사') : ''}</span></div>` : ''}
         ${finalTxt}${clutch}
         <div class="an-line"><span class="al">${T('세계 비교')}</span> ${scaleBar(myBest, pool)} <span class="al2"><b>${wgemoji} ${wgword}</b> · ${T('상위')} ${pct != null ? pct + '%' : '–'}</span></div>
       </div>`);

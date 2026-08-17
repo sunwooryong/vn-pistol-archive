@@ -87,8 +87,8 @@
 
   async function doLogin() {
     const email = $('#au-email').value.trim(), pw = $('#au-pw').value;
-    if (!email || !pw) return loginForm('이메일과 비밀번호를 입력하세요.');
-    $('#au-login').textContent = '로그인 중…'; $('#au-login').disabled = true;
+    if (!email || !pw) return loginForm(T('이메일과 비밀번호를 입력하세요.'));
+    $('#au-login').textContent = T('로그인 중…'); $('#au-login').disabled = true;
     const { error } = await sb.auth.signInWithPassword({ email, password: pw });
     if (error) return loginForm(errMsg(error));
     boot();
@@ -96,20 +96,20 @@
 
   async function doSignup() {
     const name = $('#au-name').value.trim(), email = $('#au-email').value.trim(), pw = $('#au-pw').value;
-    if (!email || pw.length < 6) return signupForm('이메일과 6자 이상 비밀번호를 입력하세요.');
-    $('#au-signup').textContent = '가입 중…'; $('#au-signup').disabled = true;
+    if (!email || pw.length < 6) return signupForm(T('이메일과 6자 이상 비밀번호를 입력하세요.'));
+    $('#au-signup').textContent = T('가입 중…'); $('#au-signup').disabled = true;
     const { data, error } = await sb.auth.signUp({ email, password: pw, options: { data: { display_name: name } } });
     if (error) return signupForm(errMsg(error));
     // 이메일 확인이 꺼져 있으면 즉시 세션 발급됨
     if (data.session) { if (name) await sb.from('profiles').update({ display_name: name }).eq('id', data.user.id); boot(); }
-    else loginForm('가입 완료! 이메일 인증이 필요하면 메일을 확인한 뒤 로그인하세요.');
+    else loginForm(T('가입 완료! 이메일 인증이 필요하면 메일을 확인한 뒤 로그인하세요.'));
   }
 
   function errMsg(e) {
     const m = e.message || '';
-    if (/Invalid login/i.test(m)) return '이메일 또는 비밀번호가 올바르지 않습니다.';
-    if (/already registered/i.test(m)) return '이미 가입된 이메일입니다. 로그인하세요.';
-    if (/Email not confirmed/i.test(m)) return '이메일 인증이 필요합니다. 메일을 확인하세요.';
+    if (/Invalid login/i.test(m)) return T('이메일 또는 비밀번호가 올바르지 않습니다.');
+    if (/already registered/i.test(m)) return T('이미 가입된 이메일입니다. 로그인하세요.');
+    if (/Email not confirmed/i.test(m)) return T('이메일 인증이 필요합니다. 메일을 확인하세요.');
     return m;
   }
 
@@ -190,10 +190,10 @@
       t = setTimeout(async () => {
         const q = box.value.trim(); if (!q) { out.innerHTML = ''; return; }
         const rows = await DB.searchAthletes(q);
-        out.innerHTML = rows.length ? '' : '<div class="muted">일치하는 선수가 없습니다.</div>';
+        out.innerHTML = rows.length ? '' : `<div class="muted">${T('일치하는 선수가 없습니다.')}</div>`;
         rows.slice(0, 20).forEach(a => {
           const b = document.createElement('button'); b.className = 'au-result';
-          b.innerHTML = `<b>${esc(a.full_name)}</b> <span>${a.birth_year || '?'}년생 · ${esc(a.units || (a.is_foreign ? a.nationality : '-'))}</span>`;
+          b.innerHTML = `<b>${esc(a.full_name)}</b> <span>${a.birth_year || '?'}${T('년생')} · ${esc(a.units || (a.is_foreign ? a.nationality : '-'))}</span>`;
           b.onclick = () => requestLink(a);
           out.appendChild(b);
         });
@@ -222,21 +222,21 @@
 
   // ---------- 코치 승인 화면 (app.js에서 호출) ----------
   window.coachApprovals = async function (container) {
-    container.innerHTML = '<div class="muted">불러오는 중…</div>';
+    container.innerHTML = `<div class="muted">${T('불러오는 중…')}</div>`;
     const { data, error } = await sb.from('profiles').select('*').order('created_at', { ascending: false });
-    if (error) { container.innerHTML = '<div class="muted">권한 오류: ' + esc(error.message) + '</div>'; return; }
+    if (error) { container.innerHTML = `<div class="muted">${T('권한 오류')}: ` + esc(error.message) + '</div>'; return; }
     const pending = data.filter(p => p.requested_key && !p.approved);
     const linked = data.filter(p => p.approved && p.athlete_key);
-    let h = `<h3>승인 대기 <span class="sub2">${pending.length}건</span></h3>`;
-    if (!pending.length) h += '<div class="muted">대기 중인 신청이 없습니다.</div>';
+    let h = `<h3>${T('승인 대기')} <span class="sub2">${pending.length}${T('건')}</span></h3>`;
+    if (!pending.length) h += `<div class="muted">${T('대기 중인 신청이 없습니다.')}</div>`;
     pending.forEach(p => {
       h += `<div class="appr-row"><div><b>${esc(p.display_name || p.email)}</b>
-        <span class="appr-sub">${esc(p.email)} · 신청: ${esc((p.requested_key || '').split('|')[0])} (${esc((p.requested_key || '').split('|')[1] || '')})</span></div>
-        <div><button class="appr-ok" data-id="${p.id}" data-key="${esc(p.requested_key)}">승인</button>
-        <button class="appr-no" data-id="${p.id}">거절</button></div></div>`;
+        <span class="appr-sub">${esc(p.email)} · ${T('신청')}: ${esc((p.requested_key || '').split('|')[0])} (${esc((p.requested_key || '').split('|')[1] || '')})</span></div>
+        <div><button class="appr-ok" data-id="${p.id}" data-key="${esc(p.requested_key)}">${T('승인')}</button>
+        <button class="appr-no" data-id="${p.id}">${T('거절')}</button></div></div>`;
     });
-    h += `<h3 style="margin-top:16px">연결된 선수 <span class="sub2">${linked.length}명</span></h3>`;
-    linked.forEach(p => { h += `<div class="appr-row"><div><b>${esc(p.display_name || p.email)}</b> <span class="appr-sub">${esc((p.athlete_key || '').split('|')[0])}</span></div><button class="appr-unlink" data-id="${p.id}">해제</button></div>`; });
+    h += `<h3 style="margin-top:16px">${T('연결된 선수')} <span class="sub2">${linked.length}${T('명')}</span></h3>`;
+    linked.forEach(p => { h += `<div class="appr-row"><div><b>${esc(p.display_name || p.email)}</b> <span class="appr-sub">${esc((p.athlete_key || '').split('|')[0])}</span></div><button class="appr-unlink" data-id="${p.id}">${T('해제')}</button></div>`; });
     container.innerHTML = h;
     container.querySelectorAll('.appr-ok').forEach(b => b.onclick = async () => { await sb.from('profiles').update({ approved: true, athlete_key: b.dataset.key }).eq('id', b.dataset.id); window.coachApprovals(container); });
     container.querySelectorAll('.appr-no').forEach(b => b.onclick = async () => { await sb.from('profiles').update({ requested_key: null }).eq('id', b.dataset.id); window.coachApprovals(container); });
