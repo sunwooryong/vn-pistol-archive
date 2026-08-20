@@ -244,6 +244,7 @@ async function openCoachReport(year) {
     const car = (await DB.athleteCareer(a.id)).filter(r => r.competition.year === year);
     const ind = new Map();    // disc → {best,g,s,b,comps:Set,fin}
     const teamMed = new Map();// disc → {tg,ts,tb,comps:Set}
+    const medalRows = [];     // 대회별 메달 수집
     car.forEach(r => {
       comps.add(r.competition.name);
       const d = r.event.discipline;
@@ -259,13 +260,14 @@ async function openCoachReport(year) {
         if (r.team_medal === 'gold') o.tg++; else if (r.team_medal === 'silver') o.ts++; else o.tb++;
         o.comps.add(r.competition.name); teamMed.set(d, o);
       }
+      if (r.medal || r.team_medal) medalRows.push({ comp: r.competition.name, date: r.competition.date_start || '', scope: r.competition.scope, ev: eventLabel(r.event), medal: r.medal, team_medal: r.team_medal });
     });
     const rankMap = {};
     try { const R = await DB.regionalAnalysis(a.id, year); if (R) R.disciplines.forEach(dz => rankMap[dz.disc] = { nat: dz.natRank, natN: dz.natN, reg: dz.regRank, regN: dz.regN }); } catch (e) { }
     const im = { g: 0, s: 0, b: 0 }, tmv = { g: 0, s: 0, b: 0 };
     ind.forEach(o => { im.g += o.g; im.s += o.s; im.b += o.b; });
     teamMed.forEach(o => { tmv.g += o.tg; tmv.s += o.ts; tmv.b += o.tb; });
-    athletes.push({ name: a.full_name, gender: a.gender, group: it.group || t('기타'), ind, teamMed, rankMap, im, tmv, has: ind.size > 0 || teamMed.size > 0 });
+    athletes.push({ name: a.full_name, gender: a.gender, group: it.group || t('기타'), ind, teamMed, rankMap, im, tmv, medals: medalRows, has: ind.size > 0 || teamMed.size > 0 });
   }
   const now = new Date();
   const dstr = `${now.getFullYear()}. ${now.getMonth() + 1}. ${now.getDate()}`;
@@ -328,6 +330,27 @@ async function openCoachReport(year) {
       });
       if (teamSecs) teamSecs = `<div class="rc-sech">👥 ${t('단체전')}</div>` + teamSecs;
     }
+    // 대회별 획득 메달
+    const compMap = new Map();
+    list.forEach(x => x.medals.forEach(m => {
+      const hasInd = !!m.medal, hasTeam = team && !!m.team_medal;
+      if (!hasInd && !hasTeam) return;
+      const o = compMap.get(m.comp) || { date: m.date, scope: m.scope, items: [], g: 0, s: 0, b: 0 };
+      o.items.push({ name: x.name, gender: x.gender, ev: m.ev, medal: m.medal, team_medal: hasTeam ? m.team_medal : null });
+      const bump = c => { if (c === 'gold') o.g++; else if (c === 'silver') o.s++; else if (c === 'bronze') o.b++; };
+      if (hasInd) bump(m.medal); if (hasTeam) bump(m.team_medal);
+      compMap.set(m.comp, o);
+    }));
+    let compMed = '';
+    const compList = [...compMap.entries()].sort((a, b) => (b[1].date || '').localeCompare(a[1].date || ''));
+    if (compList.length) {
+      compMed = `<div class="rc-sech">🏅 ${t('대회별 획득 메달')}</div>`;
+      compList.forEach(([name, o]) => {
+        const rows = o.items.map(it => `<tr><td class="rc-nm">${esc(it.name)}${it.gender ? ` <span class="g g-${it.gender}">${GENDER[it.gender]}</span>` : ''}</td><td>${esc(it.ev)}</td><td class="rc-md">${it.medal ? medalBadge(it.medal) : ''}${it.team_medal ? ` ${medalBadge(it.team_medal)}<span class="tmlbl">${t('단체')}</span>` : ''}</td></tr>`).join('');
+        compMed += `<div class="rc-disc"><div class="rc-disc-h">${(o.date || '').replace(/-/g, '.')} ${esc(name)} <span class="rc-gn">${medStr(o.g, o.s, o.b)}</span></div>
+          <table class="rc-tab"><thead><tr><th>${t('선수')}</th><th>${t('종목')}</th><th>${t('메달')}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      });
+    }
     const empty = !list.length;
     document.getElementById('rv-doc').innerHTML = `
       <div class="rc-head">
@@ -344,7 +367,7 @@ async function openCoachReport(year) {
         <div><i>${t('결선 진출')}</i><b>${tot.fin}${t('회')}</b></div>
       </div>
       ${empty ? `<div class="muted" style="padding:24px;text-align:center">${t('관리 선수를 즐겨찾기(☆)로 등록하세요.')}</div>`
-        : `<div class="rc-sech">📋 ${t('관리 선수 명단')}</div>${roster}${indSecs ? `<div class="rc-sech">🎯 ${t('개인전')}</div>${indSecs}` : ''}${teamSecs}`}
+        : `<div class="rc-sech">📋 ${t('관리 선수 명단')}</div>${roster}${compMed}${indSecs ? `<div class="rc-sech">🎯 ${t('개인전')}</div>${indSecs}` : ''}${teamSecs}`}
       <div class="rc-foot">
         <div class="rc-note">${t('본 증명서는 베트남 사격연맹 공개 기록을 기준으로 자동 집계되었습니다.')} · ${t('발급일')} ${dstr}</div>
         <div class="rc-sign"><span class="rc-signname">RYONG</span><span class="rc-signlab">${t('작성')}</span></div>
