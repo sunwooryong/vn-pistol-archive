@@ -1,11 +1,11 @@
 {
   "source": "https://docs.google.com/spreadsheets/d/1MATLspvOeL4MFObWUIiYqjKkw-PkEEQ7IqXCw-kRheQ/export?format=csv&gid=1558133737",
-  "generated_from_rows": 17012,
+  "generated_from_rows": 17013,
   "loaded_results": 5301,
   "dropped_vie": 126,
   "min_year": 2000,
-  "generated_at": "2026-08-20",
-  "generated_at_full": "2026-08-20T19:46:49.050Z",
+  "generated_at": "2026-08-21",
+  "generated_at_full": "2026-08-21T19:38:43.240Z",
   "counts": {
     "competitions": 37,
     "events": 236,
