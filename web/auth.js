@@ -41,8 +41,8 @@
       <div class="landing">
         <div class="landing-hero">
           <div class="brand-rings hero-rings">${window.ringsSVG || ''}</div>
-          <h1 class="brand-title">${T('권총기록 아카이브')}</h1>
-          <p class="auth-sub">${T('권총 · 베트남 사격연맹')}</p>
+          <h1 class="brand-title">${T('사격기록 아카이브')}</h1>
+          <p class="auth-sub">${T('사격 · 베트남 사격연맹')}</p>
         </div>
         <div class="landing-main">
           <div class="auth-card">

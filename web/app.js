@@ -2,8 +2,13 @@
 // =====================================================================
 //  검색 UI — 탭: 선수 / 대회별 / 입상실적 / 랭킹
 // =====================================================================
-const DISC = { air: t('10m 공기권총'), rapid_fire: t('25m 속사권총'), sport: t('25m 스포츠권총'),
-  standard: t('25m 표준권총'), centre_fire: t('25m 센터파이어'), pistol_50: t('50m 권총') };
+const DISC = {
+  air: t('10m 공기권총'), rapid_fire: t('25m 속사권총'), sport: t('25m 스포츠권총'),
+  standard: t('25m 표준권총'), centre_fire: t('25m 센터파이어'), pistol_50: t('50m 권총'),
+  air_rifle: t('10m 공기소총'), air_rifle_std: t('10m 공기소총 보급'),
+  rifle_3p: t('50m 소총 3자세'), rifle_prone: t('50m 소총 복사'),
+  rt: t('10m 이동표적'), rt_mix: t('10m 이동표적 혼합'), rt_std: t('10m 이동표적 표준'),
+};
 const AGE = { senior: '', junior: t('주니어'), youth: t('유소년'), u16: 'U16', u18: 'U18' };
 // 대회 유형 배지: 전체연령(개방) vs 연령부
 const ageChip = e => {
@@ -75,7 +80,7 @@ async function renderHome() {
     `<div class="bc-hero">
        <div class="bc-hero-rings">${window.ringsSVG || ''}</div>
        <div class="bc-hero-txt">
-         <div class="bc-kicker">${t('권총 · 베트남 사격연맹')}</div>
+         <div class="bc-kicker">${t('사격 · 베트남 사격연맹')}</div>
          <h2 class="bc-hero-title"><span class="bc-live"></span>${year} ${t('대회 일정')}</h2>
          <div class="bc-hero-date">${dateStr}</div>
          <div class="bc-fresh" id="bc-fresh"></div>
@@ -286,7 +291,7 @@ async function openCoachReport(year) {
   document.getElementById('rv-print').onclick = () => window.print();
 
   // 선수별 집계 (종목별로 나눔)
-  const DORDER = ['air', 'rapid_fire', 'sport', 'standard', 'centre_fire', 'pistol_50'];
+  const DORDER = ['air', 'rapid_fire', 'sport', 'standard', 'centre_fire', 'pistol_50', 'air_rifle', 'air_rifle_std', 'rifle_3p', 'rifle_prone', 'rt', 'rt_mix', 'rt_std'];
   const comps = new Set();
   const athletes = [];
   for (const it of favs) {
@@ -405,7 +410,7 @@ async function openCoachReport(year) {
     document.getElementById('rv-doc').innerHTML = `
       <div class="rc-head">
         <div class="rc-rings">${window.ringsSVG || ''}</div>
-        <div class="rc-kick">${t('권총 · 베트남 사격연맹')}</div>
+        <div class="rc-kick">${t('사격 · 베트남 사격연맹')}</div>
         <h1 class="rc-title">${year} ${t('지도 실적 증명서')}</h1>
         <div class="rc-coach">${t('지도자')}: <b>${esc(coach)}</b> · <span class="rc-scope">${team ? t('개인+단체') : t('개인전만')}</span></div>
       </div>
@@ -1234,8 +1239,8 @@ window.startApp = function (opts) {
     const k = TABS[tab.dataset.tab]; if (k) tab.textContent = t(k);
     tab.onclick = () => show(tab.dataset.tab);
   });
-  const h1 = document.querySelector('header h1'); if (h1) h1.innerHTML = `<span class="brand-rings">${window.ringsSVG || ''}</span><span class="brand-title">${t('권총기록 아카이브')}</span>`;
-  const tag = document.querySelector('.tag'); if (tag) tag.textContent = t('권총 · 베트남 사격연맹');
+  const h1 = document.querySelector('header h1'); if (h1) h1.innerHTML = `<span class="brand-rings">${window.ringsSVG || ''}</span><span class="brand-title">${t('사격기록 아카이브')}</span>`;
+  const tag = document.querySelector('.tag'); if (tag) tag.textContent = t('사격 · 베트남 사격연맹');
   document.querySelector('#ath-q')?.setAttribute('placeholder', t('선수명 검색 (예: Phạm Quang Huy)'));
   // 역할별 탭 노출
   const showTab = (name, on) => { const el2 = document.querySelector(`.tab[data-tab="${name}"]`); if (el2) el2.hidden = !on; };

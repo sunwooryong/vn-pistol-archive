@@ -6,8 +6,12 @@
 (function () {
   const VI = {
     // 공통 / 헤더
-    '권총기록 아카이브': 'Kho dữ liệu súng ngắn',
-    '권총 · 베트남 사격연맹': 'Súng ngắn · LĐ Bắn súng Việt Nam',
+    '사격기록 아카이브': 'Kho dữ liệu bắn súng',
+    '사격 · 베트남 사격연맹': 'Bắn súng · LĐ Bắn súng Việt Nam',
+    // 소총·러닝타겟 종목
+    '10m 공기소총': '10m súng trường hơi', '10m 공기소총 보급': '10m STH phổ thông',
+    '50m 소총 3자세': '50m ST 3 tư thế', '50m 소총 복사': '50m ST nằm',
+    '10m 이동표적': '10m bia di động', '10m 이동표적 혼합': '10m bia di động hỗn hợp', '10m 이동표적 표준': '10m bia di động tiêu chuẩn',
     '4주 이내': 'Trong 4 tuần', '4주 이내 예정 대회가 없습니다.': 'Không có giải trong 4 tuần tới.',
     '자동 갱신': 'Tự động cập nhật', '기준': 'Cập nhật', '30분마다 자동 갱신': 'Tự động cập nhật mỗi 30 phút',
     '연맹 원본 페이지': 'Trang LĐ Bắn súng', '연맹 원본 페이지 열기': 'Mở trang LĐ Bắn súng',

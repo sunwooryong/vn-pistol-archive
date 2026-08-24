@@ -1,7 +1,7 @@
 {
-  "name": "베트남 권총기록 아카이브",
+  "name": "베트남 사격기록 아카이브",
   "short_name": "권총기록",
-  "description": "권총 대회기록 조회·분석",
+  "description": "사격 대회기록 조회·분석",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
