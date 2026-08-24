@@ -114,13 +114,19 @@
       async stageAnalysis(athleteId, year) {
         const d = await ensure();
         const STAGES = {
+          // 권총 25m
           sport: [['완사', [0, 1, 2]], ['속사', [3, 4, 5]]],
           centre_fire: [['완사', [0, 1, 2]], ['속사', [3, 4, 5]]],
           standard: [['150″', [0, 1]], ['20″', [2, 3]], ['10″', [4, 5]]],
           rapid_fire: [['8″', [0, 3]], ['6″', [1, 4]], ['4″', [2, 5]]],
+          // 소총 50m 3자세 (무릎→복사→입사)
+          rifle_3p: [['무릎', [0, 1]], ['복사', [2, 3]], ['입사', [4, 5]]],
+          // 러닝타겟 (슬로우/패스트)
+          rt: [['슬로우', [0, 1, 2]], ['패스트', [3, 4, 5]]],
+          rt_mix: [['슬로우', [0, 1]], ['패스트', [2, 3]]],
         };
         const serScores = r => (d.serByRes.get(r.id) || []).slice().sort((a, b) => a.series_no - b.series_no).map(s => s.score);
-        const stageVals = (disc, ss) => { const cfg = STAGES[disc]; if (!cfg || ss.length < 6) return null; return cfg.map(([k, idx]) => ({ key: k, avg: idx.reduce((s, i) => s + ss[i], 0) / idx.length })); };
+        const stageVals = (disc, ss) => { const cfg = STAGES[disc]; if (!cfg) return null; const need = Math.max(...cfg.flatMap(([, idx]) => idx)) + 1; if (ss.length < need) return null; return cfg.map(([k, idx]) => ({ key: k, avg: idx.reduce((s, i) => s + ss[i], 0) / idx.length })); };
         // 국내 선수별·종목별·단계별 최고 단계평균 (전국 순위용)
         const bank = {};
         d.results.forEach(r => {

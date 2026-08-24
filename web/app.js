@@ -9,6 +9,16 @@ const DISC = {
   rifle_3p: t('50m 소총 3자세'), rifle_prone: t('50m 소총 복사'),
   rt: t('10m 이동표적'), rt_mix: t('10m 이동표적 혼합'), rt_std: t('10m 이동표적 표준'),
 };
+// 무기별 그룹 (종목 드롭다운 optgroup)
+const WEAPON_GROUP = [
+  ['권총', ['air', 'rapid_fire', 'sport', 'standard', 'centre_fire', 'pistol_50']],
+  ['소총', ['air_rifle', 'air_rifle_std', 'rifle_3p', 'rifle_prone']],
+  ['이동표적', ['rt', 'rt_mix', 'rt_std']],
+];
+function discOptions(allLabel) {
+  return (allLabel != null ? `<option value="">${allLabel}</option>` : '') +
+    WEAPON_GROUP.map(([w, ds]) => `<optgroup label="${esc(t(w))}">` + ds.filter(x => DISC[x]).map(x => `<option value="${x}">${esc(DISC[x])}</option>`).join('') + `</optgroup>`).join('');
+}
 const AGE = { senior: '', junior: t('주니어'), youth: t('유소년'), u16: 'U16', u18: 'U18' };
 // 대회 유형 배지: 전체연령(개방) vs 연령부
 const ageChip = e => {
@@ -793,7 +803,7 @@ async function renderRegional(a, box) {
 
 // 25m 단계 분석 (완사·속사 / 150″·20″·10″ / 8″·6″·4″)
 async function render25mStages(a, box) {
-  box.innerHTML = `<h3>${t('25m 단계 분석')} <span class="sub2">${t('완사·속사·시간단계')} · ${t('전체 기간')}</span></h3><div class="muted">${t('계산 중…')}</div>`;
+  box.innerHTML = `<h3>${t('단계 분석')} <span class="sub2">${t('자세·시간·완속 단계')} · ${t('전체 기간')}</span></h3><div class="muted">${t('계산 중…')}</div>`;
   let data = [];
   try { data = await DB.stageAnalysis(a.id); } catch (e) { }
   if (!data.length) { box.innerHTML = ''; return; }
@@ -824,7 +834,7 @@ async function render25mStages(a, box) {
     }
     h += `</div>`;
   });
-  box.innerHTML = `<h3>${t('25m 단계 분석')} <span class="sub2">${t('완사·속사·시간단계')} · ${t('전체 기간')}</span></h3><div class="rgn-help">${t('한 종목 안에서 시간·방식이 다른 단계로 나눠 강약을 봐요. (10발 평균)')}</div>` + h;
+  box.innerHTML = `<h3>${t('단계 분석')} <span class="sub2">${t('자세·시간·완속 단계')} · ${t('전체 기간')}</span></h3><div class="rgn-help">${t('한 종목 안에서 시간·방식이 다른 단계로 나눠 강약을 봐요. (10발 평균)')}</div>` + h;
 }
 
 async function renderRankings(a, rows, box) {
@@ -1098,7 +1108,7 @@ init.medals = async () => {
   const yearSel = $('#med-year'), discSel = $('#med-disc'), scopeSel = $('#med-scope'), out = $('#med-out'), cnt = $('#med-count');
   const years = await DB.years();
   yearSel.innerHTML = `<option value="">${t('전체 연도')}</option>` + years.map(y => `<option>${y}</option>`).join('');
-  discSel.innerHTML = `<option value="">${t('전체 종목')}</option>` + Object.entries(DISC).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+  discSel.innerHTML = discOptions(t('전체 종목'));
   scopeSel.innerHTML = `<option value="">${t('국내+국제')}</option><option value="domestic">${t('국내')}</option><option value="international">${t('국제')}</option>`;
   async function run() {
     out.innerHTML = `<div class="muted">${t('불러오는 중…')}</div>`;
@@ -1159,7 +1169,7 @@ init.medals = async () => {
 // =====================================================================
 init.rank = async () => {
   const discSel = $('#rk-disc'), gSel = $('#rk-gender'), ageSel = $('#rk-age'), out = $('#rk-out'), cnt = $('#rk-count');
-  discSel.innerHTML = Object.entries(DISC).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+  discSel.innerHTML = discOptions(null);
   gSel.innerHTML = `<option value="">${t('남/여')}</option><option value="M">${t('남자부')}</option><option value="W">${t('여자부')}</option>`;
   ageSel.innerHTML = `<option value="">${t('전체 연령')}</option>` +
     [['senior', t('일반')], ['junior', t('주니어')], ['youth', t('유소년')], ['u18', 'U18'], ['u16', 'U16']].map(([k, v]) => `<option value="${k}">${v}</option>`).join('');

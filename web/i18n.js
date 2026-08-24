@@ -12,6 +12,10 @@
     '10m 공기소총': '10m súng trường hơi', '10m 공기소총 보급': '10m STH phổ thông',
     '50m 소총 3자세': '50m ST 3 tư thế', '50m 소총 복사': '50m ST nằm',
     '10m 이동표적': '10m bia di động', '10m 이동표적 혼합': '10m bia di động hỗn hợp', '10m 이동표적 표준': '10m bia di động tiêu chuẩn',
+    // 무기 그룹 / 단계(자세·주행)
+    '권총': 'Súng ngắn', '소총': 'Súng trường', '이동표적': 'Bia di động',
+    '단계 분석': 'Phân tích giai đoạn', '자세·시간·완속 단계': 'Tư thế · thời gian · chậm/nhanh',
+    '무릎': 'Quỳ', '복사': 'Nằm', '입사': 'Đứng', '슬로우': 'Chậm', '패스트': 'Nhanh',
     '4주 이내': 'Trong 4 tuần', '4주 이내 예정 대회가 없습니다.': 'Không có giải trong 4 tuần tới.',
     '자동 갱신': 'Tự động cập nhật', '기준': 'Cập nhật', '30분마다 자동 갱신': 'Tự động cập nhật mỗi 30 phút',
     '연맹 원본 페이지': 'Trang LĐ Bắn súng', '연맹 원본 페이지 열기': 'Mở trang LĐ Bắn súng',
