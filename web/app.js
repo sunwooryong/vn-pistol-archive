@@ -193,7 +193,9 @@ async function renderMyAthletesComps(box, year) {
       `</span>`;
   };
   box.innerHTML = `<h3>${t('관리 선수 일정·기록')} <span class="sub2">${cards.length}</span>
-      <button class="report-btn" id="coach-report-btn">🖨️ ${t('지도 실적 증명')}</button></h3>` +
+      <button class="report-btn ghost" id="team-ov-btn">📊 ${t('팀 종합')}</button>
+      <button class="report-btn" id="coach-report-btn">🖨️ ${t('지도 실적 증명')}</button></h3>
+    <div id="team-overview" class="team-ov" hidden></div>` +
     cards.map(c => `
       <div class="ma-card">
         <div class="ma-top">
@@ -217,6 +219,54 @@ async function renderMyAthletesComps(box, year) {
     };
   });
   const rb = $('#coach-report-btn'); if (rb) rb.onclick = () => openCoachReport(year);
+  const tb = $('#team-ov-btn'); const tov = $('#team-overview');
+  if (tb && tov) tb.onclick = async () => {
+    if (!tov.hidden) { tov.hidden = true; tb.classList.remove('on'); return; }
+    tov.hidden = false; tb.classList.add('on');
+    if (!tov.dataset.done) { tov.dataset.done = '1'; await renderTeamOverview(tov, year); }
+  };
+}
+
+// 팀 종합 대시보드 (코치): 관리 선수 전원 한눈 — 주 종목·최고·전국순위·폼·메달
+async function renderTeamOverview(box, year) {
+  box.innerHTML = `<div class="muted">${t('계산 중…')}</div>`;
+  const favs = (window.Fav && Fav.list()) || [];
+  if (!favs.length) { box.innerHTML = `<div class="muted">${t('관리 선수를 즐겨찾기(☆)로 등록하세요.')}</div>`; return; }
+  const dt = r => r.match_date || r.competition.date_start || '';
+  const scored = r => !r.is_dnf && r.qual_total != null;
+  const data = [];
+  for (const it of favs) {
+    const a = await DB.athleteByKey(it.key); if (!a) continue;
+    const car = await DB.athleteCareer(a.id);
+    const cnt = new Map();
+    car.forEach(r => { if (r.event.team_type === 'individual' && scored(r)) cnt.set(r.event.discipline, (cnt.get(r.event.discipline) || 0) + 1); });
+    let mainDisc = null, mx = 0; for (const [d, c] of cnt) if (c > mx) { mx = c; mainDisc = d; }
+    let best = null, form = '▬', formCls = 'flat';
+    if (mainDisc) {
+      const ml = car.filter(r => r.event.discipline === mainDisc && r.event.team_type === 'individual' && scored(r)).sort((x, y) => (dt(x)).localeCompare(dt(y)));
+      best = Math.max(...ml.map(r => r.qual_total));
+      if (ml.length >= 4) { const vals = ml.map(r => r.qual_total), n = vals.length, xm = (n - 1) / 2, ym = vals.reduce((s, v) => s + v, 0) / n; let num = 0, den = 0; vals.forEach((y, x) => { num += (x - xm) * (y - ym); den += (x - xm) ** 2; }); const sl = den ? num / den : 0; if (sl > 0.15) { form = '▲'; formCls = 'up'; } else if (sl < -0.15) { form = '▼'; formCls = 'dn'; } }
+    }
+    let nat = null; try { const R = await DB.regionalAnalysis(a.id, year); if (R) { const dz = R.disciplines.find(d => d.disc === mainDisc) || R.disciplines[0]; if (dz) nat = `${dz.natRank}/${dz.natN}`; } } catch (e) { }
+    const m = { g: 0, s: 0, b: 0 }, tmv = { g: 0, s: 0, b: 0 };
+    car.filter(r => r.competition.year === year).forEach(r => { if (r.medal === 'gold') m.g++; else if (r.medal === 'silver') m.s++; else if (r.medal === 'bronze') m.b++; if (r.team_medal === 'gold') tmv.g++; else if (r.team_medal === 'silver') tmv.s++; else if (r.team_medal === 'bronze') tmv.b++; });
+    data.push({ name: a.full_name, gender: a.gender, group: it.group, key: it.key, mainDisc, best, nat, form, formCls, m, tmv });
+  }
+  data.sort((x, y) => (y.best || 0) - (x.best || 0));
+  const medStr = (g, s, b) => [g && `${medalBadge('gold')}${g}`, s && `${medalBadge('silver')}${s}`, b && `${medalBadge('bronze')}${b}`].filter(Boolean).join(' ') || '–';
+  box.innerHTML = `<div class="table-wrap"><table class="team-tab">
+    <thead><tr><th>${t('선수')}</th><th>${t('주 종목')}</th><th>${t('최고')}</th><th>${t('전국')}</th><th>${t('폼')}</th><th>${t('메달')}</th></tr></thead><tbody>` +
+    data.map(x => `<tr><td class="tt-nm"><button class="lnk" data-akey="${esc(x.key || '')}">${esc(x.name)}</button>${x.gender ? ` <span class="g g-${x.gender}">${GENDER[x.gender]}</span>` : ''}${x.group ? `<i>${esc(t(x.group))}</i>` : ''}</td>
+      <td>${x.mainDisc ? esc(DISC[x.mainDisc] || x.mainDisc) : '–'}</td>
+      <td class="c"><b>${x.best != null ? x.best : '–'}</b></td>
+      <td class="c">${x.nat || '–'}</td>
+      <td class="c form-${x.formCls}">${x.form}</td>
+      <td class="tt-md">${medStr(x.m.g, x.m.s, x.m.b)}${(x.tmv.g || x.tmv.s || x.tmv.b) ? ` <span class="tt-t">${medStr(x.tmv.g, x.tmv.s, x.tmv.b)}</span>` : ''}</td></tr>`).join('') +
+    `</tbody></table></div>`;
+  box.querySelectorAll('.lnk[data-akey]').forEach(btn => btn.onclick = async () => {
+    const a = await DB.athleteByKey(btn.dataset.akey); if (!a) return;
+    show('athlete'); renderCareer({ id: a.id, ...a }, $('#ath-detail'), $('#ath-list'));
+  });
 }
 
 // 2026 지도 실적 증명서 (인쇄 가능) — 개인전 기본, 단체전 포함은 선택
@@ -474,6 +524,69 @@ init.athlete = () => {
   });
 };
 
+// 선수 요약 대시보드 (상단): 오늘의 훈련 포인트 · 개인 최고기록(PB) · 다음 대회
+async function renderAthleteDashboard(a, rows, box) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const p2 = n => String(n).padStart(2, '0');
+  const iso = `${today.getFullYear()}-${p2(today.getMonth() + 1)}-${p2(today.getDate())}`;
+  const curY = today.getFullYear();
+  const daysTo = d => Math.round((new Date(d + 'T00:00:00') - today) / 86400000);
+  const scored = r => !r.is_dnf && r.qual_total != null;
+  const dt = r => r.match_date || r.competition.date_start || '';
+
+  // 개인 최고기록(PB) — 종목별
+  const pbMap = new Map();
+  rows.forEach(r => { if (r.event.team_type !== 'individual' || !scored(r)) return; const d = r.event.discipline; const o = pbMap.get(d); if (!o || r.qual_total > o.best) pbMap.set(d, { best: r.qual_total, date: dt(r), year: r.competition.year }); });
+  const pbs = [...pbMap.entries()].sort((x, y) => y[1].best - x[1].best);
+
+  // 다음 대회 (점수 미입력 & 대회 종료일 이후) — 중복 제거
+  const seen = new Set();
+  const upcoming = rows.filter(r => !scored(r) && ((r.competition.date_end || r.competition.date_start || '') >= iso))
+    .sort((x, y) => (dt(x)).localeCompare(dt(y)))
+    .filter(r => { const k = r.competition.name + '|' + eventLabel(r.event); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 6);
+
+  // 오늘의 훈련 포인트 (약점 Top3)
+  const tips = [];
+  let stageData = []; try { stageData = await DB.stageAnalysis(a.id); } catch (e) { }
+  stageData.forEach(dz => {
+    if (dz.stages.length < 2) return;
+    const worst = dz.stages.reduce((m, s) => s.avg < m.avg ? s : m), best = dz.stages.reduce((m, s) => s.avg > m.avg ? s : m);
+    tips.push({ sev: (best.avg - worst.avg) * 3, ico: '🎯', txt: `${DISC[dz.disc] || dz.disc} · <b>${t(worst.key)}</b> ${t('보강')} (${worst.avg.toFixed(1)} · ${t('전국')} ${worst.natRank}${t('위')})` });
+  });
+  const byDisc = new Map();
+  rows.forEach(r => { if (r.event.team_type !== 'individual' || !scored(r)) return; (byDisc.get(r.event.discipline) || byDisc.set(r.event.discipline, []).get(r.event.discipline)).push(r); });
+  byDisc.forEach((list, disc) => {
+    const sSum = new Array(6).fill(0), sCnt = new Array(6).fill(0);
+    list.forEach(r => (r.series || []).forEach(s => { if (s.series_no >= 1 && s.series_no <= 6) { sSum[s.series_no - 1] += s.score; sCnt[s.series_no - 1]++; } }));
+    const sAvg = sSum.map((v, i) => sCnt[i] ? v / sCnt[i] : null);
+    if (['air', 'pistol_50'].includes(disc) && sAvg.every(v => v != null)) {
+      const mean = sAvg.reduce((s, v) => s + v, 0) / 6, wi = sAvg.indexOf(Math.min(...sAvg)), gap = mean - sAvg[wi];
+      if (gap > 0.5) tips.push({ sev: gap * 2, ico: '📉', txt: `${DISC[disc] || disc} · ${wi + 1}${t('번째 시리즈 집중')} (${sAvg[wi].toFixed(1)})` });
+    }
+    const sorted = list.slice().sort((x, y) => (dt(x)).localeCompare(dt(y)));
+    if (sorted.length >= 4) {
+      const vals = sorted.map(r => r.qual_total), n = vals.length, xm = (n - 1) / 2, ym = vals.reduce((s, v) => s + v, 0) / n;
+      let num = 0, den = 0; vals.forEach((y, x) => { num += (x - xm) * (y - ym); den += (x - xm) ** 2; }); const slope = den ? num / den : 0;
+      if (slope < -0.2) tips.push({ sev: -slope * 4, ico: '⚠️', txt: `${DISC[disc] || disc} · ${t('요즘 폼 하락 — 기본기 점검')}` });
+    }
+  });
+  tips.sort((x, y) => y.sev - x.sev);
+  const top = tips.slice(0, 3);
+
+  let h = `<h3>${t('선수 요약')} <span class="sub2">${t('한눈에 보기')}</span></h3>`;
+  if (top.length) h += `<div class="dash-card focus"><div class="dash-h">🎯 ${t('오늘의 훈련 포인트')}</div>` +
+    top.map((tp, i) => `<div class="focus-item"><span class="focus-n">${i + 1}</span><span class="focus-ico">${tp.ico}</span><span class="focus-tx">${tp.txt}</span></div>`).join('') + `</div>`;
+  if (pbs.length) h += `<div class="dash-card"><div class="dash-h">🏆 ${t('개인 최고기록')}</div><div class="pb2-grid">` +
+    pbs.map(([d, o]) => `<div class="pb2${o.year === curY ? ' recent' : ''}"><div class="pb2-d">${esc(DISC[d] || d)}</div><div class="pb2-v"><b>${o.best}</b>${o.year === curY ? ` <span class="pb2-new">${t('올해')}</span>` : ''}</div><div class="pb2-y">${(o.date || '').slice(0, 4)}</div></div>`).join('') + `</div></div>`;
+  if (upcoming.length) h += `<div class="dash-card"><div class="dash-h">📅 ${t('다가오는 경기')}</div>` +
+    upcoming.map(r => { const d = dt(r), dd = d >= iso ? `D-${Math.max(0, daysTo(d))}` : ''; const meta = slotMeta(r);
+      return `<div class="dash-up"><span class="du-d">${(d || '').slice(5).replace('-', '.')}${r.match_time ? ` <b>${esc(r.match_time)}</b>` : ''}${dd ? ` <span class="du-dd">${dd}</span>` : ''}</span>
+        <span class="du-e">${esc(eventLabel(r.event))}</span>
+        <span class="du-c">${esc(r.competition.name)}${r.competition.location ? ` · 📍${esc(r.competition.location)}` : ''}${meta ? ` <span class="ma-slot">${meta}</span>` : ''}</span></div>`; }).join('') + `</div>`;
+  if (!top.length && !pbs.length && !upcoming.length) { box.innerHTML = ''; return; }
+  box.innerHTML = h;
+}
+
 async function renderCareer(a, detail, list) {
   if (list) list.innerHTML = '';
   detail.innerHTML = `<div class="muted">${t('불러오는 중…')}</div>`;
@@ -510,6 +623,11 @@ async function buildCareer(a, rows, detail) {
   const starSrc = a.identity_key ? a : (a0.identity_key ? { ...a0 } : null);
   if (starSrc && window.Fav) { const st = Fav.starButton(starSrc); st.classList.add('head-star'); head.appendChild(st); }
   detail.appendChild(head);
+
+  // 선수 요약 대시보드: PB · 다음 대회 · 오늘의 훈련 포인트
+  const dashBox = el('div', 'block');
+  detail.appendChild(dashBox);
+  renderAthleteDashboard(a, rows, dashBox);
 
   // 해당 연도 랭킹 (비동기로 채움)
   const rankBox = el('div', 'block', `<h3>${RANK_YEAR} ${t('랭킹')} <span class="sub2">${t('국내 대회 · 종목별')}</span></h3><div class="muted">${t('계산 중…')}</div>`);

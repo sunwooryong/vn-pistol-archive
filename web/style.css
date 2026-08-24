@@ -693,6 +693,20 @@ svg.rings { height: 19px; width: auto; display: block; }
 .report-btn { margin-left: auto; font-size: 11.5px; font-weight: 700; color: #fff; background: var(--navy);
   border: 0; border-radius: 8px; padding: 6px 11px; white-space: nowrap; }
 .report-btn:active { transform: scale(.97); }
+.report-btn.ghost { background: var(--card2); color: var(--acc2); border: 1px solid var(--line); }
+.report-btn.ghost.on { background: var(--acc); color: #fff; border-color: transparent; }
+/* 팀 종합 대시보드 */
+.team-ov { margin: 4px 0 12px; }
+.team-ov[hidden] { display: none; }
+table.team-tab { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+table.team-tab th { text-align: left; color: var(--mut); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; padding: 6px 7px; background: var(--card2); border-bottom: 1.5px solid var(--line); }
+table.team-tab td { padding: 7px 7px; border-bottom: 1px solid var(--line2); vertical-align: middle; }
+table.team-tab td.c { text-align: center; font-variant-numeric: tabular-nums; }
+table.team-tab tbody tr:nth-child(even) { background: color-mix(in srgb, var(--card2) 45%, transparent); }
+.tt-nm { font-weight: 700; } .tt-nm i { font-style: normal; font-size: 9.5px; color: var(--mut); margin-left: 4px; }
+.tt-nm .lnk { font-weight: 700; }
+.tt-md .tt-t { opacity: .7; } .tt-md { white-space: nowrap; }
+td.form-up { color: var(--dom); font-weight: 800; } td.form-dn { color: #c0453a; font-weight: 800; } td.form-flat { color: var(--mut); }
 
 /* 지도 실적 증명서 (인쇄) */
 .report-view { position: fixed; inset: 0; z-index: 100; background: var(--bg); overflow: auto; }
@@ -751,6 +765,29 @@ table.rc-tab tbody tr:nth-child(even) { background: #fafbfd; }
   .rv-doc { margin: 0 !important; max-width: none !important; border: 0 !important; box-shadow: none !important; padding: 6px 4px !important; }
   .rc-disc, table.rc-tab tr { break-inside: avoid; }
 }
+
+/* 선수 요약 대시보드 (상단) */
+.dash-card { border: 1px solid var(--line); border-radius: var(--r); background: var(--card); box-shadow: var(--sh-sm); padding: 11px 13px; margin: 9px 0; }
+.dash-card.focus { border-color: color-mix(in srgb, var(--gold) 45%, var(--line)); background: color-mix(in srgb, var(--gold) 5%, var(--card)); }
+.dash-h { font-size: 12px; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+.focus-item { display: grid; grid-template-columns: 20px 20px 1fr; gap: 8px; align-items: baseline; padding: 5px 0; border-bottom: 1px dashed var(--line2); font-size: 13px; }
+.focus-item:last-child { border-bottom: 0; }
+.focus-n { width: 18px; height: 18px; line-height: 18px; text-align: center; border-radius: 50%; background: var(--gold); color: #fff; font-size: 10px; font-weight: 800; }
+.focus-ico { font-size: 14px; }
+.focus-tx { line-height: 1.4; } .focus-tx b { color: #c0453a; }
+.pb2-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 7px; }
+.pb2 { background: var(--card2); border: 1px solid var(--line); border-radius: 9px; padding: 7px 9px; }
+.pb2.recent { border-color: color-mix(in srgb, var(--dom) 45%, var(--line)); background: color-mix(in srgb, var(--dom) 7%, var(--card2)); }
+.pb2-d { font-size: 10.5px; color: var(--mut); font-weight: 700; }
+.pb2-v { font-size: 19px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.pb2-new { font-size: 8.5px; font-weight: 800; color: #fff; background: var(--dom); border-radius: 4px; padding: 1px 5px; vertical-align: middle; }
+.pb2-y { font-size: 10px; color: var(--mut); }
+.dash-up { display: flex; flex-direction: column; gap: 1px; padding: 6px 0; border-bottom: 1px dashed var(--line2); }
+.dash-up:last-child { border-bottom: 0; }
+.du-d { font-size: 11.5px; color: var(--mut); font-weight: 700; font-variant-numeric: tabular-nums; }
+.du-d b { color: var(--acc2); } .du-dd { color: #fff; background: var(--acc); border-radius: 999px; padding: 0 6px; font-size: 9.5px; font-weight: 800; }
+.du-e { font-weight: 700; font-size: 13px; }
+.du-c { font-size: 11px; color: var(--mut); }
 
 /* 25m 단계 분석 */
 .stg-card { border: 1px solid var(--line); border-radius: var(--r); background: var(--card); box-shadow: var(--sh-sm); padding: 11px 13px; margin: 10px 0; }
