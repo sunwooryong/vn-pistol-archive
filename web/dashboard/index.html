@@ -147,6 +147,9 @@
   <div class="mode" data-mode="coach">
     <div class="ic">📊</div><b data-t="m_coach">감독 확인용</b><small data-t="m_coach_d">팀 전체 현황 · 위험 · 랭킹</small>
   </div>
+  <div class="mode" data-mode="vs">
+    <div class="ic">⚖️</div><b data-t="m_vs">훈련 vs 대회</b><small data-t="m_vs_d">시리즈별 격차 · 압박 분석</small>
+  </div>
   <div class="mode" data-mode="report">
     <div class="ic">📄</div><b data-t="m_report">보고서용</b><small data-t="m_report_d">선수별 전문 분석 · 인쇄 가능</small>
   </div>
@@ -245,7 +248,12 @@ const NAMES = ATH.map(a=>a.name);
 const I18N = {
   ko:{title:"베트남 청소년 권총 대표팀",subtitle:"실시간 통합 대시보드 · 전문가 선우룡",refresh:"새로고침",
     m_meet:"선수 대면 회의용",m_meet_d:"선수 1명 집중 · 강점과 다음 행동",m_coach:"감독 확인용",m_coach_d:"팀 전체 현황 · 위험 · 랭킹",
-    m_report:"보고서용",m_report_d:"선수별 전문 분석 · 인쇄 가능",loading:"실시간 데이터를 불러오는 중…",
+    m_report:"보고서용",m_report_d:"선수별 전문 분석 · 인쇄 가능",m_vs:"훈련 vs 대회",m_vs_d:"시리즈별 격차 · 압박 분석",loading:"실시간 데이터를 불러오는 중…",
+    vs_head:"훈련 vs 대회 — 한눈에",vs_desc:"'대회 한발당'이 '훈련 한발당'보다 낮을수록 실전 압박·피로의 영향이 큽니다. Δ(격차)가 클수록 대회에서 훈련 실력을 못 냅니다.",
+    c_train:"훈련 한발당",c_match:"대회 한발당",c_gap:"격차 Δ",vs_series:"시리즈별 (S1~S6) 훈련 vs 대회",
+    vs_pick:"선수 선택",vs_train:"훈련",vs_match:"대회",vs_serieshead:"시리즈별 평균 (10m·60발)",vs_gapby:"시리즈별 격차",
+    vs_insight:"해석",vs_ncomp:"대회수",vs_note:"훈련=연습 60발 세션 S1~S6 평균 / 대회=공식전 10m 예선 시리즈 평균",
+    vs_worst:"가장 약한 시리즈",vs_drop:"대회 최대 하락 구간",
     foot:"데이터 출처: 예측사격·연습기록·면담 구글시트 + 대회 아카이브 · 방문 시마다 최신 반영",
     updatedAt:"갱신",male:"남자부",female:"여자부",
     k_ath:"선수",k_sess:"총 훈련 세션",k_medal:"총 메달(개인+단체)",k_avg:"팀 평균 한 발당",k_risk:"관리 필요(위험)",
@@ -258,7 +266,12 @@ const I18N = {
     exp:"경력",mo:"개월",sess:"세션",print:"인쇄 / PDF 저장",detail:"상세 보기"},
   vi:{title:"Đội tuyển súng ngắn trẻ Việt Nam",subtitle:"Dashboard thời gian thực · Chuyên gia Sunwoo Ryong",refresh:"Làm mới",
     m_meet:"Họp với VĐV",m_meet_d:"Tập trung 1 VĐV · điểm mạnh & việc cần làm",m_coach:"Cho HLV trưởng",m_coach_d:"Toàn đội · nguy cơ · xếp hạng",
-    m_report:"Báo cáo",m_report_d:"Phân tích chuyên sâu · có thể in",loading:"Đang tải dữ liệu thời gian thực…",
+    m_report:"Báo cáo",m_report_d:"Phân tích chuyên sâu · có thể in",m_vs:"Tập vs Thi đấu",m_vs_d:"Chênh lệch theo loạt · phân tích áp lực",loading:"Đang tải dữ liệu thời gian thực…",
+    vs_head:"Tập luyện vs Thi đấu — tổng quan",vs_desc:"'TB/phát khi thi' càng thấp hơn 'TB/phát khi tập' thì ảnh hưởng của áp lực·mệt mỏi càng lớn. Δ (chênh lệch) càng lớn, VĐV càng không phát huy được như khi tập.",
+    c_train:"Tập TB/phát",c_match:"Thi TB/phát",c_gap:"Chênh Δ",vs_series:"Theo loạt (S1~S6): Tập vs Thi",
+    vs_pick:"Chọn VĐV",vs_train:"Tập",vs_match:"Thi đấu",vs_serieshead:"TB theo loạt (10m·60 viên)",vs_gapby:"Chênh lệch theo loạt",
+    vs_insight:"Nhận định",vs_ncomp:"Số giải",vs_note:"Tập = TB S1~S6 buổi 60 viên / Thi = TB loạt vòng loại 10m chính thức",
+    vs_worst:"Loạt yếu nhất",vs_drop:"Loạt tụt nhiều nhất khi thi",
     foot:"Nguồn: Google Sheet dự đoán·tập luyện·phỏng vấn + kho thi đấu · cập nhật mỗi lần truy cập",
     updatedAt:"Cập nhật",male:"Nội dung Nam",female:"Nội dung Nữ",
     k_ath:"Vận động viên",k_sess:"Tổng buổi tập",k_medal:"Tổng HC (CN+ĐĐ)",k_avg:"TB đội mỗi phát",k_risk:"Cần lưu ý (nguy cơ)",
@@ -270,7 +283,7 @@ const I18N = {
     prog:"Diễn tiến điểm",risk:"Nguy cơ",type:"Nhóm",prob:"Vấn đề lặp lại",act:"Hành động tiếp theo",noData:"Không có dữ liệu",
     exp:"Kinh nghiệm",mo:"tháng",sess:"buổi",print:"In / Lưu PDF",detail:"Xem chi tiết"},
 };
-let LANG="ko", MODE="meet", MEET_SEL=null;
+let LANG="ko", MODE="meet", MEET_SEL=null, VS_SEL=null;
 const t=k=>I18N[LANG][k]||k;
 
 // ================= CSV parser =================
@@ -289,21 +302,36 @@ function monthKey(d){ const m=String(d).match(/(\d{4})[.\-]\s*(\d{1,2})/); retur
 
 // ================= fetch + compute =================
 let DATA={pred:{},practice:{},interview:{},archive:{}};
-async function fetchText(u){const r=await fetch(u,{cache:"no-store"});if(!r.ok)throw new Error(r.status);return r.text();}
-async function fetchJSON(u){const r=await fetch(u,{cache:"no-store"});if(!r.ok)throw new Error(r.status);return r.json();}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function getWith(u,kind,tries=4){
+  let last;
+  for(let i=0;i<tries;i++){
+    try{const r=await fetch(u,{cache:"no-store"});
+      if(r.ok)return kind==="json"?r.json():r.text();
+      last=new Error(r.status);
+    }catch(e){last=e;}
+    await sleep(500*(i+1)); // backoff for Google rate-limit (transient 400/429)
+  }
+  throw last;
+}
+const fetchText=u=>getWith(u,"text");
+const fetchJSON=u=>getWith(u,"json");
 
 function computePractice(rows){
-  const H=3; const out={}; NAMES.forEach(n=>out[n]={n:0,persh:[],best60:0,mon:{}});
+  const H=3; const out={}; NAMES.forEach(n=>out[n]={n:0,persh:[],best60:0,mon:{},ser:{1:[],2:[],3:[],4:[],5:[],6:[]}});
   for(let i=H+1;i<rows.length;i++){const r=rows[i];if(!r||r.length<8)continue;
     const name=(r[1]||"").trim(); if(!out[name])continue;
     const ev=(r[4]||""); if(!ev.includes("10m"))continue;
     const shots=num(r[6]), total=num(r[7]); if(!shots||!total)continue;
     const ps=total/shots; out[name].n++; out[name].persh.push(ps);
     if(shots===60&&total>out[name].best60)out[name].best60=total;
+    if(shots===60){for(let sn=1;sn<=6;sn++){const v=num(r[7+sn]);if(v!=null&&v>50&&v<=109)out[name].ser[sn].push(v);}}
     const mk=monthKey(r[0]); if(mk){(out[name].mon[mk]=out[name].mon[mk]||[]).push(ps);}
   }
-  for(const n in out){const o=out[n]; o.avg=o.persh.length?o.persh.reduce((a,b)=>a+b,0)/o.persh.length:null;
-    o.trend=Object.keys(o.mon).sort().map(m=>({m,v:o.mon[m].reduce((a,b)=>a+b,0)/o.mon[m].length}));}
+  const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+  for(const n in out){const o=out[n]; o.avg=avg(o.persh);
+    o.trend=Object.keys(o.mon).sort().map(m=>({m,v:avg(o.mon[m])}));
+    o.tser=[1,2,3,4,5,6].map(sn=>avg(o.ser[sn]));}
   return out;
 }
 function idx(h,sub){return h.findIndex(x=>x&&x.includes(sub));}
@@ -322,17 +350,28 @@ function computeInterview(rows){
     out[nm]={risk:num(r[iRisk]),level:r[iLvl]||"",type:r[iType]||"",prob:r[iRep]||"",act:r[iAct]||"",solve:r[iSolve]||""};}
   return out;
 }
-function computeArchive(ath,res,ev){
+function computeArchive(ath,res,ev,seriesRows){
   const evm={}; ev.forEach(e=>evm[e.id]=e);
   const id2=Object.fromEntries(ath.filter(a=>byName[a.full_name]).map(a=>[a.id,a.full_name]));
-  const out={}; NAMES.forEach(n=>out[n]={ind:[0,0,0],team:[0,0,0],best60:0,finals:0,count:0,recent:[]});
+  const out={}; NAMES.forEach(n=>out[n]={ind:[0,0,0],team:[0,0,0],best60:0,finals:0,count:0,recent:[],
+    cser:{1:[],2:[],3:[],4:[],5:[],6:[]},cshot:[]});
   const M={gold:0,silver:1,bronze:2};
+  // series indexed by result_id
+  const byres={}; (seriesRows||[]).forEach(s=>{(byres[s.result_id]=byres[s.result_id]||{})[s.series_no]=s.score;});
   res.forEach(r=>{const nm=id2[r.athlete_id];if(!nm)return;const o=out[nm];o.count++;
     if(r.medal!=null&&M[r.medal]!=null)o.ind[M[r.medal]]++;
     if(r.team_medal!=null&&M[r.team_medal]!=null)o.team[M[r.team_medal]]++;
     if(r.final_score)o.finals++;
     if(r.qual_total&&r.qual_total>500&&r.qual_total>o.best60)o.best60=r.qual_total;
+    // competition per-series (10m individual 60-shot)
+    const e=evm[r.event_id]||{};
+    if(e.distance==="10m"&&e.team_type==="individual"&&e.n_series===6){
+      const ss=byres[r.id]; if(ss&&Object.keys(ss).length>=6){for(let sn=1;sn<=6;sn++)if(ss[sn]!=null)o.cser[sn].push(ss[sn]);}
+      if(r.qual_total)o.cshot.push(r.qual_total/60);
+    }
   });
+  const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+  NAMES.forEach(n=>{const o=out[n];o.cserAvg=[1,2,3,4,5,6].map(sn=>avg(o.cser[sn]));o.cshotAvg=avg(o.cshot);o.ncomp=o.cshot.length;});
   // recent 2026 (top 3 by date) per athlete
   const perA={}; NAMES.forEach(n=>perA[n]=[]);
   res.forEach(r=>{const nm=id2[r.athlete_id];if(!nm)return;const d=r.match_date||"";if(d<"2026")return;
@@ -344,15 +383,13 @@ function computeArchive(ath,res,ev){
 }
 
 async function loadAll(){
-  const [pT,prT,iT] = await Promise.all([
-    fetchText(csvUrl(SHEETS.practice)), fetchText(csvUrl(SHEETS.pred)), fetchText(csvUrl(SHEETS.interview))
-  ]);
-  DATA.practice=computePractice(parseCSV(pT));
-  DATA.pred=computePred(parseCSV(prT));
-  DATA.interview=computeInterview(parseCSV(iT));
+  // sequential + small stagger to avoid Google Sheets rate-limit (transient 400)
+  DATA.practice=computePractice(parseCSV(await fetchText(csvUrl(SHEETS.practice)))); await sleep(150);
+  DATA.pred=computePred(parseCSV(await fetchText(csvUrl(SHEETS.pred)))); await sleep(150);
+  DATA.interview=computeInterview(parseCSV(await fetchText(csvUrl(SHEETS.interview))));
   try{
-    const [ath,res,ev]=await Promise.all([fetchJSON(ARCHIVE+"athletes.json"),fetchJSON(ARCHIVE+"results.json"),fetchJSON(ARCHIVE+"events.json")]);
-    DATA.archive=computeArchive(ath,res,ev);
+    const [ath,res,ev,ser]=await Promise.all([fetchJSON(ARCHIVE+"athletes.json"),fetchJSON(ARCHIVE+"results.json"),fetchJSON(ARCHIVE+"events.json"),fetchJSON(ARCHIVE+"series.json")]);
+    DATA.archive=computeArchive(ath,res,ev,ser);
   }catch(e){ DATA.archive={}; DATA.archiveErr=String(e); }
   const now=new Date();
   document.getElementById("updated").textContent=t("updatedAt")+" "+now.toLocaleTimeString(LANG==="ko"?"ko-KR":"vi-VN");
@@ -535,6 +572,102 @@ function renderReport(){
   return app;
 }
 
+// ================= MODE: TRAINING vs COMPETITION =================
+function seriesChart(train,comp,w,h){
+  w=w||Math.min(560,window.innerWidth-70); h=h||190;
+  const pad={l:34,r:12,t:14,b:26};
+  const all=[...train,...comp].filter(v=>v!=null);
+  if(all.length<2)return `<span class="muted">${t("noData")}</span>`;
+  const mn=Math.floor(Math.min(...all))-1, mx=Math.ceil(Math.max(...all))+1;
+  const px=i=>pad.l+(i/5)*(w-pad.l-pad.r);
+  const py=v=>h-pad.b-((v-mn)/(mx-mn))*(h-pad.t-pad.b);
+  const line=(arr,col)=>{const pts=arr.map((v,i)=>v==null?null:`${px(i).toFixed(1)},${py(v).toFixed(1)}`).filter(Boolean).join(" ");
+    return `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>`
+      + arr.map((v,i)=>v==null?"":`<circle cx="${px(i).toFixed(1)}" cy="${py(v).toFixed(1)}" r="3.4" fill="${col}"/>`).join("");}
+  // gap shading between train and comp
+  let gapPoly="";
+  const both=train.map((v,i)=>({t:v,c:comp[i],i})).filter(o=>o.t!=null&&o.c!=null);
+  if(both.length>1){const top=both.map(o=>`${px(o.i).toFixed(1)},${py(o.t).toFixed(1)}`).join(" ");
+    const bot=both.slice().reverse().map(o=>`${px(o.i).toFixed(1)},${py(o.c).toFixed(1)}`).join(" ");
+    gapPoly=`<polygon points="${top} ${bot}" fill="rgba(226,183,60,.10)"/>`;}
+  // gridlines/labels
+  let grid="";
+  for(let g=mn;g<=mx;g+=2){const y=py(g);grid+=`<line x1="${pad.l}" y1="${y}" x2="${w-pad.r}" y2="${y}" stroke="#2c384f" stroke-width="1"/>
+    <text x="${pad.l-6}" y="${y+3}" text-anchor="end" font-size="9" fill="#93a1bd">${g}</text>`;}
+  let xl="";for(let i=0;i<6;i++)xl+=`<text x="${px(i)}" y="${h-8}" text-anchor="middle" font-size="10" fill="#93a1bd">S${i+1}</text>`;
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="max-width:100%">
+    ${grid}${gapPoly}${line(comp,'#e2b73c')}${line(train,'#5b9dff')}${xl}</svg>`;
+}
+function renderCompare(){
+  const app=el("div"); const O=ordered();
+  // A) at-a-glance overview
+  app.append(el("h2","sec",t("vs_head")));
+  app.append(el("p","muted",t("vs_desc")));
+  const rows=O.all.map(a=>{const p=DATA.practice[a.name]||{},ar=DATA.archive[a.name]||{};
+    return {a,tr:p.avg,ma:ar.cshotAvg,n:ar.ncomp||0};}).filter(x=>x.tr!=null&&x.ma!=null);
+  rows.sort((x,y)=>(y.tr-y.ma)-(x.tr-x.ma)); // biggest drop first
+  const card=el("div","card");card.style.overflowX="auto";
+  const tb=el("table");
+  tb.innerHTML=`<thead><tr><th class="l">${t("c_name")}</th><th>${t("c_train")}</th><th>${t("c_match")}</th><th>${t("c_gap")}</th><th>${t("vs_ncomp")}</th></tr></thead>`;
+  const body=el("tbody");
+  const maxGap=Math.max(...rows.map(r=>r.tr-r.ma),0.01);
+  rows.forEach(({a,tr,ma,n})=>{const gap=tr-ma;const pct=(gap/maxGap*100).toFixed(0);
+    const trr=el("tr");
+    trr.innerHTML=`<td class="l"><b>${a.name.split(" ").slice(-1)}</b> <span class="muted">${a.kr}</span></td>
+     <td style="color:var(--acc)">${tr.toFixed(2)}</td><td style="color:var(--gold)">${ma.toFixed(2)}</td>
+     <td><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:60px;height:8px;background:var(--bg2);border-radius:5px;overflow:hidden;display:inline-block"><span style="display:block;height:100%;width:${pct}%;background:linear-gradient(90deg,#b23,#ff5d5d)"></span></span><b style="color:var(--warn)">−${gap.toFixed(2)}</b></span></td>
+     <td>${n}</td>`;
+    trr.style.cursor="pointer";trr.onclick=()=>{VS_SEL=a.key;render();window.scrollTo({top:document.querySelector('#vsdetail')?.offsetTop-70||0,behavior:'smooth'});};
+    body.append(trr);});
+  tb.append(body);card.append(tb);app.append(card);
+
+  // B) per-athlete series detail
+  app.append(el("h2","sec",t("vs_series")));
+  if(!VS_SEL)VS_SEL=O.all[0].key;
+  const chips=el("div","chips");
+  O.all.forEach(a=>{const c=el("div","chip"+(a.key===VS_SEL?" on":""));
+    c.innerHTML=`${a.name.split(" ").slice(-1)} <span class="g">${a.kr}</span>`;
+    c.onclick=()=>{VS_SEL=a.key;render();};chips.append(c);});
+  app.append(chips);
+  const a=ATH.find(x=>x.key===VS_SEL);
+  const p=DATA.practice[a.name]||{},ar=DATA.archive[a.name]||{};
+  const train=p.tser||[null,null,null,null,null,null], comp=ar.cserAvg||[null,null,null,null,null,null];
+  const d=el("div","card");d.id="vsdetail";
+  d.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+    <b>${a.name.split(" ").slice(-1)} ${a.kr}</b>
+    <div style="font-size:12px"><span style="color:var(--acc)">■</span> ${t("vs_train")} &nbsp; <span style="color:var(--gold)">■</span> ${t("vs_match")}</div></div>
+    <div style="text-align:center;margin:6px 0">${seriesChart(train,comp)}</div>`;
+  // per-series numeric + gap
+  const g=el("div");g.style.marginTop="6px";
+  const line=el("div","bar");line.style.gridTemplateColumns="70px repeat(6,1fr)";
+  const hd=`<span class="l muted"></span>`+[1,2,3,4,5,6].map(s=>`<b style="text-align:center;color:var(--mut)">S${s}</b>`).join("");
+  const tline=`<span class="l" style="color:var(--acc)">${t("vs_train")}</span>`+train.map(v=>`<b style="text-align:center">${v!=null?v.toFixed(1):'—'}</b>`).join("");
+  const mline=`<span class="l" style="color:var(--gold)">${t("vs_match")}</span>`+comp.map(v=>`<b style="text-align:center">${v!=null?v.toFixed(1):'—'}</b>`).join("");
+  const gline=`<span class="l" style="color:var(--warn)">Δ</span>`+train.map((v,i)=>{const c=comp[i];const gap=(v!=null&&c!=null)?(v-c):null;
+    return `<b style="text-align:center;color:${gap>0.6?'var(--warn)':gap!=null?'#c9b16a':'var(--mut)'}">${gap!=null?'−'+gap.toFixed(1):'—'}</b>`;}).join("");
+  g.innerHTML=`<div class="bar" style="grid-template-columns:70px repeat(6,1fr)">${hd}</div>
+    <div class="bar" style="grid-template-columns:70px repeat(6,1fr)">${tline}</div>
+    <div class="bar" style="grid-template-columns:70px repeat(6,1fr)">${mline}</div>
+    <div class="bar" style="grid-template-columns:70px repeat(6,1fr)">${gline}</div>`;
+  d.append(g);
+  // insight
+  const valid=train.map((v,i)=>({s:i+1,t:v,c:comp[i],gap:(v!=null&&comp[i]!=null)?v-comp[i]:null})).filter(o=>o.gap!=null);
+  if(valid.length){const worstComp=valid.slice().sort((x,y)=>x.c-y.c)[0];
+    const maxDrop=valid.slice().sort((x,y)=>y.gap-x.gap)[0];
+    const ins=el("div","goal");
+    const ovGap=(p.avg!=null&&ar.cshotAvg!=null)?(p.avg-ar.cshotAvg):null;
+    ins.innerHTML=`<b>${t("vs_insight")}</b><br>`+
+      (LANG==="ko"
+        ? `전체 한발당 격차 <b style="color:var(--warn)">−${ovGap!=null?ovGap.toFixed(2):'—'}</b> (훈련 ${p.avg?p.avg.toFixed(2):'—'} → 대회 ${ar.cshotAvg?ar.cshotAvg.toFixed(2):'—'}). `
+          +`${t("vs_worst")}: <b>S${worstComp.s}</b> (대회 ${worstComp.c.toFixed(1)}), ${t("vs_drop")}: <b>S${maxDrop.s}</b> (Δ−${maxDrop.gap.toFixed(1)}).`
+        : `Chênh TB/phát <b style="color:var(--warn)">−${ovGap!=null?ovGap.toFixed(2):'—'}</b> (tập ${p.avg?p.avg.toFixed(2):'—'} → thi ${ar.cshotAvg?ar.cshotAvg.toFixed(2):'—'}). `
+          +`${t("vs_worst")}: <b>S${worstComp.s}</b> (thi ${worstComp.c.toFixed(1)}), ${t("vs_drop")}: <b>S${maxDrop.s}</b> (Δ−${maxDrop.gap.toFixed(1)}).`);
+    d.append(ins);}
+  app.append(d);
+  app.append(el("p","muted",t("vs_note")+" · "+t("vs_ncomp")+" "+(ar.ncomp||0)));
+  return app;
+}
+
 // ================= app shell =================
 function render(){
   const app=document.getElementById("app");app.innerHTML="";
@@ -542,6 +675,7 @@ function render(){
   if(!DATA.loaded){app.innerHTML=`<div class="loading">${t("loading")}</div>`;return;}
   if(MODE==="coach")app.append(renderCoach());
   else if(MODE==="report")app.append(renderReport());
+  else if(MODE==="vs")app.append(renderCompare());
   else app.append(renderMeet());
 }
 function applyLangStatic(){document.querySelectorAll("[data-t]").forEach(e=>{const k=e.getAttribute("data-t");if(I18N[LANG][k])e.textContent=I18N[LANG][k];});
@@ -560,7 +694,7 @@ document.getElementById("refresh").addEventListener("click",async()=>{
 
 async function boot(){
   applyLangStatic();
-  if(location.hash&&["meet","coach","report"].includes(location.hash.slice(1))){MODE=location.hash.slice(1);setMode();}
+  if(location.hash&&["meet","coach","report","vs"].includes(location.hash.slice(1))){MODE=location.hash.slice(1);setMode();}
   try{await loadAll();DATA.loaded=true;}catch(e){DATA.err=String(e);}
   render();
   // auto-refresh every 90s (real-time)
