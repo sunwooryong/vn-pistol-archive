@@ -65,6 +65,11 @@
     '개인전만': 'Chỉ cá nhân', '개인+단체': 'Cá nhân + đồng đội',
     '관리 선수 명단': 'Danh sách VĐV phụ trách', '2026 기록': 'KQ 2026', '기록 없음': 'Chưa có KQ',
     '대회별 획득 메달': 'HC theo từng giải', '종목': 'Nội dung',
+    // 선수 평가 보고서 (연말 총결산)
+    '평가 보고서': 'Báo cáo đánh giá', '선수 평가 보고서': 'Báo cáo đánh giá VĐV', '연도': 'Năm', '선수를 선택하세요.': 'Vui lòng chọn VĐV.',
+    '기록이 없습니다.': 'Không có dữ liệu.', '종목별 성적': 'Thành tích theo nội dung', '단계 약점': 'Điểm yếu theo giai đoạn',
+    '대회별 성적': 'Thành tích theo giải', '총평': 'Nhận xét chung', '출전': 'thi đấu', '주력': 'Chủ lực', '개 대회': ' giải', '년': '',
+    '본 보고서는 베트남 사격연맹 공개 기록을 기준으로 자동 작성되었습니다.': 'Báo cáo được lập tự động từ dữ liệu công khai của LĐ Bắn súng Việt Nam.',
     // 선수 요약 대시보드
     '선수 요약': 'Tổng quan VĐV', '한눈에 보기': 'Xem nhanh', '오늘의 훈련 포인트': 'Điểm luyện tập', '개인 최고기록': 'Kỷ lục cá nhân',
     '올해': 'Năm nay', '보강': 'Cải thiện', '번째 시리즈 집중': ' loạt cần tập trung', '요즘 폼 하락 — 기본기 점검': 'Phong độ giảm — kiểm tra cơ bản',

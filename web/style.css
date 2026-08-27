@@ -764,7 +764,23 @@ table.rc-tab tbody tr:nth-child(even) { background: #fafbfd; }
   .no-print { display: none !important; }
   .rv-doc { margin: 0 !important; max-width: none !important; border: 0 !important; box-shadow: none !important; padding: 6px 4px !important; }
   .rc-disc, table.rc-tab tr { break-inside: avoid; }
+  .eval-doc + .eval-doc { break-before: page; }
 }
+
+/* 선수 평가 보고서 */
+.eval-btn { margin-left: 8px; background: var(--card2); color: var(--tx); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+.eval-btn:hover { border-color: var(--acc); color: var(--acc); }
+.rv-yr { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--tx); }
+.rv-yr select { background: var(--card2); color: var(--tx); border: 1px solid var(--line); border-radius: 7px; padding: 5px 9px; font-size: 12px; font-weight: 700; }
+.rv-athsel { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.rv-glab { font-size: 11px; font-weight: 800; color: var(--mut); }
+.ev-chk { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--tx); cursor: pointer; }
+.eval-doc + .eval-doc { margin-top: 26px; padding-top: 26px; border-top: 2px dashed #cdd5e0; }
+.eval-stage { margin: 4px 0 8px; padding-left: 20px; font-size: 12.5px; color: #24303f; }
+.eval-stage li { margin: 3px 0; }
+.eval-comment { font-size: 12.5px; line-height: 1.7; color: #24303f; background: #f8fafd; border: 1px solid #e2e7ef; border-radius: 9px; padding: 11px 13px; }
+.tmlbl { font-size: 9px; color: #7c8698; margin-left: 2px; }
+.rc-md { text-align: right; white-space: nowrap; }
 
 /* 선수 요약 대시보드 (상단) */
 .dash-card { border: 1px solid var(--line); border-radius: var(--r); background: var(--card); box-shadow: var(--sh-sm); padding: 11px 13px; margin: 9px 0; }
