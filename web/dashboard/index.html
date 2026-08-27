@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>베트남 청소년 권총 대표팀 · 실시간 대시보드</title>
+<style>
+  :root{
+    --bg:#0e131f; --bg2:#131a29; --card:#1a2233; --card2:#212b40; --line:#2c384f;
+    --tx:#e8edf6; --mut:#93a1bd; --acc:#5b9dff; --acc2:#3a7be0;
+    --gold:#e2b73c; --good:#37c98a; --warn:#ff5d5d; --warnbg:#3a1f28; --goldbg:#2b2718;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:linear-gradient(180deg,#0b0f18,#0e131f 30%);color:var(--tx);
+    font-family:"Malgun Gothic","Segoe UI",system-ui,-apple-system,"Apple SD Gothic Neo",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;line-height:1.55;min-height:100vh}
+  a{color:var(--acc);text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 16px 80px}
+
+  /* header */
+  header{position:sticky;top:0;z-index:50;background:rgba(11,15,24,.86);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line)}
+  .hd{max-width:1120px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px;min-width:0}
+  .brand img.rings{height:38px}
+  .brand .flags{height:26px;border-radius:4px}
+  .brand .tt{display:flex;flex-direction:column;min-width:0}
+  .brand .tt b{font-size:15px;letter-spacing:.2px;white-space:nowrap}
+  .brand .tt span{font-size:11px;color:var(--mut);white-space:nowrap}
+  .spacer{flex:1}
+  .live{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 0 0 rgba(55,201,138,.6);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(55,201,138,.5)}70%{box-shadow:0 0 0 8px rgba(55,201,138,0)}100%{box-shadow:0 0 0 0 rgba(55,201,138,0)}}
+  .btn{background:var(--card2);border:1px solid var(--line);color:var(--tx);border-radius:9px;
+    padding:7px 12px;font-size:12px;cursor:pointer;font-family:inherit;transition:.15s}
+  .btn:hover{border-color:var(--acc);color:#fff}
+  .seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .seg button{background:transparent;border:0;color:var(--mut);padding:7px 11px;font-size:12px;cursor:pointer;font-family:inherit}
+  .seg button.on{background:var(--acc);color:#fff;font-weight:700}
+
+  /* mode tabs */
+  .modes{display:flex;gap:8px;max-width:1120px;margin:0 auto;padding:12px 16px 0;flex-wrap:wrap}
+  .mode{flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:12px 14px;cursor:pointer;transition:.18s;position:relative;overflow:hidden}
+  .mode:hover{border-color:var(--acc2);transform:translateY(-1px)}
+  .mode.on{border-color:var(--acc);background:linear-gradient(135deg,#20304f,#182136);box-shadow:var(--shadow)}
+  .mode .ic{font-size:20px}
+  .mode b{display:block;font-size:14.5px;margin-top:4px}
+  .mode small{display:block;color:var(--mut);font-size:11.5px;margin-top:2px}
+  .mode.on b{color:#fff}
+
+  h2.sec{font-size:16px;color:var(--acc);margin:26px 0 12px;letter-spacing:.3px}
+  .muted{color:var(--mut)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+  .grid{display:grid;gap:12px}
+
+  /* KPI */
+  .kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .kpi{background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:14px;padding:14px}
+  .kpi .v{font-size:26px;font-weight:800;letter-spacing:.3px}
+  .kpi .l{font-size:12px;color:var(--mut);margin-top:2px}
+  .kpi .v.good{color:var(--good)} .kpi .v.warn{color:var(--warn)} .kpi .v.gold{color:var(--gold)} .kpi .v.acc{color:var(--acc)}
+
+  /* athlete chips */
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer;font-size:13px;transition:.15s}
+  .chip:hover{border-color:var(--acc2)}
+  .chip.on{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:700}
+  .chip .g{font-size:11px;color:var(--mut);margin-left:4px}
+  .chip.on .g{color:#dde}
+
+  /* bars */
+  .bar{display:grid;grid-template-columns:150px 1fr 54px;align-items:center;gap:10px;margin:7px 0;font-size:13px}
+  .bar .track{background:var(--bg2);border-radius:8px;height:16px;overflow:hidden;border:1px solid var(--line)}
+  .bar .fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--acc2),var(--acc))}
+  .bar .fill.gold{background:linear-gradient(90deg,#a8842a,var(--gold))}
+  .bar .fill.good{background:linear-gradient(90deg,#25936a,var(--good))}
+  .bar .fill.warn{background:linear-gradient(90deg,#b23,var(--warn))}
+  .bar b{text-align:right}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:center}
+  th{color:var(--mut);font-weight:600;font-size:12px;position:sticky}
+  td.l,th.l{text-align:left}
+  tr.male-h td,tr.female-h td{background:var(--acc2);color:#fff;font-weight:700;text-align:left;font-size:12px}
+  .tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700}
+  .tag.A{background:#173d2c;color:#54e0a0}.tag.B{background:#2a3350;color:#9db8ff}
+  .tag.C{background:#3a3320;color:#e2c24c}.tag.D{background:#3a1f28;color:#ff8a8a}
+  .tag.risk{background:var(--warnbg);color:#ff9a9a}.tag.ok{background:#173d2c;color:#54e0a0}
+
+  /* meeting mode */
+  .meet-hero{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .avatar{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#2b3a58,#1a2233);
+    display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;border:2px solid var(--acc);color:#fff}
+  .big-stat{font-size:40px;font-weight:800;letter-spacing:.5px}
+  .goal{background:var(--goldbg);border-left:4px solid var(--gold);border-radius:10px;padding:12px 14px;margin:8px 0}
+  .goal.warn{background:var(--warnbg);border-left-color:var(--warn)}
+  .goal b{color:var(--gold)} .goal.warn b{color:var(--warn)}
+  .pledge{background:linear-gradient(135deg,#1a2f4a,#16233a);border:1px solid var(--acc2);border-radius:12px;padding:14px 16px;margin-top:10px}
+  .pledge .q{font-size:15px;line-height:1.6}
+
+  /* report mode */
+  .rp h3{font-size:18px;color:#fff;margin:22px 0 4px}
+  .rp .banner{border-radius:10px;padding:11px 14px;margin:8px 0 12px;font-weight:700;font-size:13.5px}
+  .rp .banner.gold{background:var(--goldbg);border:1px solid #5a4d20;color:#f0d78a}
+  .rp .banner.warn{background:var(--warnbg);border:1px solid #6a2a2a;color:#ffb0b0}
+  .rp .sub{font-size:13px;color:var(--acc);font-weight:700;border-bottom:1px solid var(--line);padding-bottom:4px;margin:14px 0 6px}
+  .rp p{font-size:13.5px;color:#d5deee;margin:6px 0}
+  .rp .verdict{background:var(--goldbg);border:1px solid #5a4d20;border-radius:10px;padding:12px 14px}
+  .sparkwrap{display:flex;align-items:center;gap:10px}
+  .loading{text-align:center;color:var(--mut);padding:60px 0}
+  .err{background:var(--warnbg);border:1px solid #6a2a2a;color:#ffb0b0;border-radius:10px;padding:12px 14px;margin:12px 0;font-size:13px}
+  .foot{color:var(--mut);font-size:12px;text-align:center;margin-top:36px;border-top:1px solid var(--line);padding-top:16px}
+  .hide{display:none!important}
+  @media print{header,.modes,.chips,.btn,.seg{display:none!important} body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hd">
+    <div class="brand">
+      <img class="rings" src="rings.png" alt="Olympic rings"/>
+      <img class="flags" src="flags.png" alt="KR VN"/>
+      <div class="tt">
+        <b data-t="title">베트남 청소년 권총 대표팀</b>
+        <span data-t="subtitle">실시간 통합 대시보드 · 전문가 선우룡</span>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="live">
+      <span class="dot"></span><span id="updated">—</span>
+    </div>
+    <button class="btn" id="refresh" data-t="refresh">새로고침</button>
+    <div class="seg" id="lang">
+      <button data-lang="ko" class="on">한국어</button>
+      <button data-lang="vi">Tiếng Việt</button>
+    </div>
+  </div>
+</header>
+
+<div class="modes" id="modes">
+  <div class="mode on" data-mode="meet">
+    <div class="ic">🎯</div><b data-t="m_meet">선수 대면 회의용</b><small data-t="m_meet_d">선수 1명 집중 · 강점과 다음 행동</small>
+  </div>
+  <div class="mode" data-mode="coach">
+    <div class="ic">📊</div><b data-t="m_coach">감독 확인용</b><small data-t="m_coach_d">팀 전체 현황 · 위험 · 랭킹</small>
+  </div>
+  <div class="mode" data-mode="report">
+    <div class="ic">📄</div><b data-t="m_report">보고서용</b><small data-t="m_report_d">선수별 전문 분석 · 인쇄 가능</small>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="app"><div class="loading" data-t="loading">실시간 데이터를 불러오는 중…</div></div>
+  <div class="foot">
+    <span data-t="foot">데이터 출처: 예측사격·연습기록·면담 구글시트 + 대회 아카이브 · 방문 시마다 최신 반영</span>
+  </div>
+</div>
+
+<script>
+// ================= CONFIG =================
+const SHEETS = {
+  pred:    {id:"1dpFf86urjQfl_qA-d99ETwiDLZbRRzpe64YURPoeNsw", gid:"1182106552"},
+  practice:{id:"16zdF1VFnNFNR36zQuSu5dzas9ZM-v_NDFF-me-o6Oco", gid:"1804031283"},
+  interview:{id:"1bA2IPhC9ybCxf09Ipwmma-pXGL4BOd3_rRCm4_Hyr20", gid:"60613013"},
+};
+const ARCHIVE = "https://sunwooryong.github.io/vn-pistol-archive/build/";
+const csvUrl = s => `https://docs.google.com/spreadsheets/d/${s.id}/export?format=csv&gid=${s.gid}`;
+
+// static athlete meta + narrative (bilingual). Live metrics computed from sheets/archive.
+const ATH = [
+ {key:"Nguyen",name:"Nguyễn Quốc Khôi Nguyên",kr:"응우옌",birth:2007,gender:"M",club:"Army",exp:76,
+  disc:{ko:"10m 공기권총 + 50m 권총",vi:"10m súng hơi + 50m súng ngắn"},
+  headline:{ko:"다종목·최다 경험 베테랑 — 개인·단체 통산 최다 메달",vi:"VĐV kỳ cựu, đa nội dung — nhiều huy chương nhất đội"},
+  tests:[73,73,80,69,92.0], testGrade:"A-", warn:false,
+  strength:{ko:"대회 경험과 무대 적응력이 팀에서 가장 풍부하며 단체전 기여도 1위.",vi:"Kinh nghiệm và khả năng thích ứng sân đấu phong phú nhất đội; dẫn đầu về đóng góp đồng đội."},
+  task:{ko:"격발 직후 총구 안정 — 방아쇠 압력을 일정하고 부드럽게.",vi:"Ổn định nòng súng sau bóp cò — tăng lực cò đều và mượt."},
+  report:{
+   comp:{ko:"10m·50m·혼성단체를 두루 소화하는 팀 최다 출전·최다 메달 보유 선수다. 2025년 8월 청소년부 개인 금(본선 1위)과 2026년 3월 결선 동메달(212.5)이 대표 성과다.",vi:"VĐV tham dự nhiều nhất, đa nội dung 10m/50m/đồng đội. Dấu ấn: HCV cá nhân nhóm trẻ (nhất vòng loại) 8/2025 và HCĐ chung kết (212.5) 3/2026."},
+   pred:{ko:"완전일치율 46.7%로 팀 공동 2위. 실제 평균이 예측 평균을 상회해 안정적 자기인식을 보인다.",vi:"Tỷ lệ trùng khớp 46.7% — đồng hạng nhì đội; điểm thực tế cao hơn dự đoán, tự nhận thức ổn định."},
+   tests:{ko:"초기 C등급에서 고급 시험 92.0점(A-)으로 크게 성장. 가장 시급한 한 가지를 선택하는 훈련이 필요하다.",vi:"Từ hạng C lên 92.0 (A-) ở bài nâng cao. Cần rèn chọn một nhiệm vụ cấp thiết nhất."},
+   verdict:{ko:"경험·다종목·단체 기여도에서 팀을 대표하는 베테랑. 2027년 과제: ①격발 직후 총구 안정 ②완벽주의 완화·과정 중심 리듬 ③10m·50m 훈련 비중 재조정. 팀의 정신적 리더 역할 기대.",vi:"VĐV kỳ cựu tiêu biểu. 2027: ①ổn định nòng súng sau bóp cò ②giảm cầu toàn, giữ nhịp theo quá trình ③cân đối tập 10m/50m. Kỳ vọng vai trò thủ lĩnh tinh thần."}}},
+ {key:"Phat",name:"Ngô Đại Phát",kr:"팟",birth:2008,gender:"M",club:"Dakrak",exp:42,
+  disc:{ko:"10m 공기권총 (남자 개인)",vi:"10m súng ngắn hơi (cá nhân nam)"},
+  headline:{ko:"대표팀의 핵심 자원 — 이론·훈련·본선 전 부문 팀 정상",vi:"Hạt nhân đội tuyển — dẫn đầu lý thuyết, tập luyện & vòng loại"},
+  tests:[94,90,86,82,97.7], testGrade:"A+", warn:false,
+  strength:{ko:"이론·훈련·본선 기량이 모두 팀 최상위. 고급 이해도 97.7점(A+) 팀 1위, 훈련 한 발당 평균 팀 1위.",vi:"Lý thuyết, tập luyện, vòng loại đều dẫn đầu. Bài nâng cao 97.7 (A+) hạng 1; trung bình/phát hạng 1 đội."},
+  task:{ko:"복잡한 절차를 '가늠쇠 유지–검지 직선–3~5초' 키워드로 단순화해 격발 순간 실행.",vi:"Rút gọn quy trình thành 'giữ đầu ngắm – ngón trỏ thẳng – 3~5 giây' để thực thi khi bóp cò."},
+  report:{
+   comp:{ko:"3년간 10m 공기권총 개인에 전념한 정통 스페셜리스트. 본선 점수가 546→570점대로 견실히 상승, 2026년 7월 개인 동메달로 첫 입상.",vi:"Chuyên sâu 10m suốt 3 năm; điểm vòng loại tăng 546→570, HCĐ cá nhân đầu tiên 7/2026."},
+   pred:{ko:"완전일치율 53.3%로 팀 1위. 실제(9.57)가 예측(9.10)보다 높아 겸손한 안정형 자기인식.",vi:"Tỷ lệ trùng khớp 53.3% — hạng 1 đội; thực tế (9.57) cao hơn dự đoán (9.10)."},
+   tests:{ko:"1차 재시험 94점(A), 고급 97.7점(A+)으로 팀 1위. 지식이 많아 사고 과잉만 유의.",vi:"94 (A) và 97.7 (A+) — hạng 1 đội. Chỉ cần tránh suy nghĩ thái quá."},
+   verdict:{ko:"이론·훈련·본선 모두 팀 정상인 에이스. 2027년 과제: ①결선 점수 방어력 완성 ②사고 절차를 실행 키워드로 압축 ③나쁜 발 이후 자기비난 차단.",vi:"Ngôi sao dẫn đầu mọi mặt. 2027: ①hoàn thiện giữ điểm chung kết ②nén quy trình thành từ khoá thực thi ③chặn tự trách sau phát xấu."}}},
+ {key:"Loc",name:"Nguyễn Thanh An Lộc",kr:"록",birth:2009,gender:"M",club:"Da Nang",exp:33,
+  disc:{ko:"10m 공기권총 (남자 개인)",vi:"10m súng ngắn hơi (cá nhân nam)"},
+  headline:{ko:"실전 메달 전환력 팀 최고 — 개인 금메달 2개",vi:"Chuyển hoá huy chương tốt nhất đội — 2 HCV cá nhân"},
+  tests:[91,91,90,90,94.3], testGrade:"A", warn:false,
+  strength:{ko:"큰 무대에서 본선을 메달로 바꾸는 능력 팀 최고. 개인 금 2개, 전 회차 이해도 A등급.",vi:"Khả năng biến vòng loại thành huy chương tốt nhất đội. 2 HCV cá nhân, hạng A mọi lần thi."},
+  task:{ko:"호흡을 먼저 안정시킨 뒤 격발 타이밍을 일정하게. 그립 재점검.",vi:"Ổn định hơi thở trước rồi giữ đều nhịp bóp cò. Kiểm tra lại grip."},
+  report:{
+   comp:{ko:"'실전형' 선수. 2025년 3월 본선 567점 1위·금메달, 2026년 7월 결선 233.7점 금메달. 개인 금 2개는 팀 최다.",vi:"VĐV bản lĩnh: nhất vòng loại 567 & HCV (3/2025), HCV chung kết 233.7 (7/2026). 2 HCV — nhiều nhất đội."},
+   pred:{ko:"완전일치율 41.7%. 예측·실제 평균 차이가 팀에서 가장 작아 점수 감각이 매우 정밀.",vi:"Trùng khớp 41.7%; chênh lệch dự đoán–thực tế nhỏ nhất đội, cảm nhận điểm rất tinh tế."},
+   tests:{ko:"전 회차 A등급. 유일한 리스크는 '과분석'으로 루틴 단순화 필요.",vi:"Hạng A toàn bộ. Rủi ro duy nhất là 'phân tích thái quá' — cần đơn giản hoá routine."},
+   verdict:{ko:"이론과 실전 메달 전환력을 겸비한 균형형. 2027년 과제: ①본선 하한선 550+ 안정화 ②과분석 축소·단일 키워드 실행 ③그립 재정렬.",vi:"Cân bằng lý thuyết & huy chương. 2027: ①ổn định ngưỡng vòng loại 550+ ②giảm phân tích, thực thi 1 từ khoá ③căn chỉnh grip."}}},
+ {key:"Hung",name:"Phạm Hoàng Gia Hưng",kr:"흥",birth:2010,gender:"M",club:"Quang Ninh",exp:49,
+  disc:{ko:"10m 공기권총 + 50m 권총",vi:"10m súng hơi + 50m súng ngắn"},
+  headline:{ko:"최연소·최고 성장속도 유망주 — 격발 리듬이 최우선 관리 과제",vi:"Tài năng trẻ nhất, tiến bộ nhanh nhất — nhịp bóp cò là ưu tiên số 1"},
+  tests:[78,77,80,74,93.2], testGrade:"A-", warn:true,
+  strength:{ko:"어린 나이 대비 본선 경쟁력이 가장 빠르게 성장. 8월 본선 562점 개인 최고, 7월 개인 은메달.",vi:"Năng lực vòng loại tăng nhanh nhất so với tuổi. 562 điểm (cao nhất) tháng 8, HCB cá nhân tháng 7."},
+  task:{ko:"1발당 시간을 균일하게 — 너무 급하거나 늦지 않게, 팔로우스루 유지.",vi:"Đều thời gian mỗi phát — không quá vội/muộn, giữ follow-through."},
+  report:{
+   comp:{ko:"팀 최연소지만 출전 15회로 경험 풍부. 3월 결선 4위(195.3), 7월 개인 은메달, 8월 본선 562점(개인 최고).",vi:"Nhỏ tuổi nhất nhưng 15 lượt thi. Hạng 4 CK (195.3) 3/2026, HCB cá nhân 7/2026, 562 điểm 8/2026."},
+   pred:{ko:"완전일치율 46.7%로 공동 2위. 예측 평균이 팀 최저로 보수적이나 실제가 더 높아 자신감 상향 여지.",vi:"Trùng khớp 46.7% — đồng hạng nhì; dự đoán thấp nhất đội (dè dặt) trong khi thực tế cao hơn."},
+   tests:{ko:"고급 93.2점(A-)으로 크게 성장. 자기 지시어 구체화가 과제.",vi:"Lên 93.2 (A-) ở bài nâng cao. Cần cụ thể hoá câu tự ra lệnh."},
+   verdict:{ko:"성장 속도 최고 유망주. 최우선은 면담 유일 '위험(과속형)' 격발 리듬. 2027년 과제: ①1발당 리듬 균일화 ②총점 확인 욕구 차단 ③자기 지시어 고정. 리듬만 잡히면 큰 도약.",vi:"Tài năng tiến bộ nhanh nhất. Ưu tiên: nhịp bóp cò ('nguy cơ – quá nhanh' duy nhất). 2027: ①đều nhịp mỗi phát ②chặn ham xem tổng điểm ③cố định câu tự ra lệnh."}}},
+ {key:"Chi",name:"Nguyễn Linh Chi",kr:"치",birth:2007,gender:"W",club:"Army",exp:67,
+  disc:{ko:"10m 공기권총 + 25m + 50m",vi:"10m súng hơi + 25m + 50m"},
+  headline:{ko:"여자부 다종목 상승주 — 2026년 8월 청소년부 개인 금메달",vi:"VĐV nữ đa nội dung đang lên — HCV cá nhân nhóm trẻ 8/2026"},
+  tests:[81,80,76,59,84.1], testGrade:"B", warn:false,
+  strength:{ko:"가장 뚜렷한 훈련 상승 곡선. 8월 청소년부 본선 554점·종합 1위 금메달로 시즌 후반 도약.",vi:"Đường cong tập luyện tăng rõ nhất. 554 điểm & HCV chung cuộc nhóm trẻ 8/2026."},
+  task:{ko:"손목 들림 교정 + 3~5초 안에 자신 있게 격발. 개념을 문장으로 고정.",vi:"Sửa nâng cổ tay + bóp cò tự tin trong 3~5 giây. Cố định khái niệm thành câu chữ."},
+  report:{
+   comp:{ko:"여자부 최다 종목(10m·25m·50m). 3월 결선 동메달(204.5)에 이어 8월 본선 554점·종합 1위 금메달.",vi:"Đa nội dung nhất nữ. HCĐ chung kết (204.5) 3/2026, rồi HCV hạng nhất chung cuộc 8/2026."},
+   pred:{ko:"완전일치율 31.7%로 개선 여지 큼. 탄착 방향 예측 정확도 향상 필요.",vi:"Trùng khớp 31.7% — còn nhiều dư địa; cần nâng độ chính xác dự đoán hướng chạm."},
+   tests:{ko:"회차 편차 최대(4차 59점 D → 고급 84.1점 B 회복). 개념 안정화가 시급.",vi:"Dao động lớn nhất (59 D → hồi phục 84.1 B). Cần ổn định khái niệm gấp."},
+   verdict:{ko:"시즌 후반 실전 성과와 훈련 상승세가 뚜렷한 상승형·여자부 다종목 자원. 2027년 과제: ①이해도 편차 안정화 ②손목 들림 교정·3~5초 격발 ③방향 예측 향상.",vi:"VĐV đang lên, đa nội dung nữ. 2027: ①ổn định dao động nhận thức ②sửa cổ tay, bóp cò 3~5 giây ③nâng dự đoán hướng."}}},
+ {key:"Anh",name:"Phan Nguyễn Ngọc Ánh",kr:"아잉",birth:2010,gender:"W",club:"Đồng Nai",exp:50,
+  disc:{ko:"10m 공기권총 + 25m",vi:"10m súng hơi + 25m"},
+  headline:{ko:"팀 최고의 꾸준함 — 단체 은메달 5개, 시즌 내내 시상대",vi:"Bền bỉ nhất đội — 5 HCB đồng đội, lên bục cả mùa"},
+  tests:null, testGrade:"—", warn:false,
+  strength:{ko:"시상대에 가장 꾸준히 오르는 안정형. 3월 결선 2위, 7월 개인 동, 8월 개인 은메달.",vi:"Ổn định nhất, lên bục đều đặn. Hạng 2 CK (3), HCĐ cá nhân (7), HCB cá nhân (8)."},
+  task:{ko:"손목 각도를 일정하게 유지(본인 지목 최우선). DRF→실탄 자신감 연결.",vi:"Giữ góc cổ tay ổn định (ưu tiên do VĐV chọn). Nối tự tin từ DRF sang đạn thật."},
+  report:{
+   comp:{ko:"단체 은메달 5개 등 단체 기여도 팀 최고. 개인 은 2·동 1로 안정적 입상.",vi:"Đóng góp đồng đội cao nhất (5 HCB đồng đội). 2 HCB, 1 HCĐ cá nhân — ổn định."},
+   pred:{ko:"예측사격 데이터 미수집. 2027년 도입 권장.",vi:"Chưa có dữ liệu bắn dự đoán. Đề xuất áp dụng 2027."},
+   tests:{ko:"이해도 시험 응시 기록 없음. 2027년 편입 권장.",vi:"Chưa có hồ sơ kiểm tra nhận thức. Đề xuất bổ sung 2027."},
+   verdict:{ko:"가장 꾸준한 안정형·단체전 핵심. 2027년 과제: ①손목 각도 고정 ②훈련 하한선 향상·월별 편차 축소 ③이해도·예측사격 데이터 편입. 꾸준함을 개인 금으로 전환할 잠재력.",vi:"Ổn định nhất, chủ chốt đồng đội. 2027: ①cố định góc cổ tay ②nâng ngưỡng tập, giảm dao động ③bổ sung dữ liệu nhận thức & dự đoán. Đủ tiềm năng thành HCV cá nhân."}}},
+];
+const byName = Object.fromEntries(ATH.map(a=>[a.name,a]));
+const NAMES = ATH.map(a=>a.name);
+
+// ================= i18n =================
+const I18N = {
+  ko:{title:"베트남 청소년 권총 대표팀",subtitle:"실시간 통합 대시보드 · 전문가 선우룡",refresh:"새로고침",
+    m_meet:"선수 대면 회의용",m_meet_d:"선수 1명 집중 · 강점과 다음 행동",m_coach:"감독 확인용",m_coach_d:"팀 전체 현황 · 위험 · 랭킹",
+    m_report:"보고서용",m_report_d:"선수별 전문 분석 · 인쇄 가능",loading:"실시간 데이터를 불러오는 중…",
+    foot:"데이터 출처: 예측사격·연습기록·면담 구글시트 + 대회 아카이브 · 방문 시마다 최신 반영",
+    updatedAt:"갱신",male:"남자부",female:"여자부",
+    k_ath:"선수",k_sess:"총 훈련 세션",k_medal:"총 메달(개인+단체)",k_avg:"팀 평균 한 발당",k_risk:"관리 필요(위험)",
+    riskboard:"심리 위험도 (면담)",rank_prac:"훈련 한 발당 평균",rank_pred:"예측 자기인식(완전일치율)",rank_medal:"메달 합계",
+    tbl_over:"선수별 종합 현황",c_name:"선수",c_birth:"출생",c_club:"소속",c_recent:"최근60발",c_best:"대회최고",c_avg:"한발당",c_pred:"예측일치",c_risk:"위험도",c_test:"이해도",
+    meet_pick:"회의할 선수를 선택하세요",my2026:"나의 2026",recent60:"최근 60발",best:"대회 최고 본선",medals:"메달",avg:"훈련 한 발당",trend:"훈련 성장 추이 (10m)",
+    strength:"나의 강점",nextTask:"나의 다음 과제",myPledge:"내가 정한 다짐 (면담)",noPledge:"면담 기록 없음",
+    hComp:"대회 성적",hPrac:"훈련 기록",hPred:"예측사격 자기인식",hInt:"면담·심리",hTest:"이해도 평가",hVerdict:"종합 평가 및 2027년 방향",
+    prog:"점수 진행",risk:"위험도",type:"유형",prob:"반복 문제",act:"다음 행동",noData:"데이터 없음",
+    exp:"경력",mo:"개월",sess:"세션",print:"인쇄 / PDF 저장",detail:"상세 보기"},
+  vi:{title:"Đội tuyển súng ngắn trẻ Việt Nam",subtitle:"Dashboard thời gian thực · Chuyên gia Sunwoo Ryong",refresh:"Làm mới",
+    m_meet:"Họp với VĐV",m_meet_d:"Tập trung 1 VĐV · điểm mạnh & việc cần làm",m_coach:"Cho HLV trưởng",m_coach_d:"Toàn đội · nguy cơ · xếp hạng",
+    m_report:"Báo cáo",m_report_d:"Phân tích chuyên sâu · có thể in",loading:"Đang tải dữ liệu thời gian thực…",
+    foot:"Nguồn: Google Sheet dự đoán·tập luyện·phỏng vấn + kho thi đấu · cập nhật mỗi lần truy cập",
+    updatedAt:"Cập nhật",male:"Nội dung Nam",female:"Nội dung Nữ",
+    k_ath:"Vận động viên",k_sess:"Tổng buổi tập",k_medal:"Tổng HC (CN+ĐĐ)",k_avg:"TB đội mỗi phát",k_risk:"Cần lưu ý (nguy cơ)",
+    riskboard:"Nguy cơ tâm lý (phỏng vấn)",rank_prac:"Điểm trung bình mỗi phát",rank_pred:"Tự nhận thức (trùng khớp)",rank_medal:"Tổng huy chương",
+    tbl_over:"Tổng quan từng VĐV",c_name:"VĐV",c_birth:"Năm",c_club:"Đội",c_recent:"60 gần",c_best:"VL cao",c_avg:"TB/phát",c_pred:"Trùng khớp",c_risk:"Nguy cơ",c_test:"Nhận thức",
+    meet_pick:"Chọn vận động viên để họp",my2026:"Năm 2026 của tôi",recent60:"60 viên gần nhất",best:"VL cao nhất",medals:"Huy chương",avg:"TB mỗi phát",trend:"Đà tiến bộ tập luyện (10m)",
+    strength:"Điểm mạnh của tôi",nextTask:"Việc cần làm tiếp theo",myPledge:"Cam kết của tôi (phỏng vấn)",noPledge:"Chưa có hồ sơ phỏng vấn",
+    hComp:"Thành tích thi đấu",hPrac:"Hồ sơ tập luyện",hPred:"Tự nhận thức qua dự đoán",hInt:"Phỏng vấn·tâm lý",hTest:"Kiểm tra nhận thức",hVerdict:"Đánh giá tổng hợp & hướng 2027",
+    prog:"Diễn tiến điểm",risk:"Nguy cơ",type:"Nhóm",prob:"Vấn đề lặp lại",act:"Hành động tiếp theo",noData:"Không có dữ liệu",
+    exp:"Kinh nghiệm",mo:"tháng",sess:"buổi",print:"In / Lưu PDF",detail:"Xem chi tiết"},
+};
+let LANG="ko", MODE="meet", MEET_SEL=null;
+const t=k=>I18N[LANG][k]||k;
+
+// ================= CSV parser =================
+function parseCSV(text){
+  const rows=[]; let row=[], f="", q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){f+='"';i++} else q=false } else f+=c }
+    else{ if(c==='"')q=true; else if(c===','){row.push(f);f=""}
+      else if(c==='\n'){row.push(f);rows.push(row);row=[];f=""}
+      else if(c==='\r'){} else f+=c } }
+  if(f!==""||row.length){row.push(f);rows.push(row)}
+  return rows;
+}
+const num=x=>{const v=parseFloat(String(x).replace(/[^0-9.\-]/g,""));return isNaN(v)?null:v};
+function monthKey(d){ const m=String(d).match(/(\d{4})[.\-]\s*(\d{1,2})/); return m?`${m[1]}-${String(+m[2]).padStart(2,"0")}`:null; }
+
+// ================= fetch + compute =================
+let DATA={pred:{},practice:{},interview:{},archive:{}};
+async function fetchText(u){const r=await fetch(u,{cache:"no-store"});if(!r.ok)throw new Error(r.status);return r.text();}
+async function fetchJSON(u){const r=await fetch(u,{cache:"no-store"});if(!r.ok)throw new Error(r.status);return r.json();}
+
+function computePractice(rows){
+  const H=3; const out={}; NAMES.forEach(n=>out[n]={n:0,persh:[],best60:0,mon:{}});
+  for(let i=H+1;i<rows.length;i++){const r=rows[i];if(!r||r.length<8)continue;
+    const name=(r[1]||"").trim(); if(!out[name])continue;
+    const ev=(r[4]||""); if(!ev.includes("10m"))continue;
+    const shots=num(r[6]), total=num(r[7]); if(!shots||!total)continue;
+    const ps=total/shots; out[name].n++; out[name].persh.push(ps);
+    if(shots===60&&total>out[name].best60)out[name].best60=total;
+    const mk=monthKey(r[0]); if(mk){(out[name].mon[mk]=out[name].mon[mk]||[]).push(ps);}
+  }
+  for(const n in out){const o=out[n]; o.avg=o.persh.length?o.persh.reduce((a,b)=>a+b,0)/o.persh.length:null;
+    o.trend=Object.keys(o.mon).sort().map(m=>({m,v:o.mon[m].reduce((a,b)=>a+b,0)/o.mon[m].length}));}
+  return out;
+}
+function idx(h,sub){return h.findIndex(x=>x&&x.includes(sub));}
+function computePred(rows){
+  const h=rows[0]; const iName=idx(h,"선수명"),iMatch=idx(h,"누적완전일치율"),iPa=idx(h,"전체_예측점수평균"),iRa=idx(h,"전체_실제점수평균"),iV=idx(h,"최종판정");
+  const out={};
+  for(let i=1;i<rows.length;i++){const r=rows[i];if(!r||r.length<=iName)continue;const nm=(r[iName]||"").trim();if(!byName[nm])continue;
+    out[nm]={match:num(r[iMatch]),pa:num(r[iPa]),ra:num(r[iRa]),verdict:r[iV]||""};}
+  return out;
+}
+function computeInterview(rows){
+  const h=rows[0]; const iName=idx(h,"Athlete"),iRisk=idx(h,"Risk Score"),iLvl=idx(h,"Risk Level"),iType=idx(h,"Primary Type"),
+    iRep=idx(h,"Repeated Problem"),iAct=idx(h,"One Action"),iSolve=idx(h,"Problem to Solve");
+  const out={};
+  for(let i=1;i<rows.length;i++){const r=rows[i];if(!r||r.length<=iName)continue;const nm=(r[iName]||"").trim();if(!byName[nm])continue;
+    out[nm]={risk:num(r[iRisk]),level:r[iLvl]||"",type:r[iType]||"",prob:r[iRep]||"",act:r[iAct]||"",solve:r[iSolve]||""};}
+  return out;
+}
+function computeArchive(ath,res,ev){
+  const evm={}; ev.forEach(e=>evm[e.id]=e);
+  const id2=Object.fromEntries(ath.filter(a=>byName[a.full_name]).map(a=>[a.id,a.full_name]));
+  const out={}; NAMES.forEach(n=>out[n]={ind:[0,0,0],team:[0,0,0],best60:0,finals:0,count:0,recent:[]});
+  const M={gold:0,silver:1,bronze:2};
+  res.forEach(r=>{const nm=id2[r.athlete_id];if(!nm)return;const o=out[nm];o.count++;
+    if(r.medal!=null&&M[r.medal]!=null)o.ind[M[r.medal]]++;
+    if(r.team_medal!=null&&M[r.team_medal]!=null)o.team[M[r.team_medal]]++;
+    if(r.final_score)o.finals++;
+    if(r.qual_total&&r.qual_total>500&&r.qual_total>o.best60)o.best60=r.qual_total;
+  });
+  // recent 2026 (top 3 by date) per athlete
+  const perA={}; NAMES.forEach(n=>perA[n]=[]);
+  res.forEach(r=>{const nm=id2[r.athlete_id];if(!nm)return;const d=r.match_date||"";if(d<"2026")return;
+    perA[nm].push(r);});
+  for(const nm in perA){perA[nm].sort((a,b)=>(a.match_date||"").localeCompare(b.match_date||""));
+    out[nm].recent=perA[nm].slice(-3).map(r=>({d:r.match_date,q:r.qual_total,f:r.final_score,
+      medal:r.medal,team:r.team_medal,plc:r.placement}));}
+  return out;
+}
+
+async function loadAll(){
+  const [pT,prT,iT] = await Promise.all([
+    fetchText(csvUrl(SHEETS.practice)), fetchText(csvUrl(SHEETS.pred)), fetchText(csvUrl(SHEETS.interview))
+  ]);
+  DATA.practice=computePractice(parseCSV(pT));
+  DATA.pred=computePred(parseCSV(prT));
+  DATA.interview=computeInterview(parseCSV(iT));
+  try{
+    const [ath,res,ev]=await Promise.all([fetchJSON(ARCHIVE+"athletes.json"),fetchJSON(ARCHIVE+"results.json"),fetchJSON(ARCHIVE+"events.json")]);
+    DATA.archive=computeArchive(ath,res,ev);
+  }catch(e){ DATA.archive={}; DATA.archiveErr=String(e); }
+  const now=new Date();
+  document.getElementById("updated").textContent=t("updatedAt")+" "+now.toLocaleTimeString(LANG==="ko"?"ko-KR":"vi-VN");
+}
+
+// ================= render helpers =================
+const el=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;};
+const esc=s=>String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+function medalStr(a){return `<span style="color:var(--gold)">${a[0]}</span>·<span style="color:#cfd6e6">${a[1]}</span>·<span style="color:#c9905a">${a[2]}</span>`;}
+function totalMedals(a){const ar=a||[0,0,0];return ar[0]+ar[1]+ar[2];}
+function sparkline(trend,w=180,h=44){
+  if(!trend||trend.length<2)return `<span class="muted">${t("noData")}</span>`;
+  const xs=trend.map((_,i)=>i),ys=trend.map(p=>p.v);
+  const mn=Math.min(...ys)-0.05,mx=Math.max(...ys)+0.05;
+  const px=i=>8+ (i/(trend.length-1))*(w-16);
+  const py=v=>h-6-((v-mn)/(mx-mn))*(h-12);
+  const pts=trend.map((p,i)=>`${px(i).toFixed(1)},${py(p.v).toFixed(1)}`).join(" ");
+  const last=trend[trend.length-1].v, first=trend[0].v, up=last>=first;
+  const area=`8,${h-6} ${pts} ${(w-8)},${h-6}`;
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+    <polygon points="${area}" fill="${up?'rgba(55,201,138,.12)':'rgba(255,93,93,.12)'}"/>
+    <polyline points="${pts}" fill="none" stroke="${up?'#37c98a':'#ff5d5d'}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${px(trend.length-1)}" cy="${py(last)}" r="3.2" fill="${up?'#37c98a':'#ff5d5d'}"/>
+  </svg>`;
+}
+function ordered(){const m=ATH.filter(a=>a.gender==="M").sort((a,b)=>a.birth-b.birth);
+  const f=ATH.filter(a=>a.gender==="W").sort((a,b)=>a.birth-b.birth);return {m,f,all:[...m,...f]};}
+
+// ================= MODE: COACH =================
+function renderCoach(){
+  const app=el("div");
+  const O=ordered();
+  // KPIs
+  let sess=0,medals=0,avgs=[],risks=0;
+  O.all.forEach(a=>{const p=DATA.practice[a.name]||{},ar=DATA.archive[a.name]||{},iv=DATA.interview[a.name]||{};
+    sess+=p.n||0; medals+=totalMedals(ar.ind)+totalMedals(ar.team); if(p.avg)avgs.push(p.avg);
+    if(iv.risk!=null&&iv.risk>=26)risks++;});
+  const teamAvg=avgs.length?(avgs.reduce((a,b)=>a+b,0)/avgs.length):0;
+  const kp=el("div","grid kpis");
+  const kpi=(v,l,cls)=>{const e=el("div","kpi");e.innerHTML=`<div class="v ${cls||''}">${v}</div><div class="l">${l}</div>`;return e;};
+  kp.append(kpi(O.all.length,t("k_ath"),"acc"),kpi(sess.toLocaleString(),t("k_sess")),kpi(medals,t("k_medal"),"gold"),
+    kpi(teamAvg.toFixed(2),t("k_avg"),"good"),kpi(risks,t("k_risk"),risks?"warn":""));
+  app.append(kp);
+
+  // risk board
+  app.append(el("h2","sec",t("riskboard")));
+  const rb=el("div","card");
+  const rlist=O.all.map(a=>({a,iv:DATA.interview[a.name]||{}})).sort((x,y)=>(y.iv.risk||0)-(x.iv.risk||0));
+  const maxR=Math.max(30,...rlist.map(x=>x.iv.risk||0));
+  rlist.forEach(({a,iv})=>{const risk=iv.risk||0;const warn=risk>=26;
+    const b=el("div","bar");b.innerHTML=`<span class="l">${a.name.split(" ").slice(-1)} <span class="muted">${a.kr}</span></span>
+      <div class="track"><div class="fill ${warn?'warn':(risk>=23?'gold':'good')}" style="width:${(risk/maxR*100).toFixed(0)}%"></div></div>
+      <b>${risk||'—'} ${warn?'⚠':''}</b>`;rb.append(b);});
+  app.append(rb);
+
+  // ranking bars
+  const mk=(title,valfn,fmt,cls)=>{app.append(el("h2","sec",title));const c=el("div","card");
+    const arr=O.all.map(a=>({a,v:valfn(a)})).filter(x=>x.v!=null).sort((x,y)=>y.v-x.v);
+    const mx=Math.max(...arr.map(x=>x.v))||1;
+    arr.forEach(({a,v})=>{const b=el("div","bar");b.innerHTML=`<span class="l">${a.name.split(" ").slice(-1)} <span class="muted">${a.kr}</span></span>
+      <div class="track"><div class="fill ${cls}" style="width:${(v/mx*100).toFixed(0)}%"></div></div><b>${fmt(v)}</b>`;c.append(b);});
+    app.append(c);};
+  mk(t("rank_prac"),a=>(DATA.practice[a.name]||{}).avg,v=>v.toFixed(2),"");
+  mk(t("rank_pred"),a=>(DATA.pred[a.name]||{}).match,v=>v.toFixed(1)+"%","good");
+  mk(t("rank_medal"),a=>{const ar=DATA.archive[a.name]||{};return totalMedals(ar.ind)+totalMedals(ar.team);},v=>String(v),"gold");
+
+  // overview table
+  app.append(el("h2","sec",t("tbl_over")));
+  const wrap=el("div","card");wrap.style.overflowX="auto";
+  const tb=el("table");
+  tb.innerHTML=`<thead><tr><th class="l">${t("c_name")}</th><th>${t("c_birth")}</th><th>${t("c_club")}</th>
+    <th>${t("c_best")}</th><th>${t("c_avg")}</th><th>${t("c_pred")}</th><th>${t("c_risk")}</th><th>${t("c_test")}</th></tr></thead>`;
+  const tbody=el("tbody");
+  const grp=(label)=>{const tr=el("tr","male-h");tr.innerHTML=`<td colspan="8">${label}</td>`;return tr;};
+  const rowFor=a=>{const p=DATA.practice[a.name]||{},pr=DATA.pred[a.name]||{},ar=DATA.archive[a.name]||{},iv=DATA.interview[a.name]||{};
+    const warn=(iv.risk||0)>=26;const tr=el("tr");
+    tr.innerHTML=`<td class="l"><b>${a.name.split(" ").slice(-1)}</b> <span class="muted">${a.kr}</span></td>
+     <td>${a.birth}</td><td>${a.club}</td><td><b>${ar.best60||'—'}</b></td>
+     <td>${p.avg?p.avg.toFixed(2):'—'}</td><td>${pr.match!=null?pr.match.toFixed(1)+'%':'—'}</td>
+     <td><span class="tag ${warn?'risk':'ok'}">${iv.risk!=null?iv.risk:'—'}</span></td>
+     <td>${a.testGrade!=="—"?`<span class="tag ${a.testGrade[0]}">${a.testGrade}</span>`:'—'}</td>`;
+    tr.style.cursor="pointer";tr.onclick=()=>{MODE="report";location.hash="report";setMode();setTimeout(()=>{const t2=document.getElementById("rp-"+a.key);if(t2)t2.scrollIntoView({behavior:"smooth"});},60);};
+    return tr;};
+  const gh=(lbl)=>{const tr=el("tr","male-h");tr.innerHTML=`<td colspan="8">${lbl}</td>`;tbody.append(tr);};
+  gh(t("male")); O.m.forEach(a=>tbody.append(rowFor(a)));
+  gh(t("female")); O.f.forEach(a=>tbody.append(rowFor(a)));
+  tb.append(tbody);wrap.append(tb);app.append(wrap);
+  return app;
+}
+
+// ================= MODE: MEETING =================
+function renderMeet(){
+  const app=el("div");
+  const O=ordered();
+  if(!MEET_SEL)MEET_SEL=O.all[0].key;
+  const chips=el("div","chips");
+  O.all.forEach(a=>{const c=el("div","chip"+(a.key===MEET_SEL?" on":""));
+    c.innerHTML=`${a.name.split(" ").slice(-1)} <span class="g">${a.kr}·${a.birth}</span>`;
+    c.onclick=()=>{MEET_SEL=a.key;render();};chips.append(c);});
+  app.append(chips);
+  const a=ATH.find(x=>x.key===MEET_SEL);
+  const p=DATA.practice[a.name]||{},pr=DATA.pred[a.name]||{},ar=DATA.archive[a.name]||{},iv=DATA.interview[a.name]||{};
+  const card=el("div","card");
+  // hero
+  const hero=el("div","meet-hero");
+  hero.innerHTML=`<div class="avatar">${a.name.split(" ").slice(-1)[0]}</div>
+    <div style="flex:1;min-width:200px"><div style="font-size:22px;font-weight:800">${a.name} <span class="muted" style="font-size:15px">${a.kr}</span></div>
+    <div class="muted" style="font-size:13px">${a.birth} · ${a.club} · ${t("exp")} ${a.exp}${t("mo")} · ${a.disc[LANG]}</div>
+    <div style="margin-top:6px;font-weight:700;color:${a.warn?'var(--warn)':'var(--gold)'}">${a.warn?'⚠ ':'★ '}${a.headline[LANG]}</div></div>`;
+  card.append(hero);
+  // my 2026 stats
+  card.append(el("h2","sec",t("my2026")));
+  const kp=el("div","grid kpis");
+  const kpi=(v,l,cls)=>{const e=el("div","kpi");e.innerHTML=`<div class="v ${cls||''}">${v}</div><div class="l">${l}</div>`;return e;};
+  const recent=(a.recent60!=null?a.recent60:null);
+  kp.append(
+    kpi(ar.best60||'—',t("best"),"acc"),
+    kpi(p.avg?p.avg.toFixed(2):'—',t("avg"),"good"),
+    kpi(totalMedals(ar.ind)+totalMedals(ar.team),t("medals"),"gold"),
+    kpi((p.n||0)+" ",t("sess")));
+  card.append(kp);
+  // trend
+  card.append(el("h2","sec",t("trend")));
+  const tw=el("div","card");tw.style.background="var(--bg2)";
+  tw.innerHTML=`<div class="sparkwrap">${sparkline(p.trend,Math.min(520,window.innerWidth-90),64)}
+    <div><div class="muted" style="font-size:12px">${p.trend&&p.trend.length?p.trend[0].m+' → '+p.trend[p.trend.length-1].m:''}</div>
+    <div style="font-size:18px;font-weight:800">${p.trend&&p.trend.length?p.trend[0].v.toFixed(2)+' → '+p.trend[p.trend.length-1].v.toFixed(2):'—'}</div></div></div>`;
+  card.append(tw);
+  // strength
+  const g1=el("div","goal");g1.innerHTML=`<b>${t("strength")}</b><br>${a.strength[LANG]}`;card.append(g1);
+  // next task
+  const g2=el("div","goal"+(a.warn?" warn":""));g2.innerHTML=`<b>${t("nextTask")}</b><br>${a.task[LANG]}`;card.append(g2);
+  // pledge from interview
+  const pl=el("div","pledge");
+  if(iv.act){pl.innerHTML=`<div class="muted" style="font-size:12px">${t("myPledge")}</div><div class="q">“${esc(iv.act)}”</div>
+    ${iv.prob?`<div class="muted" style="font-size:12.5px;margin-top:8px">▸ ${esc(iv.prob)}</div>`:''}`;}
+  else pl.innerHTML=`<div class="muted">${t("noPledge")}</div>`;
+  card.append(pl);
+  app.append(card);
+  return app;
+}
+
+// ================= MODE: REPORT =================
+function renderReport(){
+  const app=el("div","rp");
+  const pbtn=el("button","btn");pbtn.textContent="🖨 "+t("print");pbtn.style.marginBottom="10px";pbtn.onclick=()=>window.print();
+  app.append(pbtn);
+  const O=ordered();
+  const block=(a)=>{const p=DATA.practice[a.name]||{},pr=DATA.pred[a.name]||{},ar=DATA.archive[a.name]||{},iv=DATA.interview[a.name]||{};
+    const wrap=el("div","card");wrap.id="rp-"+a.key;wrap.style.marginBottom="14px";
+    wrap.append(el("h3",null,`${a.name} <span class="muted" style="font-size:14px">${a.kr} · ${a.birth} · ${a.club}</span>`));
+    const ban=el("div","banner "+(a.warn?"warn":"gold"));ban.innerHTML=(a.warn?"⚠ ":"★ ")+a.headline[LANG];wrap.append(ban);
+    // quick stats line
+    const line=el("p");line.innerHTML=`<span class="muted">${t("best")}:</span> <b>${ar.best60||'—'}</b> &nbsp;
+      <span class="muted">${t("avg")}:</span> <b>${p.avg?p.avg.toFixed(2):'—'}</b> &nbsp;
+      <span class="muted">${t("medals")}:</span> ${medalStr(ar.ind)} <span class="muted">(개인)</span> / ${medalStr(ar.team)} <span class="muted">(단체)</span>`;
+    wrap.append(line);
+    const sec=(h,txt)=>{wrap.append(el("div","sub",h));wrap.append(el("p",null,txt));};
+    sec(t("hComp"),a.report.comp[LANG]);
+    // practice with sparkline
+    wrap.append(el("div","sub",t("hPrac")));
+    const pw=el("div","sparkwrap");pw.innerHTML=`${sparkline(p.trend,200,44)}<p style="margin:0">${LANG==="ko"?`한 발당 평균 <b>${p.avg?p.avg.toFixed(2):'—'}</b>, 세션 ${p.n||0}회, 60발 최고 ${p.best60||'—'}`:`TB/phát <b>${p.avg?p.avg.toFixed(2):'—'}</b>, ${p.n||0} buổi, 60 viên cao nhất ${p.best60||'—'}`}</p>`;
+    wrap.append(pw);
+    sec(t("hPred"),pr.match!=null?(a.report.pred[LANG]+` <span class="muted">(${t("prog")}: ${pr.match.toFixed(1)}%, ${esc(pr.verdict)})</span>`):a.report.pred[LANG]);
+    // interview mini table
+    wrap.append(el("div","sub",t("hInt")));
+    if(iv.risk!=null){const it=el("p");it.innerHTML=`<b style="color:${iv.risk>=26?'var(--warn)':'inherit'}">${t("risk")} ${iv.risk} (${esc(iv.level)})</b> · ${t("type")}: ${esc(iv.type)}<br>
+      <span class="muted">${t("prob")}:</span> ${esc(iv.prob)}<br><span class="muted">${t("act")}:</span> ${esc(iv.act)}`;wrap.append(it);}
+    else wrap.append(el("p","muted",t("noData")));
+    // tests
+    wrap.append(el("div","sub",t("hTest")));
+    if(a.tests){const tp=el("p");tp.innerHTML=`<b>${t("prog")}:</b> ${a.tests.join(" → ")} <span class="tag ${a.testGrade[0]}">${a.testGrade}</span><br>${a.report.tests[LANG]}`;wrap.append(tp);}
+    else wrap.append(el("p",null,a.report.tests[LANG]));
+    // verdict
+    wrap.append(el("div","sub",t("hVerdict")));
+    const v=el("div","verdict");v.innerHTML=a.report.verdict[LANG];wrap.append(v);
+    return wrap;};
+  app.append(el("h2","sec",t("male")));O.m.forEach(a=>app.append(block(a)));
+  app.append(el("h2","sec",t("female")));O.f.forEach(a=>app.append(block(a)));
+  return app;
+}
+
+// ================= app shell =================
+function render(){
+  const app=document.getElementById("app");app.innerHTML="";
+  if(DATA.err){app.innerHTML=`<div class="err">데이터 로드 실패: ${esc(DATA.err)}<br>새로고침을 눌러 다시 시도하세요.</div>`;return;}
+  if(!DATA.loaded){app.innerHTML=`<div class="loading">${t("loading")}</div>`;return;}
+  if(MODE==="coach")app.append(renderCoach());
+  else if(MODE==="report")app.append(renderReport());
+  else app.append(renderMeet());
+}
+function applyLangStatic(){document.querySelectorAll("[data-t]").forEach(e=>{const k=e.getAttribute("data-t");if(I18N[LANG][k])e.textContent=I18N[LANG][k];});
+  document.documentElement.lang=LANG;}
+function setMode(){document.querySelectorAll(".mode").forEach(m=>m.classList.toggle("on",m.dataset.mode===MODE));render();}
+
+document.getElementById("lang").addEventListener("click",e=>{const b=e.target.closest("[data-lang]");if(!b)return;
+  LANG=b.dataset.lang;document.querySelectorAll("#lang button").forEach(x=>x.classList.toggle("on",x.dataset.lang===LANG));
+  applyLangStatic();render();
+  document.getElementById("updated").textContent=t("updatedAt")+" "+new Date().toLocaleTimeString(LANG==="ko"?"ko-KR":"vi-VN");});
+document.getElementById("modes").addEventListener("click",e=>{const m=e.target.closest(".mode");if(!m)return;MODE=m.dataset.mode;location.hash=MODE;setMode();});
+document.getElementById("refresh").addEventListener("click",async()=>{
+  const b=document.getElementById("refresh");b.textContent="…";
+  try{await loadAll();DATA.loaded=true;DATA.err=null;}catch(e){DATA.err=String(e);}
+  b.textContent=t("refresh");render();});
+
+async function boot(){
+  applyLangStatic();
+  if(location.hash&&["meet","coach","report"].includes(location.hash.slice(1))){MODE=location.hash.slice(1);setMode();}
+  try{await loadAll();DATA.loaded=true;}catch(e){DATA.err=String(e);}
+  render();
+  // auto-refresh every 90s (real-time)
+  setInterval(async()=>{try{await loadAll();DATA.loaded=true;DATA.err=null;render();}catch(e){}},90000);
+}
+boot();
+</script>
+</body>
+</html>
