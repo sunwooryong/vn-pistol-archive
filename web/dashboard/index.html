@@ -124,6 +124,21 @@
   .loading{text-align:center;color:var(--mut);padding:60px 0}
   .err{background:var(--warnbg);border:1px solid #f2bfbf;color:#c0392b;border-radius:10px;padding:12px 14px;margin:12px 0;font-size:13px}
   .foot{color:var(--mut);font-size:12px;text-align:center;margin-top:36px;border-top:1px solid var(--line);padding-top:16px}
+  /* yearly medal detail */
+  .yearcard{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:linear-gradient(180deg,#f7fafe,#eef4fb)}
+  .yh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:9px;padding-bottom:8px;border-bottom:1px dashed var(--line2)}
+  .yy{font-size:19px;color:var(--acc2);font-weight:800;letter-spacing:.3px}
+  .mb{font-size:12px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:var(--tx);font-weight:600}
+  .mb.fin{color:var(--mut);background:transparent;border:0;padding:3px 2px}
+  .mlist{display:grid;gap:6px}
+  .ml{font-size:13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:3px 0}
+  .ml .em{font-size:15px}
+  .mt{font-size:10.5px;font-weight:800;background:var(--accsoft);color:var(--acc2);border-radius:5px;padding:1px 6px}
+  .mt.tm{background:#fff2df;color:#a5781a}
+  .md-d{color:var(--mut);font-variant-numeric:tabular-nums;font-size:12px;min-width:42px}
+  .md-e{font-weight:800;color:var(--tx)}
+  .md-c{font-size:12px}
+  .ynone{color:var(--mut);font-size:12px}
   .hide{display:none!important}
   @media print{header,.modes,.chips,.btn,.seg{display:none!important} body{background:#fff;color:#000}}
 </style>
@@ -530,6 +545,32 @@ function medalBars(years){
   return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="max-width:100%">${grid}${bars}</svg>`;
 }
 function medalDot(m){return m==='gold'?'#d99a1f':m==='silver'?'#9aa7b5':m==='bronze'?'#c07a3c':'#0081C8';}
+// Detailed textual medal breakdown per year (replaces vertical bar chart)
+function medalDetail(a){
+  const ar=DATA.archive[a.name]||{};const wrap=el("div");
+  const EM={gold:'🥇',silver:'🥈',bronze:'🥉'};const RK={gold:0,silver:1,bronze:2};
+  const CN=LANG==='ko'?'개인':'CN', TM=LANG==='ko'?'단체':'ĐĐ';
+  const yearsDesc=(ar.yearsArr||[]).slice().reverse();
+  if(!yearsDesc.length){wrap.append(el("p","muted",t("noData")));return wrap;}
+  const byYear={}; (ar.results||[]).forEach(r=>{if(r.medal||r.tmedal)(byYear[r.year]=byYear[r.year]||[]).push(r);});
+  const badge=(arr,lbl)=>{const p=[];if(arr[0])p.push('🥇'+arr[0]);if(arr[1])p.push('🥈'+arr[1]);if(arr[2])p.push('🥉'+arr[2]);
+    return p.length?`<span class="mb">${lbl} ${p.join(' ')}</span>`:'';};
+  yearsDesc.forEach(y=>{
+    const card=el("div","yearcard");
+    const head=`<div class="yh"><span class="yy">${y.year}</span>${badge(y.ind,CN)}${badge(y.team,TM)}<span class="mb fin">${t("ry_finals")} ${y.finals||0}</span></div>`;
+    const lines=[];
+    (byYear[y.year]||[]).forEach(r=>{
+      if(r.medal)lines.push({m:r.medal,team:false,d:r.d,dist:r.dist,age:r.age,comp:r.comp});
+      if(r.tmedal)lines.push({m:r.tmedal,team:true,d:r.d,dist:r.dist,age:r.age,comp:r.comp});});
+    lines.sort((x,z)=>(RK[x.m]-RK[z.m])||(x.d||'').localeCompare(z.d||''));
+    let rows="";
+    lines.forEach(l=>{const ev=`${l.dist||''}${l.age?' '+l.age:''}`.trim();const dt=(l.d||'').slice(5);
+      rows+=`<div class="ml"><span class="em">${EM[l.m]}</span><span class="mt ${l.team?'tm':''}">${l.team?TM:CN}</span><span class="md-d">${dt}</span><span class="md-e">${esc(ev)}</span><span class="md-c muted">${esc(l.comp||'')}</span></div>`;});
+    card.innerHTML=head+`<div class="mlist">${rows||`<div class="ynone">${LANG==='ko'?'획득 메달 없음':'Không có huy chương'}</div>`}</div>`;
+    wrap.append(card);
+  });
+  return wrap;
+}
 function qualTimeline(pts,w,h){
   w=w||Math.min(560,window.innerWidth-70);h=h||156;
   const pad={l:34,r:12,t:12,b:24};
@@ -568,12 +609,10 @@ function recordAnalysis(a){
       <td>${y.finals||'—'}</td><td>${y.q10avg?y.q10avg.toFixed(1):'—'}</td><td><b>${y.q10max||'—'}</b></td><td>${y.innerAvg!=null?y.innerAvg.toFixed(1):'—'}</td>`;
     bd.append(tr);});
   tb.append(bd);c1.append(tb);wrap.append(c1);
-  // yearly medal bar chart
+  // yearly medal detail (textual)
   wrap.append(el("h2","sec",t("rec_medalbar")));
   const cb=el("div","card");
-  cb.innerHTML=`<div style="text-align:center">${medalBars(ar.yearsArr||[])}</div>
-    <div class="muted" style="font-size:11.5px;text-align:center;margin-top:4px">
-    <span style="color:#d99a1f">■</span> ${t("lgGold")} <span style="color:#9aa7b5">■</span> ${t("lgSilver")} <span style="color:#c07a3c">■</span> ${t("lgBronze")} &nbsp;·&nbsp; ${LANG==="ko"?"진한색=개인, 연한색=단체":"đậm=cá nhân, nhạt=đồng đội"}</div>`;
+  cb.append(medalDetail(a));
   wrap.append(cb);
   // timeline
   wrap.append(el("h2","sec",t("rec_timeline")));
@@ -648,11 +687,6 @@ function renderTeam(){
     ty.n+=y.n;ty.finals+=y.finals;for(let i=0;i<3;i++){ty.ind[i]+=y.ind[i];ty.team[i]+=y.team[i];}});});
   const yrs=Object.keys(teamYears).sort();
   if(yrs.length){app.append(el("h2","sec",t("rec_teamyear")));
-    const yArr=yrs.map(y=>({year:y,ind:teamYears[y].ind,team:teamYears[y].team,finals:teamYears[y].finals,n:teamYears[y].n}));
-    const cbar=el("div","card");
-    cbar.innerHTML=`<div style="text-align:center">${medalBars(yArr)}</div>
-      <div class="muted" style="font-size:11.5px;text-align:center;margin-top:4px"><span style="color:#d99a1f">■</span> ${t("lgGold")} <span style="color:#9aa7b5">■</span> ${t("lgSilver")} <span style="color:#c07a3c">■</span> ${t("lgBronze")} &nbsp;·&nbsp; ${LANG==="ko"?"진한색=개인, 연한색=단체":"đậm=cá nhân, nhạt=đồng đội"}</div>`;
-    app.append(cbar);
     const cy=el("div","card");cy.style.overflowX="auto";const ty=el("table");
     ty.innerHTML=`<thead><tr><th>${t("ry_year")}</th><th>${t("ry_n")}</th><th>${t("ry_ind")}</th><th>${t("ry_team")}</th><th>${t("ry_finals")}</th></tr></thead>`;
     const bd=el("tbody");yrs.forEach(y=>{const d=teamYears[y];const tr=el("tr");
