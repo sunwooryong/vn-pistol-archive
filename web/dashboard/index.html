@@ -5,126 +5,124 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <title>베트남 청소년 권총 대표팀 · 실시간 대시보드</title>
 <style>
+  /* ===== Olympic-broadcast light theme ===== */
   :root{
-    --bg:#080b14; --bg2:#0e1420; --card:#121a2a; --card2:#1a2437; --line:#28344e;
-    --tx:#eff3fc; --mut:#9dabc7; --acc:#6aa8ff; --acc2:#3f7fe6;
-    --gold:#e7c86b; --gold2:#c69b3e; --good:#3fd39a; --warn:#ff6b6b; --warnbg:#3a2029; --goldbg:#231f11;
-    --shadow:0 16px 44px rgba(0,0,0,.5);
-    --hair:linear-gradient(90deg,transparent,rgba(231,200,107,.7),transparent);
+    --bg:#e7eef8; --bg2:#f4f8fd; --panel:#ffffff; --line:#dbe4f1; --line2:#c6d5e7;
+    --tx:#122a45; --mut:#5f7288;
+    --acc:#0081C8; --acc2:#0a63a8; --accsoft:#e5f1fb;
+    --gold:#d99a1f; --gold2:#b47c12; --silver:#8b98a8; --bronze:#c07a3c;
+    --good:#1f9d57; --warn:#e23b3b; --warnbg:#fdecec; --goodbg:#e9f7ef; --goldbg:#fdf4e1;
+    --shadow:0 8px 22px rgba(24,58,105,.10); --shadow2:0 14px 34px rgba(24,58,105,.18);
+    --ring5:linear-gradient(90deg,#0081C8 0%,#00a1e0 22%,#f4c300 46%,#00a651 72%,#ee334e 100%);
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
-  body{background:
-      radial-gradient(1100px 560px at 50% -8%, #17223c 0%, rgba(23,34,60,0) 60%),
-      linear-gradient(180deg,#0a0e1a,#080b14 40%) fixed, #080b14;
-    color:var(--tx);
+  body{background:linear-gradient(180deg,#eef5fc,#e3ecf7 55%) fixed,#e7eef8;color:var(--tx);
     font-family:"Malgun Gothic","Segoe UI",system-ui,-apple-system,"Apple SD Gothic Neo",Roboto,sans-serif;
     -webkit-font-smoothing:antialiased;line-height:1.55;min-height:100vh}
   a{color:var(--acc);text-decoration:none}
   .wrap{max-width:1120px;margin:0 auto;padding:0 16px 80px}
 
-  /* header */
-  header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,rgba(9,13,22,.94),rgba(9,13,22,.82));
-    backdrop-filter:blur(14px);border-bottom:1px solid var(--line);box-shadow:0 6px 24px rgba(0,0,0,.35)}
-  header::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--hair)}
-  .hd{max-width:1120px;margin:0 auto;padding:11px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-  .brand{display:flex;align-items:center;gap:11px;min-width:0}
-  .brand img.rings{height:38px;background:linear-gradient(#ffffff,#eef1f7);border-radius:10px;padding:6px 11px;
-    box-shadow:0 3px 12px rgba(0,0,0,.45),inset 0 0 0 1px rgba(0,0,0,.05)}
-  .brand .flags{height:34px;border-radius:6px;box-shadow:0 3px 10px rgba(0,0,0,.4)}
-  .brand .tt{display:flex;flex-direction:column;min-width:0}
-  .brand .tt b{font-size:15px;letter-spacing:.3px;white-space:nowrap;
-    background:linear-gradient(90deg,#fff,#e7c86b);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .brand .tt span{font-size:11px;color:var(--mut);white-space:nowrap}
+  /* header — Olympic broadcast banner */
+  header{position:sticky;top:0;z-index:50;background:linear-gradient(100deg,#0a5ea0,#0092d6);color:#fff;
+    box-shadow:0 6px 22px rgba(6,54,96,.28)}
+  header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--ring5)}
+  .hd{max-width:1120px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:13px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .brand img.rings{height:42px;background:#fff;border-radius:9px;padding:5px 10px;box-shadow:0 2px 9px rgba(0,0,0,.22)}
+  .brand img.flag{height:27px;border-radius:4px;box-shadow:0 2px 7px rgba(0,0,0,.28);border:1.5px solid rgba(255,255,255,.65)}
+  .brand .tt{display:flex;flex-direction:column;min-width:0;margin-left:2px}
+  .brand .tt b{font-size:16px;letter-spacing:.2px;white-space:nowrap;color:#fff;font-weight:800}
+  .brand .tt span{font-size:11px;color:rgba(255,255,255,.82);white-space:nowrap}
   .spacer{flex:1}
-  .live{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)}
-  .dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 0 0 rgba(55,201,138,.6);animation:pulse 2s infinite}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(55,201,138,.5)}70%{box-shadow:0 0 0 8px rgba(55,201,138,0)}100%{box-shadow:0 0 0 0 rgba(55,201,138,0)}}
-  .btn{background:var(--card2);border:1px solid var(--line);color:var(--tx);border-radius:9px;
+  .live{display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(255,255,255,.9)}
+  .dot{width:8px;height:8px;border-radius:50%;background:#7CFBB0;box-shadow:0 0 0 0 rgba(124,251,176,.7);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(124,251,176,.6)}70%{box-shadow:0 0 0 8px rgba(124,251,176,0)}100%{box-shadow:0 0 0 0 rgba(124,251,176,0)}}
+  .btn{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:9px;
     padding:7px 12px;font-size:12px;cursor:pointer;font-family:inherit;transition:.15s}
-  .btn:hover{border-color:var(--acc);color:#fff}
-  .seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
-  .seg button{background:transparent;border:0;color:var(--mut);padding:7px 11px;font-size:12px;cursor:pointer;font-family:inherit}
-  .seg button.on{background:var(--acc);color:#fff;font-weight:700}
+  .btn:hover{background:rgba(255,255,255,.32)}
+  .seg{display:inline-flex;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);border-radius:10px;overflow:hidden}
+  .seg button{background:transparent;border:0;color:rgba(255,255,255,.88);padding:7px 11px;font-size:12px;cursor:pointer;font-family:inherit}
+  .seg button.on{background:#fff;color:#0a63a8;font-weight:800}
 
   /* mode tabs */
-  .modes{display:flex;gap:8px;max-width:1120px;margin:0 auto;padding:12px 16px 0;flex-wrap:wrap}
-  .mode{flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:14px;
-    padding:12px 14px;cursor:pointer;transition:.18s;position:relative;overflow:hidden}
-  .mode:hover{border-color:var(--acc2);transform:translateY(-1px)}
-  .mode.on{border-color:var(--gold2);background:linear-gradient(135deg,#233251,#151e31);box-shadow:var(--shadow)}
-  .mode.on::after{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--hair)}
-  .mode .ic{font-size:20px}
-  .mode b{display:block;font-size:14.5px;margin-top:4px}
+  .modes{display:flex;gap:10px;max-width:1120px;margin:0 auto;padding:14px 16px 0;flex-wrap:wrap}
+  .mode{flex:1;min-width:170px;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:13px 15px;cursor:pointer;transition:.18s;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+  .mode:hover{border-color:var(--acc);transform:translateY(-2px);box-shadow:var(--shadow2)}
+  .mode.on{border-color:transparent;background:linear-gradient(135deg,#0a63a8,#0092d6);color:#fff;box-shadow:var(--shadow2)}
+  .mode .ic{font-size:21px}
+  .mode b{display:block;font-size:15px;margin-top:4px;color:var(--tx)}
   .mode small{display:block;color:var(--mut);font-size:11.5px;margin-top:2px}
-  .mode.on b{color:var(--gold)}
+  .mode.on b{color:#fff} .mode.on small{color:rgba(255,255,255,.88)}
 
-  h2.sec{font-size:15.5px;color:var(--gold);margin:28px 0 13px;letter-spacing:.5px;font-weight:800;display:flex;align-items:center;gap:9px}
-  h2.sec::before{content:"";width:4px;height:16px;border-radius:3px;background:linear-gradient(var(--gold),var(--gold2))}
+  h2.sec{font-size:15.5px;color:var(--acc2);margin:28px 0 13px;letter-spacing:.3px;font-weight:800;display:flex;align-items:center;gap:9px}
+  h2.sec::before{content:"";width:5px;height:17px;border-radius:3px;background:linear-gradient(var(--acc),var(--acc2))}
   .muted{color:var(--mut)}
-  .card{position:relative;background:linear-gradient(180deg,#151d2e,#0f1622);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
-  .card::before{content:"";position:absolute;top:0;left:18px;right:18px;height:1px;background:var(--hair);opacity:.55}
+  .card{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
   .grid{display:grid;gap:12px}
 
   /* KPI */
   .kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
-  .kpi{position:relative;background:linear-gradient(160deg,#1c2743,#131b2b);border:1px solid var(--line);border-radius:14px;padding:15px 14px;overflow:hidden;transition:.18s}
-  .kpi:hover{transform:translateY(-2px);border-color:var(--gold2)}
-  .kpi::after{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--hair)}
-  .kpi .v{font-size:27px;font-weight:800;letter-spacing:.3px}
+  .kpi{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:16px 14px;overflow:hidden;transition:.18s;box-shadow:var(--shadow)}
+  .kpi:hover{transform:translateY(-2px);box-shadow:var(--shadow2)}
+  .kpi::after{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--acc),#00a1e0)}
+  .kpi .v{font-size:28px;font-weight:800;letter-spacing:.3px;color:var(--acc2)}
   .kpi .l{font-size:12px;color:var(--mut);margin-top:3px}
   .kpi .v.good{color:var(--good)} .kpi .v.warn{color:var(--warn)} .kpi .v.gold{color:var(--gold)} .kpi .v.acc{color:var(--acc)}
 
   /* athlete chips */
   .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-  .chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer;font-size:13px;transition:.15s}
-  .chip:hover{border-color:var(--acc2)}
-  .chip.on{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:700}
+  .chip{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer;font-size:13px;transition:.15s;box-shadow:var(--shadow)}
+  .chip:hover{border-color:var(--acc)}
+  .chip.on{background:linear-gradient(135deg,#0a63a8,#0092d6);border-color:transparent;color:#fff;font-weight:700}
   .chip .g{font-size:11px;color:var(--mut);margin-left:4px}
-  .chip.on .g{color:#dde}
+  .chip.on .g{color:#dbeeff}
 
   /* bars */
   .bar{display:grid;grid-template-columns:150px 1fr 54px;align-items:center;gap:10px;margin:7px 0;font-size:13px}
-  .bar .track{background:#0b1120;border-radius:8px;height:17px;overflow:hidden;border:1px solid var(--line)}
-  .bar .fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--acc2),var(--acc));box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
-  .bar .fill.gold{background:linear-gradient(90deg,var(--gold2),var(--gold))}
-  .bar .fill.good{background:linear-gradient(90deg,#219e73,var(--good))}
-  .bar .fill.warn{background:linear-gradient(90deg,#b23,var(--warn))}
-  .bar b{text-align:right}
+  .bar .track{background:#e6edf6;border-radius:8px;height:18px;overflow:hidden;border:1px solid var(--line)}
+  .bar .fill{height:100%;border-radius:8px;background:linear-gradient(90deg,#00a1e0,#0081C8);box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
+  .bar .fill.gold{background:linear-gradient(90deg,#f0b93a,#d99a1f)}
+  .bar .fill.good{background:linear-gradient(90deg,#2bb972,#1f9d57)}
+  .bar .fill.warn{background:linear-gradient(90deg,#f26a6a,#e23b3b)}
+  .bar b{text-align:right;color:var(--tx)}
 
   table{width:100%;border-collapse:collapse;font-size:13px}
   th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:center}
-  th{color:var(--mut);font-weight:600;font-size:12px;position:sticky}
+  th{color:var(--mut);font-weight:700;font-size:12px}
   td.l,th.l{text-align:left}
-  tr.male-h td,tr.female-h td{background:linear-gradient(90deg,#22304f,#161f33);color:var(--gold);font-weight:800;text-align:left;font-size:12px;letter-spacing:.4px}
-  thead th{background:#0d1422}
-  .tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700}
-  .tag.A{background:#173d2c;color:#54e0a0}.tag.B{background:#2a3350;color:#9db8ff}
-  .tag.C{background:#3a3320;color:#e2c24c}.tag.D{background:#3a1f28;color:#ff8a8a}
-  .tag.risk{background:var(--warnbg);color:#ff9a9a}.tag.ok{background:#173d2c;color:#54e0a0}
+  tbody tr:hover td{background:#f2f7fc}
+  tr.male-h td,tr.female-h td{background:linear-gradient(90deg,#0a63a8,#0092d6);color:#fff;font-weight:800;text-align:left;font-size:12px;letter-spacing:.4px}
+  tr.male-h:hover td,tr.female-h:hover td{background:linear-gradient(90deg,#0a63a8,#0092d6)}
+  thead th{background:#eaf1f9;color:#3a5573}
+  .tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:800}
+  .tag.A{background:#e2f6ea;color:#178a4c}.tag.B{background:#e4eefb;color:#2166a8}
+  .tag.C{background:#fdf3d9;color:#a5781a}.tag.D{background:#fdeaea;color:#c0392b}
+  .tag.risk{background:#fdeaea;color:#c0392b}.tag.ok{background:#e2f6ea;color:#178a4c}
 
   /* meeting mode */
   .meet-hero{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-  .avatar{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#2b3a58,#1a2233);
-    display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;border:2px solid var(--acc);color:#fff}
+  .avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#0092d6,#0a63a8);
+    display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;border:3px solid #fff;color:#fff;box-shadow:var(--shadow)}
   .big-stat{font-size:40px;font-weight:800;letter-spacing:.5px}
   .goal{background:var(--goldbg);border-left:4px solid var(--gold);border-radius:10px;padding:12px 14px;margin:8px 0}
   .goal.warn{background:var(--warnbg);border-left-color:var(--warn)}
-  .goal b{color:var(--gold)} .goal.warn b{color:var(--warn)}
-  .pledge{background:linear-gradient(135deg,#1a2f4a,#16233a);border:1px solid var(--acc2);border-radius:12px;padding:14px 16px;margin-top:10px}
-  .pledge .q{font-size:15px;line-height:1.6}
+  .goal b{color:var(--gold2)} .goal.warn b{color:var(--warn)}
+  .pledge{background:linear-gradient(135deg,#e6f3fc,#f3f9ff);border:1px solid var(--line2);border-radius:12px;padding:14px 16px;margin-top:10px}
+  .pledge .q{font-size:15px;line-height:1.6;color:var(--tx)}
 
   /* report mode */
-  .rp h3{font-size:18px;color:#fff;margin:22px 0 4px}
+  .rp h3{font-size:18px;color:var(--acc2);margin:22px 0 4px}
   .rp .banner{border-radius:10px;padding:11px 14px;margin:8px 0 12px;font-weight:700;font-size:13.5px}
-  .rp .banner.gold{background:var(--goldbg);border:1px solid #5a4d20;color:#f0d78a}
-  .rp .banner.warn{background:var(--warnbg);border:1px solid #6a2a2a;color:#ffb0b0}
-  .rp .sub{font-size:13px;color:var(--acc);font-weight:700;border-bottom:1px solid var(--line);padding-bottom:4px;margin:14px 0 6px}
-  .rp p{font-size:13.5px;color:#d5deee;margin:6px 0}
-  .rp .verdict{background:var(--goldbg);border:1px solid #5a4d20;border-radius:10px;padding:12px 14px}
+  .rp .banner.gold{background:var(--goldbg);border:1px solid #ecd7a2;color:#8a6712}
+  .rp .banner.warn{background:var(--warnbg);border:1px solid #f2bfbf;color:#b02a2a}
+  .rp .sub{font-size:13px;color:var(--acc2);font-weight:800;border-bottom:2px solid var(--accsoft);padding-bottom:4px;margin:14px 0 6px}
+  .rp p{font-size:13.5px;color:#34495e;margin:6px 0}
+  .rp .verdict{background:var(--goldbg);border:1px solid #ecd7a2;border-radius:10px;padding:12px 14px;color:#4a3d18}
   .sparkwrap{display:flex;align-items:center;gap:10px}
   .loading{text-align:center;color:var(--mut);padding:60px 0}
-  .err{background:var(--warnbg);border:1px solid #6a2a2a;color:#ffb0b0;border-radius:10px;padding:12px 14px;margin:12px 0;font-size:13px}
+  .err{background:var(--warnbg);border:1px solid #f2bfbf;color:#c0392b;border-radius:10px;padding:12px 14px;margin:12px 0;font-size:13px}
   .foot{color:var(--mut);font-size:12px;text-align:center;margin-top:36px;border-top:1px solid var(--line);padding-top:16px}
   .hide{display:none!important}
   @media print{header,.modes,.chips,.btn,.seg{display:none!important} body{background:#fff;color:#000}}
@@ -134,8 +132,9 @@
 <header>
   <div class="hd">
     <div class="brand">
-      <img class="rings" src="rings.png" alt="Olympic rings"/>
-      <img class="flags" src="flags.png" alt="KR VN"/>
+      <img class="rings" src="rings.svg" alt="Olympic rings"/>
+      <img class="flag" src="kr.svg" alt="Korea"/>
+      <img class="flag" src="vn.svg" alt="Vietnam"/>
       <div class="tt">
         <b data-t="title">베트남 청소년 권총 대표팀</b>
         <span data-t="subtitle">실시간 통합 대시보드 · 전문가 선우룡</span>
@@ -428,7 +427,7 @@ async function loadAll(){
 // ================= render helpers =================
 const el=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;};
 const esc=s=>String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
-function medalStr(a){return `<span style="color:var(--gold)">${a[0]}</span>·<span style="color:#cfd6e6">${a[1]}</span>·<span style="color:#c9905a">${a[2]}</span>`;}
+function medalStr(a){return `<span style="color:var(--gold)">${a[0]}</span>·<span style="color:#9aa7b5">${a[1]}</span>·<span style="color:#c07a3c">${a[2]}</span>`;}
 function totalMedals(a){const ar=a||[0,0,0];return ar[0]+ar[1]+ar[2];}
 function sparkline(trend,w=180,h=44){
   if(!trend||trend.length<2)return `<span class="muted">${t("noData")}</span>`;
@@ -498,14 +497,14 @@ function seriesBars(train,comp){
   const mn=Math.floor(Math.min(...vals))-1,mx=Math.ceil(Math.max(...vals))+1;
   const bw=(w-pad.l-pad.r)/6,barw=Math.min(15,bw*0.30);
   const py=v=>h-pad.b-((v-mn)/(mx-mn))*(h-pad.t-pad.b);
-  let grid="";for(let g=mn;g<=mx;g+=2){const y=py(g);grid+=`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${w-pad.r}" y2="${y.toFixed(1)}" stroke="#22304a"/><text x="${pad.l-6}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="9" fill="#9dabc7">${g}</text>`;}
+  let grid="";for(let g=mn;g<=mx;g+=2){const y=py(g);grid+=`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${w-pad.r}" y2="${y.toFixed(1)}" stroke="#dbe4f1"/><text x="${pad.l-6}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="9" fill="#7688a0">${g}</text>`;}
   let bars="";
   for(let i=0;i<6;i++){const cx=pad.l+bw*i+bw/2,tv=train[i],cv=comp[i];
-    if(tv!=null){const y=py(tv);bars+=`<rect x="${(cx-barw-2).toFixed(1)}" y="${y.toFixed(1)}" width="${barw.toFixed(1)}" height="${(h-pad.b-y).toFixed(1)}" rx="2.5" fill="url(#gbBlue)"/><text x="${(cx-barw/2-2).toFixed(1)}" y="${(y-3).toFixed(1)}" text-anchor="middle" font-size="8.5" fill="#8fb6ff">${tv.toFixed(1)}</text>`;}
-    if(cv!=null){const y=py(cv);bars+=`<rect x="${(cx+2).toFixed(1)}" y="${y.toFixed(1)}" width="${barw.toFixed(1)}" height="${(h-pad.b-y).toFixed(1)}" rx="2.5" fill="url(#gbGold)"/><text x="${(cx+barw/2+2).toFixed(1)}" y="${(y-3).toFixed(1)}" text-anchor="middle" font-size="8.5" fill="#e7c86b">${cv.toFixed(1)}</text>`;}
-    bars+=`<text x="${cx.toFixed(1)}" y="${h-8}" text-anchor="middle" font-size="10" fill="#9dabc7">S${i+1}</text>`;}
+    if(tv!=null){const y=py(tv);bars+=`<rect x="${(cx-barw-2).toFixed(1)}" y="${y.toFixed(1)}" width="${barw.toFixed(1)}" height="${(h-pad.b-y).toFixed(1)}" rx="2.5" fill="url(#gbBlue)"/><text x="${(cx-barw/2-2).toFixed(1)}" y="${(y-3).toFixed(1)}" text-anchor="middle" font-size="8.5" fill="#2a7fc0">${tv.toFixed(1)}</text>`;}
+    if(cv!=null){const y=py(cv);bars+=`<rect x="${(cx+2).toFixed(1)}" y="${y.toFixed(1)}" width="${barw.toFixed(1)}" height="${(h-pad.b-y).toFixed(1)}" rx="2.5" fill="url(#gbGold)"/><text x="${(cx+barw/2+2).toFixed(1)}" y="${(y-3).toFixed(1)}" text-anchor="middle" font-size="8.5" fill="#d99a1f">${cv.toFixed(1)}</text>`;}
+    bars+=`<text x="${cx.toFixed(1)}" y="${h-8}" text-anchor="middle" font-size="10" fill="#7688a0">S${i+1}</text>`;}
   return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="max-width:100%"><defs>
-    <linearGradient id="gbBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fb6ff"/><stop offset="1" stop-color="#3f7fe6"/></linearGradient>
+    <linearGradient id="gbBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a7fc0"/><stop offset="1" stop-color="#3f7fe6"/></linearGradient>
     <linearGradient id="gbGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2dc96"/><stop offset="1" stop-color="#c69b3e"/></linearGradient></defs>${grid}${bars}</svg>`;
 }
 // stacked medal bar chart per year (individual G/S/B solid + team faded)
@@ -516,21 +515,21 @@ function medalBars(years){
   const mx=Math.max(3,...totals);const n=years.length,bw=(w-pad.l-pad.r)/n,barw=Math.min(50,bw*0.52);
   const py=v=>h-pad.b-(v/mx)*(h-pad.t-pad.b);
   let grid="";const step=Math.max(1,Math.ceil(mx/4));
-  for(let g=0;g<=mx;g+=step){const y=py(g);grid+=`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${w-pad.r}" y2="${y.toFixed(1)}" stroke="#22304a"/><text x="${pad.l-4}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="9" fill="#9dabc7">${g}</text>`;}
-  const cols=[['#e7c86b',0],['#cfd6e6',1],['#c9905a',2]];
+  for(let g=0;g<=mx;g+=step){const y=py(g);grid+=`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${w-pad.r}" y2="${y.toFixed(1)}" stroke="#dbe4f1"/><text x="${pad.l-4}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="9" fill="#7688a0">${g}</text>`;}
+  const cols=[['#d99a1f',0],['#9aa7b5',1],['#c07a3c',2]];
   let bars="";
   years.forEach((y,i)=>{const cx=pad.l+bw*i+bw/2;let base=0,svg="";
-    const stack=[[y.ind[0],'#e7c86b'],[y.ind[1],'#cfd6e6'],[y.ind[2],'#c9905a'],
-      [y.team[0],'rgba(231,200,107,.42)'],[y.team[1],'rgba(207,214,230,.36)'],[y.team[2],'rgba(201,144,90,.42)']];
+    const stack=[[y.ind[0],'#d99a1f'],[y.ind[1],'#9aa7b5'],[y.ind[2],'#c07a3c'],
+      [y.team[0],'#f0d9a0'],[y.team[1],'#ccd4de'],[y.team[2],'#e2b591']];
     stack.forEach(([c,col])=>{c=c||0;if(c){const y0=py(base+c),hgt=py(base)-py(base+c);
       svg+=`<rect x="${(cx-barw/2).toFixed(1)}" y="${y0.toFixed(1)}" width="${barw.toFixed(1)}" height="${hgt.toFixed(1)}" fill="${col}"/>`;base+=c;}});
     const tot=totalMedals(y.ind)+totalMedals(y.team);
-    bars+=svg+`${tot?`<text x="${cx.toFixed(1)}" y="${(py(base)-4).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="#e7c86b">${tot}</text>`:''}
-      <text x="${cx.toFixed(1)}" y="${h-18}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#eff3fc">${y.year}</text>
-      <text x="${cx.toFixed(1)}" y="${h-6}" text-anchor="middle" font-size="8.5" fill="#9dabc7">${t("ry_finals")} ${y.finals||0}</text>`;});
+    bars+=svg+`${tot?`<text x="${cx.toFixed(1)}" y="${(py(base)-4).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="#d99a1f">${tot}</text>`:''}
+      <text x="${cx.toFixed(1)}" y="${h-18}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#122a45">${y.year}</text>
+      <text x="${cx.toFixed(1)}" y="${h-6}" text-anchor="middle" font-size="8.5" fill="#7688a0">${t("ry_finals")} ${y.finals||0}</text>`;});
   return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="max-width:100%">${grid}${bars}</svg>`;
 }
-function medalDot(m){return m==='gold'?'#e7c86b':m==='silver'?'#cfd6e6':m==='bronze'?'#c9905a':'#6aa8ff';}
+function medalDot(m){return m==='gold'?'#d99a1f':m==='silver'?'#9aa7b5':m==='bronze'?'#c07a3c':'#0081C8';}
 function qualTimeline(pts,w,h){
   w=w||Math.min(560,window.innerWidth-70);h=h||156;
   const pad={l:34,r:12,t:12,b:24};
@@ -538,12 +537,12 @@ function qualTimeline(pts,w,h){
   const mn=Math.min(...ys)-3,mx=Math.max(...ys)+3;
   const px=i=>pad.l+(pts.length<2?0:i/(pts.length-1))*(w-pad.l-pad.r);
   const py=v=>h-pad.b-((v-mn)/(mx-mn))*(h-pad.t-pad.b);
-  let grid="";for(let g=Math.ceil(mn/10)*10;g<=mx;g+=10){const y=py(g);grid+=`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${w-pad.r}" y2="${y.toFixed(1)}" stroke="#2c384f"/><text x="${pad.l-6}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="9" fill="#93a1bd">${g}</text>`;}
+  let grid="";for(let g=Math.ceil(mn/10)*10;g<=mx;g+=10){const y=py(g);grid+=`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${w-pad.r}" y2="${y.toFixed(1)}" stroke="#dbe4f1"/><text x="${pad.l-6}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="9" fill="#7688a0">${g}</text>`;}
   const lp=pts.map((p,i)=>p.q!=null?`${px(i).toFixed(1)},${py(p.q).toFixed(1)}`:null).filter(Boolean).join(" ");
-  const dots=pts.map((p,i)=>p.q==null?"":`${p.final!=null?`<circle cx="${px(i).toFixed(1)}" cy="${py(p.q).toFixed(1)}" r="7" fill="none" stroke="${medalDot(p.medal)}" stroke-width="1.4" opacity=".55"/>`:''}<circle cx="${px(i).toFixed(1)}" cy="${py(p.q).toFixed(1)}" r="${p.medal?4.6:3.2}" fill="${medalDot(p.medal)}" stroke="${p.medal?'#0e131f':'none'}" stroke-width="1"/>`).join("");
-  const lab=i=>{const d=pts[i]&&pts[i].d?pts[i].d.slice(0,7):'';return `<text x="${px(i).toFixed(1)}" y="${h-7}" text-anchor="middle" font-size="9" fill="#93a1bd">${d}</text>`;};
+  const dots=pts.map((p,i)=>p.q==null?"":`${p.final!=null?`<circle cx="${px(i).toFixed(1)}" cy="${py(p.q).toFixed(1)}" r="7" fill="none" stroke="${medalDot(p.medal)}" stroke-width="1.4" opacity=".55"/>`:''}<circle cx="${px(i).toFixed(1)}" cy="${py(p.q).toFixed(1)}" r="${p.medal?4.6:3.2}" fill="${medalDot(p.medal)}" stroke="${p.medal?'#ffffff':'none'}" stroke-width="1"/>`).join("");
+  const lab=i=>{const d=pts[i]&&pts[i].d?pts[i].d.slice(0,7):'';return `<text x="${px(i).toFixed(1)}" y="${h-7}" text-anchor="middle" font-size="9" fill="#7688a0">${d}</text>`;};
   let xl=lab(0)+lab(pts.length-1)+(pts.length>4?lab(Math.floor(pts.length/2)):'');
-  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="max-width:100%">${grid}<polyline points="${lp}" fill="none" stroke="#5b9dff" stroke-width="2"/>${dots}${xl}</svg>`;
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="max-width:100%">${grid}<polyline points="${lp}" fill="none" stroke="#0081C8" stroke-width="2"/>${dots}${xl}</svg>`;
 }
 function recordAnalysis(a){
   const ar=DATA.archive[a.name]||{};
@@ -574,14 +573,14 @@ function recordAnalysis(a){
   const cb=el("div","card");
   cb.innerHTML=`<div style="text-align:center">${medalBars(ar.yearsArr||[])}</div>
     <div class="muted" style="font-size:11.5px;text-align:center;margin-top:4px">
-    <span style="color:#e7c86b">■</span> ${t("lgGold")} <span style="color:#cfd6e6">■</span> ${t("lgSilver")} <span style="color:#c9905a">■</span> ${t("lgBronze")} &nbsp;·&nbsp; ${LANG==="ko"?"진한색=개인, 연한색=단체":"đậm=cá nhân, nhạt=đồng đội"}</div>`;
+    <span style="color:#d99a1f">■</span> ${t("lgGold")} <span style="color:#9aa7b5">■</span> ${t("lgSilver")} <span style="color:#c07a3c">■</span> ${t("lgBronze")} &nbsp;·&nbsp; ${LANG==="ko"?"진한색=개인, 연한색=단체":"đậm=cá nhân, nhạt=đồng đội"}</div>`;
   wrap.append(cb);
   // timeline
   wrap.append(el("h2","sec",t("rec_timeline")));
   const c2=el("div","card");
   c2.innerHTML=`<div style="text-align:center">${qualTimeline(ar.q10all||[])}</div>
     <div class="muted" style="font-size:11.5px;text-align:center;margin-top:4px">
-    <span style="color:#e2b73c">●</span> ${t("lgGold")} &nbsp;<span style="color:#cfd6e6">●</span> ${t("lgSilver")} &nbsp;<span style="color:#c9905a">●</span> ${t("lgBronze")} &nbsp;<span style="color:#5b9dff">●</span> ${t("lgOther")} &nbsp;◯ ${t("lgFinal")}</div>`;
+    <span style="color:#d99a1f">●</span> ${t("lgGold")} &nbsp;<span style="color:#9aa7b5">●</span> ${t("lgSilver")} &nbsp;<span style="color:#c07a3c">●</span> ${t("lgBronze")} &nbsp;<span style="color:#0081C8">●</span> ${t("lgOther")} &nbsp;◯ ${t("lgFinal")}</div>`;
   wrap.append(c2);
   // finals list
   wrap.append(el("h2","sec",t("rec_finals")));
@@ -652,7 +651,7 @@ function renderTeam(){
     const yArr=yrs.map(y=>({year:y,ind:teamYears[y].ind,team:teamYears[y].team,finals:teamYears[y].finals,n:teamYears[y].n}));
     const cbar=el("div","card");
     cbar.innerHTML=`<div style="text-align:center">${medalBars(yArr)}</div>
-      <div class="muted" style="font-size:11.5px;text-align:center;margin-top:4px"><span style="color:#e7c86b">■</span> ${t("lgGold")} <span style="color:#cfd6e6">■</span> ${t("lgSilver")} <span style="color:#c9905a">■</span> ${t("lgBronze")} &nbsp;·&nbsp; ${LANG==="ko"?"진한색=개인, 연한색=단체":"đậm=cá nhân, nhạt=đồng đội"}</div>`;
+      <div class="muted" style="font-size:11.5px;text-align:center;margin-top:4px"><span style="color:#d99a1f">■</span> ${t("lgGold")} <span style="color:#9aa7b5">■</span> ${t("lgSilver")} <span style="color:#c07a3c">■</span> ${t("lgBronze")} &nbsp;·&nbsp; ${LANG==="ko"?"진한색=개인, 연한색=단체":"đậm=cá nhân, nhạt=đồng đội"}</div>`;
     app.append(cbar);
     const cy=el("div","card");cy.style.overflowX="auto";const ty=el("table");
     ty.innerHTML=`<thead><tr><th>${t("ry_year")}</th><th>${t("ry_n")}</th><th>${t("ry_ind")}</th><th>${t("ry_team")}</th><th>${t("ry_finals")}</th></tr></thead>`;
@@ -785,11 +784,11 @@ function seriesChart(train,comp,w,h){
     gapPoly=`<polygon points="${top} ${bot}" fill="rgba(226,183,60,.10)"/>`;}
   // gridlines/labels
   let grid="";
-  for(let g=mn;g<=mx;g+=2){const y=py(g);grid+=`<line x1="${pad.l}" y1="${y}" x2="${w-pad.r}" y2="${y}" stroke="#2c384f" stroke-width="1"/>
-    <text x="${pad.l-6}" y="${y+3}" text-anchor="end" font-size="9" fill="#93a1bd">${g}</text>`;}
-  let xl="";for(let i=0;i<6;i++)xl+=`<text x="${px(i)}" y="${h-8}" text-anchor="middle" font-size="10" fill="#93a1bd">S${i+1}</text>`;
+  for(let g=mn;g<=mx;g+=2){const y=py(g);grid+=`<line x1="${pad.l}" y1="${y}" x2="${w-pad.r}" y2="${y}" stroke="#dbe4f1" stroke-width="1"/>
+    <text x="${pad.l-6}" y="${y+3}" text-anchor="end" font-size="9" fill="#7688a0">${g}</text>`;}
+  let xl="";for(let i=0;i<6;i++)xl+=`<text x="${px(i)}" y="${h-8}" text-anchor="middle" font-size="10" fill="#7688a0">S${i+1}</text>`;
   return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="max-width:100%">
-    ${grid}${gapPoly}${line(comp,'#e2b73c')}${line(train,'#5b9dff')}${xl}</svg>`;
+    ${grid}${gapPoly}${line(comp,'#d99a1f')}${line(train,'#0081C8')}${xl}</svg>`;
 }
 function renderCompare(){
   const app=el("div"); const O=ordered();
