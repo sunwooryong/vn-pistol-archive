@@ -258,7 +258,12 @@ const I18N = {
     strength:"나의 강점",nextTask:"나의 다음 과제",myPledge:"내가 정한 다짐 (면담)",noPledge:"면담 기록 없음",
     hComp:"대회 성적",hPrac:"훈련 기록",hPred:"예측사격 자기인식",hInt:"면담·심리",hTest:"이해도 평가",hVerdict:"종합 평가 및 2027년 방향",
     prog:"점수 진행",risk:"위험도",type:"유형",prob:"반복 문제",act:"다음 행동",noData:"데이터 없음",
-    exp:"경력",mo:"개월",sess:"세션",print:"인쇄 / PDF 저장",detail:"상세 보기"},
+    exp:"경력",mo:"개월",sess:"세션",print:"인쇄 / PDF 저장",detail:"상세 보기",
+    rec_head:"기록 심층 분석 (대회)",rec_yearly:"연도별 성적 추이",ry_year:"연도",ry_n:"출전",ry_ind:"개인 금·은·동",ry_team:"단체 금·은·동",
+    ry_finals:"결선진출",ry_avg:"10m 평균본선",ry_max:"10m 최고",ry_inner:"이너텐 평균",
+    rec_timeline:"대회 본선 점수 추이 (10m)",rec_finals:"결선 진출 기록",
+    mx_best:"통산 최고본선",mx_conv:"결선 전환율",mx_medal:"메달 전환율",mx_consistency:"본선 일관성 σ",mx_inner:"이너텐 평균",
+    fl_none:"결선 진출 기록 없음",rec_teamyear:"연도별 팀 성과",colDate:"일자",colEvent:"종목",colFinal:"결선점수",colFrank:"결선순위",lgGold:"금",lgSilver:"은",lgBronze:"동",lgOther:"입상외",lgFinal:"결선진출"},
   vi:{title:"Đội tuyển súng ngắn trẻ Việt Nam",subtitle:"Dashboard thời gian thực · Chuyên gia Sunwoo Ryong",refresh:"Làm mới",
     m_meet:"Họp với VĐV",m_meet_d:"Tập trung 1 VĐV · điểm mạnh & việc cần làm",m_coach:"Cho HLV trưởng",m_coach_d:"Toàn đội · nguy cơ · xếp hạng",
     m_report:"Phân tích chi tiết",m_report_d:"Phân tích chuyên sâu · có thể in",m_vs:"Tập vs Thi đấu",m_vs_d:"Chênh lệch theo loạt · phân tích áp lực",
@@ -277,7 +282,12 @@ const I18N = {
     strength:"Điểm mạnh của tôi",nextTask:"Việc cần làm tiếp theo",myPledge:"Cam kết của tôi (phỏng vấn)",noPledge:"Chưa có hồ sơ phỏng vấn",
     hComp:"Thành tích thi đấu",hPrac:"Hồ sơ tập luyện",hPred:"Tự nhận thức qua dự đoán",hInt:"Phỏng vấn·tâm lý",hTest:"Kiểm tra nhận thức",hVerdict:"Đánh giá tổng hợp & hướng 2027",
     prog:"Diễn tiến điểm",risk:"Nguy cơ",type:"Nhóm",prob:"Vấn đề lặp lại",act:"Hành động tiếp theo",noData:"Không có dữ liệu",
-    exp:"Kinh nghiệm",mo:"tháng",sess:"buổi",print:"In / Lưu PDF",detail:"Xem chi tiết"},
+    exp:"Kinh nghiệm",mo:"tháng",sess:"buổi",print:"In / Lưu PDF",detail:"Xem chi tiết",
+    rec_head:"Phân tích sâu thành tích (thi đấu)",rec_yearly:"Diễn tiến theo năm",ry_year:"Năm",ry_n:"Số giải",ry_ind:"Cá nhân V·B·Đ",ry_team:"Đồng đội V·B·Đ",
+    ry_finals:"Vào CK",ry_avg:"TB VL 10m",ry_max:"10m cao nhất",ry_inner:"Inner-ten TB",
+    rec_timeline:"Diễn biến điểm vòng loại (10m)",rec_finals:"Lịch sử vào chung kết",
+    mx_best:"VL cao nhất sự nghiệp",mx_conv:"Tỷ lệ vào CK",mx_medal:"Tỷ lệ có huy chương",mx_consistency:"Độ ổn định VL σ",mx_inner:"Inner-ten TB",
+    fl_none:"Chưa có lần vào chung kết",rec_teamyear:"Thành tích đội theo năm",colDate:"Ngày",colEvent:"Nội dung",colFinal:"Điểm CK",colFrank:"Hạng CK",lgGold:"Vàng",lgSilver:"Bạc",lgBronze:"Đồng",lgOther:"khác",lgFinal:"vào CK"},
 };
 let LANG="ko", MODE="team", MEET_SEL=null, VS_SEL=null, SOLO_SEL=null;
 const t=k=>I18N[LANG][k]||k;
@@ -346,35 +356,46 @@ function computeInterview(rows){
     out[nm]={risk:num(r[iRisk]),level:r[iLvl]||"",type:r[iType]||"",prob:r[iRep]||"",act:r[iAct]||"",solve:r[iSolve]||""};}
   return out;
 }
-function computeArchive(ath,res,ev,seriesRows){
+function computeArchive(ath,res,ev,seriesRows,comps){
   const evm={}; ev.forEach(e=>evm[e.id]=e);
+  const cm={}; (comps||[]).forEach(c=>cm[c.id]=c);
   const id2=Object.fromEntries(ath.filter(a=>byName[a.full_name]).map(a=>[a.id,a.full_name]));
   const out={}; NAMES.forEach(n=>out[n]={ind:[0,0,0],team:[0,0,0],best60:0,finals:0,count:0,recent:[],
-    cser:{1:[],2:[],3:[],4:[],5:[],6:[]},cshot:[]});
+    cser:{1:[],2:[],3:[],4:[],5:[],6:[]},cshot:[],results:[],yearly:{},q10all:[],inner10:[]});
   const M={gold:0,silver:1,bronze:2};
-  // series indexed by result_id
   const byres={}; (seriesRows||[]).forEach(s=>{(byres[s.result_id]=byres[s.result_id]||{})[s.series_no]=s.score;});
   res.forEach(r=>{const nm=id2[r.athlete_id];if(!nm)return;const o=out[nm];o.count++;
+    const e=evm[r.event_id]||{}; const c=cm[e.competition_id]||{};
+    const year=String(c.year||(r.match_date||'').slice(0,4)||'?');
     if(r.medal!=null&&M[r.medal]!=null)o.ind[M[r.medal]]++;
     if(r.team_medal!=null&&M[r.team_medal]!=null)o.team[M[r.team_medal]]++;
     if(r.final_score)o.finals++;
     if(r.qual_total&&r.qual_total>500&&r.qual_total>o.best60)o.best60=r.qual_total;
-    // competition per-series (10m individual 60-shot)
-    const e=evm[r.event_id]||{};
-    if(e.distance==="10m"&&e.team_type==="individual"&&e.n_series===6){
-      const ss=byres[r.id]; if(ss&&Object.keys(ss).length>=6){for(let sn=1;sn<=6;sn++)if(ss[sn]!=null)o.cser[sn].push(ss[sn]);}
-      if(r.qual_total)o.cshot.push(r.qual_total/60);
-    }
+    const is10ind=(e.distance==="10m"&&e.team_type==="individual"&&e.n_series===6);
+    if(is10ind){const ss=byres[r.id]; if(ss&&Object.keys(ss).length>=6){for(let sn=1;sn<=6;sn++)if(ss[sn]!=null)o.cser[sn].push(ss[sn]);}
+      if(r.qual_total){o.cshot.push(r.qual_total/60);o.q10all.push({d:r.match_date,q:r.qual_total,medal:r.medal,final:r.final_score,plc:r.placement});if(r.inner_tens!=null)o.inner10.push(r.inner_tens);}}
+    o.results.push({d:r.match_date,comp:c.name||'',year,dist:e.distance,team:e.team_type,age:e.age_category,scope:c.scope,
+      q:r.qual_total,inner:r.inner_tens,final:r.final_score,medal:r.medal,tmedal:r.team_medal,qr:r.qual_rank,fr:r.final_rank,plc:r.placement});
+    const y=(o.yearly[year]=o.yearly[year]||{comps:new Set(),ind:[0,0,0],team:[0,0,0],finals:0,q10:[],inner:[]});
+    if(e.competition_id)y.comps.add(e.competition_id);
+    if(r.medal!=null&&M[r.medal]!=null)y.ind[M[r.medal]]++;
+    if(r.team_medal!=null&&M[r.team_medal]!=null)y.team[M[r.team_medal]]++;
+    if(r.final_score)y.finals++;
+    if(is10ind&&r.qual_total){y.q10.push(r.qual_total);if(r.inner_tens!=null)y.inner.push(r.inner_tens);}
   });
   const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
-  NAMES.forEach(n=>{const o=out[n];o.cserAvg=[1,2,3,4,5,6].map(sn=>avg(o.cser[sn]));o.cshotAvg=avg(o.cshot);o.ncomp=o.cshot.length;});
-  // recent 2026 (top 3 by date) per athlete
-  const perA={}; NAMES.forEach(n=>perA[n]=[]);
-  res.forEach(r=>{const nm=id2[r.athlete_id];if(!nm)return;const d=r.match_date||"";if(d<"2026")return;
-    perA[nm].push(r);});
-  for(const nm in perA){perA[nm].sort((a,b)=>(a.match_date||"").localeCompare(b.match_date||""));
-    out[nm].recent=perA[nm].slice(-3).map(r=>({d:r.match_date,q:r.qual_total,f:r.final_score,
-      medal:r.medal,team:r.team_medal,plc:r.placement}));}
+  const std=a=>{if(a.length<2)return null;const m=avg(a);return Math.sqrt(a.reduce((s,x)=>s+(x-m)*(x-m),0)/a.length);};
+  NAMES.forEach(n=>{const o=out[n];
+    o.cserAvg=[1,2,3,4,5,6].map(sn=>avg(o.cser[sn]));o.cshotAvg=avg(o.cshot);o.ncomp=o.cshot.length;
+    o.q10sd=std(o.q10all.map(x=>x.q));o.innerAvg=avg(o.inner10);
+    o.results.sort((a,b)=>(a.d||'').localeCompare(b.d||''));
+    o.q10all.sort((a,b)=>(a.d||'').localeCompare(b.d||''));
+    o.recent=o.results.filter(r=>(r.d||'')>='2026'&&r.team==='individual').slice(-3).map(r=>({d:r.d,q:r.q,f:r.final,medal:r.medal,team:r.tmedal,plc:r.plc}));
+    o.yearsArr=Object.keys(o.yearly).filter(y=>y!=='?').sort().map(y=>{const yy=o.yearly[y];
+      return {year:y,n:yy.comps.size,ind:yy.ind,team:yy.team,finals:yy.finals,
+        q10avg:avg(yy.q10),q10max:yy.q10.length?Math.max(...yy.q10):null,innerAvg:avg(yy.inner)};});
+    o.finalsList=o.results.filter(r=>r.final!=null).map(r=>({d:r.d,dist:r.dist,age:r.age,final:r.final,fr:r.fr,plc:r.plc,medal:r.medal}));
+  });
   return out;
 }
 
@@ -384,8 +405,8 @@ async function loadAll(){
   DATA.pred=computePred(parseCSV(await fetchText(csvUrl(SHEETS.pred)))); await sleep(150);
   DATA.interview=computeInterview(parseCSV(await fetchText(csvUrl(SHEETS.interview))));
   try{
-    const [ath,res,ev,ser]=await Promise.all([fetchJSON(ARCHIVE+"athletes.json"),fetchJSON(ARCHIVE+"results.json"),fetchJSON(ARCHIVE+"events.json"),fetchJSON(ARCHIVE+"series.json")]);
-    DATA.archive=computeArchive(ath,res,ev,ser);
+    const [ath,res,ev,ser,comps]=await Promise.all([fetchJSON(ARCHIVE+"athletes.json"),fetchJSON(ARCHIVE+"results.json"),fetchJSON(ARCHIVE+"events.json"),fetchJSON(ARCHIVE+"series.json"),fetchJSON(ARCHIVE+"competitions.json")]);
+    DATA.archive=computeArchive(ath,res,ev,ser,comps);
   }catch(e){ DATA.archive={}; DATA.archiveErr=String(e); }
   const now=new Date();
   document.getElementById("updated").textContent=t("updatedAt")+" "+now.toLocaleTimeString(LANG==="ko"?"ko-KR":"vi-VN");
@@ -457,6 +478,64 @@ function soloSeries(a){
     d.append(ins);}
   return d;
 }
+function medalDot(m){return m==='gold'?'#e2b73c':m==='silver'?'#cfd6e6':m==='bronze'?'#c9905a':'#5b9dff';}
+function qualTimeline(pts,w,h){
+  w=w||Math.min(560,window.innerWidth-70);h=h||156;
+  const pad={l:34,r:12,t:12,b:24};
+  const ys=pts.map(p=>p.q).filter(v=>v!=null); if(ys.length<2)return `<span class="muted">${t("noData")}</span>`;
+  const mn=Math.min(...ys)-3,mx=Math.max(...ys)+3;
+  const px=i=>pad.l+(pts.length<2?0:i/(pts.length-1))*(w-pad.l-pad.r);
+  const py=v=>h-pad.b-((v-mn)/(mx-mn))*(h-pad.t-pad.b);
+  let grid="";for(let g=Math.ceil(mn/10)*10;g<=mx;g+=10){const y=py(g);grid+=`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${w-pad.r}" y2="${y.toFixed(1)}" stroke="#2c384f"/><text x="${pad.l-6}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="9" fill="#93a1bd">${g}</text>`;}
+  const lp=pts.map((p,i)=>p.q!=null?`${px(i).toFixed(1)},${py(p.q).toFixed(1)}`:null).filter(Boolean).join(" ");
+  const dots=pts.map((p,i)=>p.q==null?"":`${p.final!=null?`<circle cx="${px(i).toFixed(1)}" cy="${py(p.q).toFixed(1)}" r="7" fill="none" stroke="${medalDot(p.medal)}" stroke-width="1.4" opacity=".55"/>`:''}<circle cx="${px(i).toFixed(1)}" cy="${py(p.q).toFixed(1)}" r="${p.medal?4.6:3.2}" fill="${medalDot(p.medal)}" stroke="${p.medal?'#0e131f':'none'}" stroke-width="1"/>`).join("");
+  const lab=i=>{const d=pts[i]&&pts[i].d?pts[i].d.slice(0,7):'';return `<text x="${px(i).toFixed(1)}" y="${h-7}" text-anchor="middle" font-size="9" fill="#93a1bd">${d}</text>`;};
+  let xl=lab(0)+lab(pts.length-1)+(pts.length>4?lab(Math.floor(pts.length/2)):'');
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="max-width:100%">${grid}<polyline points="${lp}" fill="none" stroke="#5b9dff" stroke-width="2"/>${dots}${xl}</svg>`;
+}
+function recordAnalysis(a){
+  const ar=DATA.archive[a.name]||{};
+  const wrap=el("div");
+  const entries=(ar.results||[]).length;
+  const conv=entries?(ar.finals/entries*100):0;
+  const tmedals=totalMedals(ar.ind)+totalMedals(ar.team);
+  const mconv=entries?(tmedals/entries*100):0;
+  const kp=el("div","grid kpis");
+  kp.append(kpiEl(ar.best60||'—',t("mx_best"),"acc"),
+    kpiEl((ar.finals||0)+" · "+conv.toFixed(0)+"%",t("mx_conv"),"good"),
+    kpiEl(tmedals+" · "+mconv.toFixed(0)+"%",t("mx_medal"),"gold"),
+    kpiEl(ar.q10sd!=null?ar.q10sd.toFixed(1):'—',t("mx_consistency"),(ar.q10sd!=null&&ar.q10sd<6)?'good':''),
+    kpiEl(ar.innerAvg!=null?ar.innerAvg.toFixed(1):'—',t("mx_inner")));
+  wrap.append(kp);
+  // yearly table
+  wrap.append(el("h2","sec",t("rec_yearly")));
+  const c1=el("div","card");c1.style.overflowX="auto";const tb=el("table");
+  tb.innerHTML=`<thead><tr><th>${t("ry_year")}</th><th>${t("ry_n")}</th><th>${t("ry_ind")}</th><th>${t("ry_team")}</th><th>${t("ry_finals")}</th><th>${t("ry_avg")}</th><th>${t("ry_max")}</th><th>${t("ry_inner")}</th></tr></thead>`;
+  const bd=el("tbody");
+  (ar.yearsArr||[]).forEach(y=>{const tr=el("tr");
+    tr.innerHTML=`<td><b>${y.year}</b></td><td>${y.n}</td><td>${medalStr(y.ind)}</td><td>${medalStr(y.team)}</td>
+      <td>${y.finals||'—'}</td><td>${y.q10avg?y.q10avg.toFixed(1):'—'}</td><td><b>${y.q10max||'—'}</b></td><td>${y.innerAvg!=null?y.innerAvg.toFixed(1):'—'}</td>`;
+    bd.append(tr);});
+  tb.append(bd);c1.append(tb);wrap.append(c1);
+  // timeline
+  wrap.append(el("h2","sec",t("rec_timeline")));
+  const c2=el("div","card");
+  c2.innerHTML=`<div style="text-align:center">${qualTimeline(ar.q10all||[])}</div>
+    <div class="muted" style="font-size:11.5px;text-align:center;margin-top:4px">
+    <span style="color:#e2b73c">●</span> ${t("lgGold")} &nbsp;<span style="color:#cfd6e6">●</span> ${t("lgSilver")} &nbsp;<span style="color:#c9905a">●</span> ${t("lgBronze")} &nbsp;<span style="color:#5b9dff">●</span> ${t("lgOther")} &nbsp;◯ ${t("lgFinal")}</div>`;
+  wrap.append(c2);
+  // finals list
+  wrap.append(el("h2","sec",t("rec_finals")));
+  const fl=ar.finalsList||[];
+  if(fl.length){const c3=el("div","card");c3.style.overflowX="auto";const tb3=el("table");
+    tb3.innerHTML=`<thead><tr><th>${t("colDate")}</th><th class="l">${t("colEvent")}</th><th>${t("colFinal")}</th><th>${t("colFrank")}</th></tr></thead>`;
+    const bd3=el("tbody");
+    fl.slice().reverse().forEach(f=>{const tr=el("tr");const md=f.medal?` <span style="color:${medalDot(f.medal)}">●</span>`:'';
+      tr.innerHTML=`<td>${f.d||'—'}</td><td class="l">${(f.dist||'')} ${(f.age||'')}</td><td><b>${f.final}</b>${md}</td><td>${f.fr||f.plc||'—'}</td>`;bd3.append(tr);});
+    tb3.append(bd3);c3.append(tb3);wrap.append(c3);}
+  else wrap.append(el("p","muted",t("fl_none")));
+  return wrap;
+}
 function reportBlock(a){
   const p=DATA.practice[a.name]||{},pr=DATA.pred[a.name]||{},ar=DATA.archive[a.name]||{},iv=DATA.interview[a.name]||{};
   const wrap=el("div","rp card");
@@ -504,6 +583,18 @@ function renderTeam(){
   mk(t("rank_prac"),a=>(DATA.practice[a.name]||{}).avg,v=>v.toFixed(2),"");
   mk(t("rank_pred"),a=>(DATA.pred[a.name]||{}).match,v=>v.toFixed(1)+"%","good");
   mk(t("rank_medal"),a=>{const ar=DATA.archive[a.name]||{};return totalMedals(ar.ind)+totalMedals(ar.team);},v=>String(v),"gold");
+  // yearly team summary
+  const teamYears={};
+  O.all.forEach(a=>{((DATA.archive[a.name]||{}).yearsArr||[]).forEach(y=>{
+    const ty=teamYears[y.year]=teamYears[y.year]||{n:0,ind:[0,0,0],team:[0,0,0],finals:0};
+    ty.n+=y.n;ty.finals+=y.finals;for(let i=0;i<3;i++){ty.ind[i]+=y.ind[i];ty.team[i]+=y.team[i];}});});
+  const yrs=Object.keys(teamYears).sort();
+  if(yrs.length){app.append(el("h2","sec",t("rec_teamyear")));
+    const cy=el("div","card");cy.style.overflowX="auto";const ty=el("table");
+    ty.innerHTML=`<thead><tr><th>${t("ry_year")}</th><th>${t("ry_n")}</th><th>${t("ry_ind")}</th><th>${t("ry_team")}</th><th>${t("ry_finals")}</th></tr></thead>`;
+    const bd=el("tbody");yrs.forEach(y=>{const d=teamYears[y];const tr=el("tr");
+      tr.innerHTML=`<td><b>${y}</b></td><td>${d.n}</td><td>${medalStr(d.ind)}</td><td>${medalStr(d.team)}</td><td>${d.finals||'—'}</td>`;bd.append(tr);});
+    ty.append(bd);cy.append(ty);app.append(cy);}
   app.append(el("h2","sec",t("tbl_over")));
   const wrap=el("div","card");wrap.style.overflowX="auto";const tb=el("table");
   tb.innerHTML=`<thead><tr><th class="l">${t("c_name")}</th><th>${t("c_birth")}</th><th>${t("c_club")}</th><th>${t("c_best")}</th><th>${t("c_avg")}</th><th>${t("c_match")}</th><th>${t("c_pred")}</th><th>${t("c_risk")}</th><th>${t("c_test")}</th></tr></thead>`;
@@ -561,6 +652,8 @@ function renderSolo(){
   else pl.innerHTML=`<div class="muted">${t("noPledge")}</div>`;
   card.append(pl);
   app.append(card);
+  app.append(el("h2","sec","📈 "+t("rec_head")));
+  app.append(recordAnalysis(a));
   app.append(el("h2","sec","⚖️ "+t("vs_series")));
   app.append(soloSeries(a));
   app.append(el("h2","sec","📄 "+t("m_report")));
