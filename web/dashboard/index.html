@@ -141,17 +141,11 @@
 </header>
 
 <div class="modes" id="modes">
-  <div class="mode on" data-mode="meet">
-    <div class="ic">🎯</div><b data-t="m_meet">선수 대면 회의용</b><small data-t="m_meet_d">선수 1명 집중 · 강점과 다음 행동</small>
+  <div class="mode on" data-mode="team">
+    <div class="ic">👥</div><b data-t="m_team">전체 선수 보기</b><small data-t="m_team_d">팀 현황 · 훈련vs대회 · 위험 · 랭킹</small>
   </div>
-  <div class="mode" data-mode="coach">
-    <div class="ic">📊</div><b data-t="m_coach">감독 확인용</b><small data-t="m_coach_d">팀 전체 현황 · 위험 · 랭킹</small>
-  </div>
-  <div class="mode" data-mode="vs">
-    <div class="ic">⚖️</div><b data-t="m_vs">훈련 vs 대회</b><small data-t="m_vs_d">시리즈별 격차 · 압박 분석</small>
-  </div>
-  <div class="mode" data-mode="report">
-    <div class="ic">📄</div><b data-t="m_report">보고서용</b><small data-t="m_report_d">선수별 전문 분석 · 인쇄 가능</small>
+  <div class="mode" data-mode="solo">
+    <div class="ic">🎯</div><b data-t="m_solo">선수 개인 보기</b><small data-t="m_solo_d">선수 1명 · 회의·시리즈·전문분석 통합</small>
   </div>
 </div>
 
@@ -248,7 +242,8 @@ const NAMES = ATH.map(a=>a.name);
 const I18N = {
   ko:{title:"베트남 청소년 권총 대표팀",subtitle:"실시간 통합 대시보드 · 전문가 선우룡",refresh:"새로고침",
     m_meet:"선수 대면 회의용",m_meet_d:"선수 1명 집중 · 강점과 다음 행동",m_coach:"감독 확인용",m_coach_d:"팀 전체 현황 · 위험 · 랭킹",
-    m_report:"보고서용",m_report_d:"선수별 전문 분석 · 인쇄 가능",m_vs:"훈련 vs 대회",m_vs_d:"시리즈별 격차 · 압박 분석",loading:"실시간 데이터를 불러오는 중…",
+    m_report:"상세 분석",m_report_d:"선수별 전문 분석 · 인쇄 가능",m_vs:"훈련 vs 대회",m_vs_d:"시리즈별 격차 · 압박 분석",
+    m_team:"전체 선수 보기",m_team_d:"팀 현황 · 훈련vs대회 · 위험 · 랭킹",m_solo:"선수 개인 보기",m_solo_d:"선수 1명 · 회의·시리즈·전문분석 통합",loading:"실시간 데이터를 불러오는 중…",
     vs_head:"훈련 vs 대회 — 한눈에",vs_desc:"'대회 한발당'이 '훈련 한발당'보다 낮을수록 실전 압박·피로의 영향이 큽니다. Δ(격차)가 클수록 대회에서 훈련 실력을 못 냅니다.",
     c_train:"훈련 한발당",c_match:"대회 한발당",c_gap:"격차 Δ",vs_series:"시리즈별 (S1~S6) 훈련 vs 대회",
     vs_pick:"선수 선택",vs_train:"훈련",vs_match:"대회",vs_serieshead:"시리즈별 평균 (10m·60발)",vs_gapby:"시리즈별 격차",
@@ -266,7 +261,8 @@ const I18N = {
     exp:"경력",mo:"개월",sess:"세션",print:"인쇄 / PDF 저장",detail:"상세 보기"},
   vi:{title:"Đội tuyển súng ngắn trẻ Việt Nam",subtitle:"Dashboard thời gian thực · Chuyên gia Sunwoo Ryong",refresh:"Làm mới",
     m_meet:"Họp với VĐV",m_meet_d:"Tập trung 1 VĐV · điểm mạnh & việc cần làm",m_coach:"Cho HLV trưởng",m_coach_d:"Toàn đội · nguy cơ · xếp hạng",
-    m_report:"Báo cáo",m_report_d:"Phân tích chuyên sâu · có thể in",m_vs:"Tập vs Thi đấu",m_vs_d:"Chênh lệch theo loạt · phân tích áp lực",loading:"Đang tải dữ liệu thời gian thực…",
+    m_report:"Phân tích chi tiết",m_report_d:"Phân tích chuyên sâu · có thể in",m_vs:"Tập vs Thi đấu",m_vs_d:"Chênh lệch theo loạt · phân tích áp lực",
+    m_team:"Xem toàn đội",m_team_d:"Toàn đội · Tập vs Thi · nguy cơ · xếp hạng",m_solo:"Xem từng VĐV",m_solo_d:"1 VĐV · họp·loạt·phân tích tích hợp",loading:"Đang tải dữ liệu thời gian thực…",
     vs_head:"Tập luyện vs Thi đấu — tổng quan",vs_desc:"'TB/phát khi thi' càng thấp hơn 'TB/phát khi tập' thì ảnh hưởng của áp lực·mệt mỏi càng lớn. Δ (chênh lệch) càng lớn, VĐV càng không phát huy được như khi tập.",
     c_train:"Tập TB/phát",c_match:"Thi TB/phát",c_gap:"Chênh Δ",vs_series:"Theo loạt (S1~S6): Tập vs Thi",
     vs_pick:"Chọn VĐV",vs_train:"Tập",vs_match:"Thi đấu",vs_serieshead:"TB theo loạt (10m·60 viên)",vs_gapby:"Chênh lệch theo loạt",
@@ -283,7 +279,7 @@ const I18N = {
     prog:"Diễn tiến điểm",risk:"Nguy cơ",type:"Nhóm",prob:"Vấn đề lặp lại",act:"Hành động tiếp theo",noData:"Không có dữ liệu",
     exp:"Kinh nghiệm",mo:"tháng",sess:"buổi",print:"In / Lưu PDF",detail:"Xem chi tiết"},
 };
-let LANG="ko", MODE="meet", MEET_SEL=null, VS_SEL=null;
+let LANG="ko", MODE="team", MEET_SEL=null, VS_SEL=null, SOLO_SEL=null;
 const t=k=>I18N[LANG][k]||k;
 
 // ================= CSV parser =================
@@ -418,117 +414,157 @@ function sparkline(trend,w=180,h=44){
 function ordered(){const m=ATH.filter(a=>a.gender==="M").sort((a,b)=>a.birth-b.birth);
   const f=ATH.filter(a=>a.gender==="W").sort((a,b)=>a.birth-b.birth);return {m,f,all:[...m,...f]};}
 
-// ================= MODE: COACH =================
-function renderCoach(){
-  const app=el("div");
-  const O=ordered();
-  // KPIs
+// ================= shared builders =================
+function kpiEl(v,l,cls){const e=el("div","kpi");e.innerHTML=`<div class="v ${cls||''}">${v}</div><div class="l">${l}</div>`;return e;}
+function goSolo(key){SOLO_SEL=key;MODE="solo";location.hash="solo";setMode();window.scrollTo({top:0,behavior:'smooth'});}
+
+function teamVsCard(){
+  const O=ordered();const wrap=el("div");
+  wrap.append(el("p","muted",t("vs_desc")));
+  const rows=O.all.map(a=>{const p=DATA.practice[a.name]||{},ar=DATA.archive[a.name]||{};
+    return {a,tr:p.avg,ma:ar.cshotAvg,n:ar.ncomp||0};}).filter(x=>x.tr!=null&&x.ma!=null);
+  rows.sort((x,y)=>(y.tr-y.ma)-(x.tr-x.ma));
+  const card=el("div","card");card.style.overflowX="auto";const tb=el("table");
+  tb.innerHTML=`<thead><tr><th class="l">${t("c_name")}</th><th>${t("c_train")}</th><th>${t("c_match")}</th><th>${t("c_gap")}</th><th>${t("vs_ncomp")}</th></tr></thead>`;
+  const body=el("tbody");const maxGap=Math.max(...rows.map(r=>r.tr-r.ma),0.01);
+  rows.forEach(({a,tr,ma,n})=>{const gap=tr-ma;const pct=(gap/maxGap*100).toFixed(0);const trr=el("tr");
+    trr.innerHTML=`<td class="l"><b>${a.name.split(" ").slice(-1)}</b> <span class="muted">${a.kr}</span></td>
+     <td style="color:var(--acc)">${tr.toFixed(2)}</td><td style="color:var(--gold)">${ma.toFixed(2)}</td>
+     <td><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:56px;height:8px;background:var(--bg2);border-radius:5px;overflow:hidden;display:inline-block"><span style="display:block;height:100%;width:${pct}%;background:linear-gradient(90deg,#b23,#ff5d5d)"></span></span><b style="color:var(--warn)">−${gap.toFixed(2)}</b></span></td><td>${n}</td>`;
+    trr.style.cursor="pointer";trr.onclick=()=>goSolo(a.key);body.append(trr);});
+  tb.append(body);card.append(tb);wrap.append(card);return wrap;
+}
+function soloSeries(a){
+  const p=DATA.practice[a.name]||{},ar=DATA.archive[a.name]||{};
+  const train=p.tser||[null,null,null,null,null,null], comp=ar.cserAvg||[null,null,null,null,null,null];
+  const d=el("div","card");d.id="vsdetail";
+  d.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+    <b>${t("vs_serieshead")}</b><div style="font-size:12px"><span style="color:var(--acc)">■</span> ${t("vs_train")} &nbsp; <span style="color:var(--gold)">■</span> ${t("vs_match")}</div></div>
+    <div style="text-align:center;margin:6px 0">${seriesChart(train,comp)}</div>`;
+  const mkrow=(lbl,col,fn)=>`<div class="bar" style="grid-template-columns:70px repeat(6,1fr)"><span class="l" style="color:${col}">${lbl}</span>${[0,1,2,3,4,5].map(fn).join("")}</div>`;
+  const g=el("div");g.style.marginTop="6px";
+  g.innerHTML=`<div class="bar" style="grid-template-columns:70px repeat(6,1fr)"><span class="l muted"></span>${[1,2,3,4,5,6].map(s=>`<b style="text-align:center;color:var(--mut)">S${s}</b>`).join("")}</div>`
+    +mkrow(t("vs_train"),"var(--acc)",i=>`<b style="text-align:center">${train[i]!=null?train[i].toFixed(1):'—'}</b>`)
+    +mkrow(t("vs_match"),"var(--gold)",i=>`<b style="text-align:center">${comp[i]!=null?comp[i].toFixed(1):'—'}</b>`)
+    +mkrow("Δ","var(--warn)",i=>{const v=train[i],c=comp[i];const gap=(v!=null&&c!=null)?(v-c):null;return `<b style="text-align:center;color:${gap>0.6?'var(--warn)':gap!=null?'#c9b16a':'var(--mut)'}">${gap!=null?'−'+gap.toFixed(1):'—'}</b>`;});
+  d.append(g);
+  const valid=train.map((v,i)=>({s:i+1,c:comp[i],gap:(v!=null&&comp[i]!=null)?v-comp[i]:null})).filter(o=>o.gap!=null);
+  if(valid.length){const worstComp=valid.slice().sort((x,y)=>x.c-y.c)[0];const maxDrop=valid.slice().sort((x,y)=>y.gap-x.gap)[0];
+    const ovGap=(p.avg!=null&&ar.cshotAvg!=null)?(p.avg-ar.cshotAvg):null;const ins=el("div","goal");
+    ins.innerHTML=`<b>${t("vs_insight")}</b><br>`+(LANG==="ko"
+      ? `전체 한발당 격차 <b style="color:var(--warn)">−${ovGap!=null?ovGap.toFixed(2):'—'}</b> (훈련 ${p.avg?p.avg.toFixed(2):'—'} → 대회 ${ar.cshotAvg?ar.cshotAvg.toFixed(2):'—'}). ${t("vs_worst")}: <b>S${worstComp.s}</b> (대회 ${worstComp.c.toFixed(1)}), ${t("vs_drop")}: <b>S${maxDrop.s}</b> (Δ−${maxDrop.gap.toFixed(1)}). ${t("vs_ncomp")} ${ar.ncomp||0}`
+      : `Chênh TB/phát <b style="color:var(--warn)">−${ovGap!=null?ovGap.toFixed(2):'—'}</b> (tập ${p.avg?p.avg.toFixed(2):'—'} → thi ${ar.cshotAvg?ar.cshotAvg.toFixed(2):'—'}). ${t("vs_worst")}: <b>S${worstComp.s}</b> (thi ${worstComp.c.toFixed(1)}), ${t("vs_drop")}: <b>S${maxDrop.s}</b> (Δ−${maxDrop.gap.toFixed(1)}). ${t("vs_ncomp")} ${ar.ncomp||0}`);
+    d.append(ins);}
+  return d;
+}
+function reportBlock(a){
+  const p=DATA.practice[a.name]||{},pr=DATA.pred[a.name]||{},ar=DATA.archive[a.name]||{},iv=DATA.interview[a.name]||{};
+  const wrap=el("div","rp card");
+  const sec=(h,txt)=>{wrap.append(el("div","sub",h));wrap.append(el("p",null,txt));};
+  sec(t("hComp"),a.report.comp[LANG]);
+  sec(t("hPred"),pr.match!=null?(a.report.pred[LANG]+` <span class="muted">(${t("prog")}: ${pr.match.toFixed(1)}%, ${esc(pr.verdict)})</span>`):a.report.pred[LANG]);
+  wrap.append(el("div","sub",t("hInt")));
+  if(iv.risk!=null){const it=el("p");it.innerHTML=`<b style="color:${iv.risk>=26?'var(--warn)':'inherit'}">${t("risk")} ${iv.risk} (${esc(iv.level)})</b> · ${t("type")}: ${esc(iv.type)}<br><span class="muted">${t("prob")}:</span> ${esc(iv.prob)}<br><span class="muted">${t("act")}:</span> ${esc(iv.act)}`;wrap.append(it);}
+  else wrap.append(el("p","muted",t("noData")));
+  wrap.append(el("div","sub",t("hTest")));
+  if(a.tests){const tp=el("p");tp.innerHTML=`<b>${t("prog")}:</b> ${a.tests.join(" → ")} <span class="tag ${a.testGrade[0]}">${a.testGrade}</span><br>${a.report.tests[LANG]}`;wrap.append(tp);}
+  else wrap.append(el("p",null,a.report.tests[LANG]));
+  wrap.append(el("div","sub",t("hVerdict")));
+  const v=el("div","verdict");v.innerHTML=a.report.verdict[LANG];wrap.append(v);
+  return wrap;
+}
+
+// ================= MODE: TEAM (all athletes) =================
+function renderTeam(){
+  const app=el("div");const O=ordered();
   let sess=0,medals=0,avgs=[],risks=0;
   O.all.forEach(a=>{const p=DATA.practice[a.name]||{},ar=DATA.archive[a.name]||{},iv=DATA.interview[a.name]||{};
-    sess+=p.n||0; medals+=totalMedals(ar.ind)+totalMedals(ar.team); if(p.avg)avgs.push(p.avg);
-    if(iv.risk!=null&&iv.risk>=26)risks++;});
+    sess+=p.n||0; medals+=totalMedals(ar.ind)+totalMedals(ar.team); if(p.avg)avgs.push(p.avg); if(iv.risk!=null&&iv.risk>=26)risks++;});
   const teamAvg=avgs.length?(avgs.reduce((a,b)=>a+b,0)/avgs.length):0;
   const kp=el("div","grid kpis");
-  const kpi=(v,l,cls)=>{const e=el("div","kpi");e.innerHTML=`<div class="v ${cls||''}">${v}</div><div class="l">${l}</div>`;return e;};
-  kp.append(kpi(O.all.length,t("k_ath"),"acc"),kpi(sess.toLocaleString(),t("k_sess")),kpi(medals,t("k_medal"),"gold"),
-    kpi(teamAvg.toFixed(2),t("k_avg"),"good"),kpi(risks,t("k_risk"),risks?"warn":""));
+  kp.append(kpiEl(O.all.length,t("k_ath"),"acc"),kpiEl(sess.toLocaleString(),t("k_sess")),kpiEl(medals,t("k_medal"),"gold"),
+    kpiEl(teamAvg.toFixed(2),t("k_avg"),"good"),kpiEl(risks,t("k_risk"),risks?"warn":""));
   app.append(kp);
-
-  // risk board
+  app.append(el("h2","sec","⚖️ "+t("vs_head")));
+  app.append(teamVsCard());
   app.append(el("h2","sec",t("riskboard")));
   const rb=el("div","card");
   const rlist=O.all.map(a=>({a,iv:DATA.interview[a.name]||{}})).sort((x,y)=>(y.iv.risk||0)-(x.iv.risk||0));
   const maxR=Math.max(30,...rlist.map(x=>x.iv.risk||0));
-  rlist.forEach(({a,iv})=>{const risk=iv.risk||0;const warn=risk>=26;
-    const b=el("div","bar");b.innerHTML=`<span class="l">${a.name.split(" ").slice(-1)} <span class="muted">${a.kr}</span></span>
-      <div class="track"><div class="fill ${warn?'warn':(risk>=23?'gold':'good')}" style="width:${(risk/maxR*100).toFixed(0)}%"></div></div>
-      <b>${risk||'—'} ${warn?'⚠':''}</b>`;rb.append(b);});
+  rlist.forEach(({a,iv})=>{const risk=iv.risk||0;const warn=risk>=26;const b=el("div","bar");
+    b.innerHTML=`<span class="l">${a.name.split(" ").slice(-1)} <span class="muted">${a.kr}</span></span>
+      <div class="track"><div class="fill ${warn?'warn':(risk>=23?'gold':'good')}" style="width:${(risk/maxR*100).toFixed(0)}%"></div></div><b>${risk||'—'} ${warn?'⚠':''}</b>`;
+    b.style.cursor="pointer";b.onclick=()=>goSolo(a.key);rb.append(b);});
   app.append(rb);
-
-  // ranking bars
   const mk=(title,valfn,fmt,cls)=>{app.append(el("h2","sec",title));const c=el("div","card");
-    const arr=O.all.map(a=>({a,v:valfn(a)})).filter(x=>x.v!=null).sort((x,y)=>y.v-x.v);
-    const mx=Math.max(...arr.map(x=>x.v))||1;
+    const arr=O.all.map(a=>({a,v:valfn(a)})).filter(x=>x.v!=null).sort((x,y)=>y.v-x.v);const mx=Math.max(...arr.map(x=>x.v))||1;
     arr.forEach(({a,v})=>{const b=el("div","bar");b.innerHTML=`<span class="l">${a.name.split(" ").slice(-1)} <span class="muted">${a.kr}</span></span>
-      <div class="track"><div class="fill ${cls}" style="width:${(v/mx*100).toFixed(0)}%"></div></div><b>${fmt(v)}</b>`;c.append(b);});
-    app.append(c);};
+      <div class="track"><div class="fill ${cls}" style="width:${(v/mx*100).toFixed(0)}%"></div></div><b>${fmt(v)}</b>`;
+      b.style.cursor="pointer";b.onclick=()=>goSolo(a.key);c.append(b);});app.append(c);};
   mk(t("rank_prac"),a=>(DATA.practice[a.name]||{}).avg,v=>v.toFixed(2),"");
   mk(t("rank_pred"),a=>(DATA.pred[a.name]||{}).match,v=>v.toFixed(1)+"%","good");
   mk(t("rank_medal"),a=>{const ar=DATA.archive[a.name]||{};return totalMedals(ar.ind)+totalMedals(ar.team);},v=>String(v),"gold");
-
-  // overview table
   app.append(el("h2","sec",t("tbl_over")));
-  const wrap=el("div","card");wrap.style.overflowX="auto";
-  const tb=el("table");
-  tb.innerHTML=`<thead><tr><th class="l">${t("c_name")}</th><th>${t("c_birth")}</th><th>${t("c_club")}</th>
-    <th>${t("c_best")}</th><th>${t("c_avg")}</th><th>${t("c_pred")}</th><th>${t("c_risk")}</th><th>${t("c_test")}</th></tr></thead>`;
+  const wrap=el("div","card");wrap.style.overflowX="auto";const tb=el("table");
+  tb.innerHTML=`<thead><tr><th class="l">${t("c_name")}</th><th>${t("c_birth")}</th><th>${t("c_club")}</th><th>${t("c_best")}</th><th>${t("c_avg")}</th><th>${t("c_match")}</th><th>${t("c_pred")}</th><th>${t("c_risk")}</th><th>${t("c_test")}</th></tr></thead>`;
   const tbody=el("tbody");
-  const grp=(label)=>{const tr=el("tr","male-h");tr.innerHTML=`<td colspan="8">${label}</td>`;return tr;};
   const rowFor=a=>{const p=DATA.practice[a.name]||{},pr=DATA.pred[a.name]||{},ar=DATA.archive[a.name]||{},iv=DATA.interview[a.name]||{};
     const warn=(iv.risk||0)>=26;const tr=el("tr");
     tr.innerHTML=`<td class="l"><b>${a.name.split(" ").slice(-1)}</b> <span class="muted">${a.kr}</span></td>
      <td>${a.birth}</td><td>${a.club}</td><td><b>${ar.best60||'—'}</b></td>
-     <td>${p.avg?p.avg.toFixed(2):'—'}</td><td>${pr.match!=null?pr.match.toFixed(1)+'%':'—'}</td>
+     <td style="color:var(--acc)">${p.avg?p.avg.toFixed(2):'—'}</td><td style="color:var(--gold)">${ar.cshotAvg!=null?ar.cshotAvg.toFixed(2):'—'}</td>
+     <td>${pr.match!=null?pr.match.toFixed(1)+'%':'—'}</td>
      <td><span class="tag ${warn?'risk':'ok'}">${iv.risk!=null?iv.risk:'—'}</span></td>
      <td>${a.testGrade!=="—"?`<span class="tag ${a.testGrade[0]}">${a.testGrade}</span>`:'—'}</td>`;
-    tr.style.cursor="pointer";tr.onclick=()=>{MODE="report";location.hash="report";setMode();setTimeout(()=>{const t2=document.getElementById("rp-"+a.key);if(t2)t2.scrollIntoView({behavior:"smooth"});},60);};
-    return tr;};
-  const gh=(lbl)=>{const tr=el("tr","male-h");tr.innerHTML=`<td colspan="8">${lbl}</td>`;tbody.append(tr);};
+    tr.style.cursor="pointer";tr.onclick=()=>goSolo(a.key);return tr;};
+  const gh=(lbl)=>{const tr=el("tr","male-h");tr.innerHTML=`<td colspan="9">${lbl}</td>`;tbody.append(tr);};
   gh(t("male")); O.m.forEach(a=>tbody.append(rowFor(a)));
   gh(t("female")); O.f.forEach(a=>tbody.append(rowFor(a)));
   tb.append(tbody);wrap.append(tb);app.append(wrap);
   return app;
 }
 
-// ================= MODE: MEETING =================
-function renderMeet(){
-  const app=el("div");
-  const O=ordered();
-  if(!MEET_SEL)MEET_SEL=O.all[0].key;
+// ================= MODE: SOLO (individual) =================
+function renderSolo(){
+  const app=el("div");const O=ordered();
+  if(!SOLO_SEL)SOLO_SEL=O.all[0].key;
   const chips=el("div","chips");
-  O.all.forEach(a=>{const c=el("div","chip"+(a.key===MEET_SEL?" on":""));
+  O.all.forEach(a=>{const c=el("div","chip"+(a.key===SOLO_SEL?" on":""));
     c.innerHTML=`${a.name.split(" ").slice(-1)} <span class="g">${a.kr}·${a.birth}</span>`;
-    c.onclick=()=>{MEET_SEL=a.key;render();};chips.append(c);});
+    c.onclick=()=>{SOLO_SEL=a.key;render();window.scrollTo({top:0,behavior:'smooth'});};chips.append(c);});
   app.append(chips);
-  const a=ATH.find(x=>x.key===MEET_SEL);
-  const p=DATA.practice[a.name]||{},pr=DATA.pred[a.name]||{},ar=DATA.archive[a.name]||{},iv=DATA.interview[a.name]||{};
+  const a=ATH.find(x=>x.key===SOLO_SEL);
+  const p=DATA.practice[a.name]||{},ar=DATA.archive[a.name]||{},iv=DATA.interview[a.name]||{};
   const card=el("div","card");
-  // hero
   const hero=el("div","meet-hero");
   hero.innerHTML=`<div class="avatar">${a.name.split(" ").slice(-1)[0]}</div>
     <div style="flex:1;min-width:200px"><div style="font-size:22px;font-weight:800">${a.name} <span class="muted" style="font-size:15px">${a.kr}</span></div>
     <div class="muted" style="font-size:13px">${a.birth} · ${a.club} · ${t("exp")} ${a.exp}${t("mo")} · ${a.disc[LANG]}</div>
-    <div style="margin-top:6px;font-weight:700;color:${a.warn?'var(--warn)':'var(--gold)'}">${a.warn?'⚠ ':'★ '}${a.headline[LANG]}</div></div>`;
+    <div style="margin-top:6px;font-weight:700;color:${a.warn?'var(--warn)':'var(--gold)'}">${a.warn?'⚠ ':'★ '}${a.headline[LANG]}</div></div>
+    <button class="btn" onclick="window.print()">🖨 ${t("print")}</button>`;
   card.append(hero);
-  // my 2026 stats
   card.append(el("h2","sec",t("my2026")));
   const kp=el("div","grid kpis");
-  const kpi=(v,l,cls)=>{const e=el("div","kpi");e.innerHTML=`<div class="v ${cls||''}">${v}</div><div class="l">${l}</div>`;return e;};
-  const recent=(a.recent60!=null?a.recent60:null);
-  kp.append(
-    kpi(ar.best60||'—',t("best"),"acc"),
-    kpi(p.avg?p.avg.toFixed(2):'—',t("avg"),"good"),
-    kpi(totalMedals(ar.ind)+totalMedals(ar.team),t("medals"),"gold"),
-    kpi((p.n||0)+" ",t("sess")));
+  kp.append(kpiEl(ar.best60||'—',t("best"),"acc"),kpiEl(p.avg?p.avg.toFixed(2):'—',t("avg"),"good"),
+    kpiEl(totalMedals(ar.ind)+totalMedals(ar.team),t("medals"),"gold"),kpiEl((p.n||0)+" ",t("sess")));
   card.append(kp);
-  // trend
   card.append(el("h2","sec",t("trend")));
   const tw=el("div","card");tw.style.background="var(--bg2)";
   tw.innerHTML=`<div class="sparkwrap">${sparkline(p.trend,Math.min(520,window.innerWidth-90),64)}
     <div><div class="muted" style="font-size:12px">${p.trend&&p.trend.length?p.trend[0].m+' → '+p.trend[p.trend.length-1].m:''}</div>
     <div style="font-size:18px;font-weight:800">${p.trend&&p.trend.length?p.trend[0].v.toFixed(2)+' → '+p.trend[p.trend.length-1].v.toFixed(2):'—'}</div></div></div>`;
   card.append(tw);
-  // strength
   const g1=el("div","goal");g1.innerHTML=`<b>${t("strength")}</b><br>${a.strength[LANG]}`;card.append(g1);
-  // next task
   const g2=el("div","goal"+(a.warn?" warn":""));g2.innerHTML=`<b>${t("nextTask")}</b><br>${a.task[LANG]}`;card.append(g2);
-  // pledge from interview
   const pl=el("div","pledge");
-  if(iv.act){pl.innerHTML=`<div class="muted" style="font-size:12px">${t("myPledge")}</div><div class="q">“${esc(iv.act)}”</div>
-    ${iv.prob?`<div class="muted" style="font-size:12.5px;margin-top:8px">▸ ${esc(iv.prob)}</div>`:''}`;}
+  if(iv.act){pl.innerHTML=`<div class="muted" style="font-size:12px">${t("myPledge")}</div><div class="q">“${esc(iv.act)}”</div>${iv.prob?`<div class="muted" style="font-size:12.5px;margin-top:8px">▸ ${esc(iv.prob)}</div>`:''}`;}
   else pl.innerHTML=`<div class="muted">${t("noPledge")}</div>`;
   card.append(pl);
   app.append(card);
+  app.append(el("h2","sec","⚖️ "+t("vs_series")));
+  app.append(soloSeries(a));
+  app.append(el("h2","sec","📄 "+t("m_report")));
+  app.append(reportBlock(a));
   return app;
 }
 
@@ -673,10 +709,8 @@ function render(){
   const app=document.getElementById("app");app.innerHTML="";
   if(DATA.err){app.innerHTML=`<div class="err">데이터 로드 실패: ${esc(DATA.err)}<br>새로고침을 눌러 다시 시도하세요.</div>`;return;}
   if(!DATA.loaded){app.innerHTML=`<div class="loading">${t("loading")}</div>`;return;}
-  if(MODE==="coach")app.append(renderCoach());
-  else if(MODE==="report")app.append(renderReport());
-  else if(MODE==="vs")app.append(renderCompare());
-  else app.append(renderMeet());
+  if(MODE==="solo")app.append(renderSolo());
+  else app.append(renderTeam());
 }
 function applyLangStatic(){document.querySelectorAll("[data-t]").forEach(e=>{const k=e.getAttribute("data-t");if(I18N[LANG][k])e.textContent=I18N[LANG][k];});
   document.documentElement.lang=LANG;}
@@ -694,7 +728,7 @@ document.getElementById("refresh").addEventListener("click",async()=>{
 
 async function boot(){
   applyLangStatic();
-  if(location.hash&&["meet","coach","report","vs"].includes(location.hash.slice(1))){MODE=location.hash.slice(1);setMode();}
+  if(location.hash&&["team","solo"].includes(location.hash.slice(1))){MODE=location.hash.slice(1);setMode();}
   try{await loadAll();DATA.loaded=true;}catch(e){DATA.err=String(e);}
   render();
   // auto-refresh every 90s (real-time)
