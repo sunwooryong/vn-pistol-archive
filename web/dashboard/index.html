@@ -6,28 +6,35 @@
 <title>베트남 청소년 권총 대표팀 · 실시간 대시보드</title>
 <style>
   :root{
-    --bg:#0e131f; --bg2:#131a29; --card:#1a2233; --card2:#212b40; --line:#2c384f;
-    --tx:#e8edf6; --mut:#93a1bd; --acc:#5b9dff; --acc2:#3a7be0;
-    --gold:#e2b73c; --good:#37c98a; --warn:#ff5d5d; --warnbg:#3a1f28; --goldbg:#2b2718;
-    --shadow:0 10px 30px rgba(0,0,0,.35);
+    --bg:#080b14; --bg2:#0e1420; --card:#121a2a; --card2:#1a2437; --line:#28344e;
+    --tx:#eff3fc; --mut:#9dabc7; --acc:#6aa8ff; --acc2:#3f7fe6;
+    --gold:#e7c86b; --gold2:#c69b3e; --good:#3fd39a; --warn:#ff6b6b; --warnbg:#3a2029; --goldbg:#231f11;
+    --shadow:0 16px 44px rgba(0,0,0,.5);
+    --hair:linear-gradient(90deg,transparent,rgba(231,200,107,.7),transparent);
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
-  body{background:linear-gradient(180deg,#0b0f18,#0e131f 30%);color:var(--tx);
+  body{background:
+      radial-gradient(1100px 560px at 50% -8%, #17223c 0%, rgba(23,34,60,0) 60%),
+      linear-gradient(180deg,#0a0e1a,#080b14 40%) fixed, #080b14;
+    color:var(--tx);
     font-family:"Malgun Gothic","Segoe UI",system-ui,-apple-system,"Apple SD Gothic Neo",Roboto,sans-serif;
     -webkit-font-smoothing:antialiased;line-height:1.55;min-height:100vh}
   a{color:var(--acc);text-decoration:none}
   .wrap{max-width:1120px;margin:0 auto;padding:0 16px 80px}
 
   /* header */
-  header{position:sticky;top:0;z-index:50;background:rgba(11,15,24,.86);backdrop-filter:blur(12px);
-    border-bottom:1px solid var(--line)}
-  .hd{max-width:1120px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-  .brand{display:flex;align-items:center;gap:12px;min-width:0}
-  .brand img.rings{height:38px}
-  .brand .flags{height:26px;border-radius:4px}
+  header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,rgba(9,13,22,.94),rgba(9,13,22,.82));
+    backdrop-filter:blur(14px);border-bottom:1px solid var(--line);box-shadow:0 6px 24px rgba(0,0,0,.35)}
+  header::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--hair)}
+  .hd{max-width:1120px;margin:0 auto;padding:11px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:11px;min-width:0}
+  .brand img.rings{height:38px;background:linear-gradient(#ffffff,#eef1f7);border-radius:10px;padding:6px 11px;
+    box-shadow:0 3px 12px rgba(0,0,0,.45),inset 0 0 0 1px rgba(0,0,0,.05)}
+  .brand .flags{height:34px;border-radius:6px;box-shadow:0 3px 10px rgba(0,0,0,.4)}
   .brand .tt{display:flex;flex-direction:column;min-width:0}
-  .brand .tt b{font-size:15px;letter-spacing:.2px;white-space:nowrap}
+  .brand .tt b{font-size:15px;letter-spacing:.3px;white-space:nowrap;
+    background:linear-gradient(90deg,#fff,#e7c86b);-webkit-background-clip:text;background-clip:text;color:transparent}
   .brand .tt span{font-size:11px;color:var(--mut);white-space:nowrap}
   .spacer{flex:1}
   .live{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)}
@@ -45,22 +52,27 @@
   .mode{flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:14px;
     padding:12px 14px;cursor:pointer;transition:.18s;position:relative;overflow:hidden}
   .mode:hover{border-color:var(--acc2);transform:translateY(-1px)}
-  .mode.on{border-color:var(--acc);background:linear-gradient(135deg,#20304f,#182136);box-shadow:var(--shadow)}
+  .mode.on{border-color:var(--gold2);background:linear-gradient(135deg,#233251,#151e31);box-shadow:var(--shadow)}
+  .mode.on::after{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--hair)}
   .mode .ic{font-size:20px}
   .mode b{display:block;font-size:14.5px;margin-top:4px}
   .mode small{display:block;color:var(--mut);font-size:11.5px;margin-top:2px}
-  .mode.on b{color:#fff}
+  .mode.on b{color:var(--gold)}
 
-  h2.sec{font-size:16px;color:var(--acc);margin:26px 0 12px;letter-spacing:.3px}
+  h2.sec{font-size:15.5px;color:var(--gold);margin:28px 0 13px;letter-spacing:.5px;font-weight:800;display:flex;align-items:center;gap:9px}
+  h2.sec::before{content:"";width:4px;height:16px;border-radius:3px;background:linear-gradient(var(--gold),var(--gold2))}
   .muted{color:var(--mut)}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+  .card{position:relative;background:linear-gradient(180deg,#151d2e,#0f1622);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+  .card::before{content:"";position:absolute;top:0;left:18px;right:18px;height:1px;background:var(--hair);opacity:.55}
   .grid{display:grid;gap:12px}
 
   /* KPI */
   .kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
-  .kpi{background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:14px;padding:14px}
-  .kpi .v{font-size:26px;font-weight:800;letter-spacing:.3px}
-  .kpi .l{font-size:12px;color:var(--mut);margin-top:2px}
+  .kpi{position:relative;background:linear-gradient(160deg,#1c2743,#131b2b);border:1px solid var(--line);border-radius:14px;padding:15px 14px;overflow:hidden;transition:.18s}
+  .kpi:hover{transform:translateY(-2px);border-color:var(--gold2)}
+  .kpi::after{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--hair)}
+  .kpi .v{font-size:27px;font-weight:800;letter-spacing:.3px}
+  .kpi .l{font-size:12px;color:var(--mut);margin-top:3px}
   .kpi .v.good{color:var(--good)} .kpi .v.warn{color:var(--warn)} .kpi .v.gold{color:var(--gold)} .kpi .v.acc{color:var(--acc)}
 
   /* athlete chips */
@@ -73,10 +85,10 @@
 
   /* bars */
   .bar{display:grid;grid-template-columns:150px 1fr 54px;align-items:center;gap:10px;margin:7px 0;font-size:13px}
-  .bar .track{background:var(--bg2);border-radius:8px;height:16px;overflow:hidden;border:1px solid var(--line)}
-  .bar .fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--acc2),var(--acc))}
-  .bar .fill.gold{background:linear-gradient(90deg,#a8842a,var(--gold))}
-  .bar .fill.good{background:linear-gradient(90deg,#25936a,var(--good))}
+  .bar .track{background:#0b1120;border-radius:8px;height:17px;overflow:hidden;border:1px solid var(--line)}
+  .bar .fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--acc2),var(--acc));box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
+  .bar .fill.gold{background:linear-gradient(90deg,var(--gold2),var(--gold))}
+  .bar .fill.good{background:linear-gradient(90deg,#219e73,var(--good))}
   .bar .fill.warn{background:linear-gradient(90deg,#b23,var(--warn))}
   .bar b{text-align:right}
 
@@ -84,7 +96,8 @@
   th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:center}
   th{color:var(--mut);font-weight:600;font-size:12px;position:sticky}
   td.l,th.l{text-align:left}
-  tr.male-h td,tr.female-h td{background:var(--acc2);color:#fff;font-weight:700;text-align:left;font-size:12px}
+  tr.male-h td,tr.female-h td{background:linear-gradient(90deg,#22304f,#161f33);color:var(--gold);font-weight:800;text-align:left;font-size:12px;letter-spacing:.4px}
+  thead th{background:#0d1422}
   .tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700}
   .tag.A{background:#173d2c;color:#54e0a0}.tag.B{background:#2a3350;color:#9db8ff}
   .tag.C{background:#3a3320;color:#e2c24c}.tag.D{background:#3a1f28;color:#ff8a8a}
@@ -263,7 +276,7 @@ const I18N = {
     ry_finals:"결선진출",ry_avg:"10m 평균본선",ry_max:"10m 최고",ry_inner:"이너텐 평균",
     rec_timeline:"대회 본선 점수 추이 (10m)",rec_finals:"결선 진출 기록",
     mx_best:"통산 최고본선",mx_conv:"결선 전환율",mx_medal:"메달 전환율",mx_consistency:"본선 일관성 σ",mx_inner:"이너텐 평균",
-    fl_none:"결선 진출 기록 없음",rec_teamyear:"연도별 팀 성과",colDate:"일자",colEvent:"종목",colFinal:"결선점수",colFrank:"결선순위",lgGold:"금",lgSilver:"은",lgBronze:"동",lgOther:"입상외",lgFinal:"결선진출"},
+    fl_none:"결선 진출 기록 없음",rec_teamyear:"연도별 팀 성과",rec_medalbar:"연도별 메달 획득",colDate:"일자",colEvent:"종목",colFinal:"결선점수",colFrank:"결선순위",lgGold:"금",lgSilver:"은",lgBronze:"동",lgOther:"입상외",lgFinal:"결선진출"},
   vi:{title:"Đội tuyển súng ngắn trẻ Việt Nam",subtitle:"Dashboard thời gian thực · Chuyên gia Sunwoo Ryong",refresh:"Làm mới",
     m_meet:"Họp với VĐV",m_meet_d:"Tập trung 1 VĐV · điểm mạnh & việc cần làm",m_coach:"Cho HLV trưởng",m_coach_d:"Toàn đội · nguy cơ · xếp hạng",
     m_report:"Phân tích chi tiết",m_report_d:"Phân tích chuyên sâu · có thể in",m_vs:"Tập vs Thi đấu",m_vs_d:"Chênh lệch theo loạt · phân tích áp lực",
@@ -287,7 +300,7 @@ const I18N = {
     ry_finals:"Vào CK",ry_avg:"TB VL 10m",ry_max:"10m cao nhất",ry_inner:"Inner-ten TB",
     rec_timeline:"Diễn biến điểm vòng loại (10m)",rec_finals:"Lịch sử vào chung kết",
     mx_best:"VL cao nhất sự nghiệp",mx_conv:"Tỷ lệ vào CK",mx_medal:"Tỷ lệ có huy chương",mx_consistency:"Độ ổn định VL σ",mx_inner:"Inner-ten TB",
-    fl_none:"Chưa có lần vào chung kết",rec_teamyear:"Thành tích đội theo năm",colDate:"Ngày",colEvent:"Nội dung",colFinal:"Điểm CK",colFrank:"Hạng CK",lgGold:"Vàng",lgSilver:"Bạc",lgBronze:"Đồng",lgOther:"khác",lgFinal:"vào CK"},
+    fl_none:"Chưa có lần vào chung kết",rec_teamyear:"Thành tích đội theo năm",rec_medalbar:"Huy chương theo năm",colDate:"Ngày",colEvent:"Nội dung",colFinal:"Điểm CK",colFrank:"Hạng CK",lgGold:"Vàng",lgSilver:"Bạc",lgBronze:"Đồng",lgOther:"khác",lgFinal:"vào CK"},
 };
 let LANG="ko", MODE="team", MEET_SEL=null, VS_SEL=null, SOLO_SEL=null;
 const t=k=>I18N[LANG][k]||k;
@@ -461,7 +474,7 @@ function soloSeries(a){
   const d=el("div","card");d.id="vsdetail";
   d.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
     <b>${t("vs_serieshead")}</b><div style="font-size:12px"><span style="color:var(--acc)">■</span> ${t("vs_train")} &nbsp; <span style="color:var(--gold)">■</span> ${t("vs_match")}</div></div>
-    <div style="text-align:center;margin:6px 0">${seriesChart(train,comp)}</div>`;
+    <div style="text-align:center;margin:6px 0">${seriesBars(train,comp)}</div>`;
   const mkrow=(lbl,col,fn)=>`<div class="bar" style="grid-template-columns:70px repeat(6,1fr)"><span class="l" style="color:${col}">${lbl}</span>${[0,1,2,3,4,5].map(fn).join("")}</div>`;
   const g=el("div");g.style.marginTop="6px";
   g.innerHTML=`<div class="bar" style="grid-template-columns:70px repeat(6,1fr)"><span class="l muted"></span>${[1,2,3,4,5,6].map(s=>`<b style="text-align:center;color:var(--mut)">S${s}</b>`).join("")}</div>`
@@ -478,7 +491,46 @@ function soloSeries(a){
     d.append(ins);}
   return d;
 }
-function medalDot(m){return m==='gold'?'#e2b73c':m==='silver'?'#cfd6e6':m==='bronze'?'#c9905a':'#5b9dff';}
+// grouped bar chart: training vs competition per series (S1-S6)
+function seriesBars(train,comp){
+  const w=Math.min(560,window.innerWidth-70),h=210;const pad={l:32,r:10,t:14,b:26};
+  const vals=[...train,...comp].filter(v=>v!=null);if(vals.length<2)return `<span class="muted">${t("noData")}</span>`;
+  const mn=Math.floor(Math.min(...vals))-1,mx=Math.ceil(Math.max(...vals))+1;
+  const bw=(w-pad.l-pad.r)/6,barw=Math.min(15,bw*0.30);
+  const py=v=>h-pad.b-((v-mn)/(mx-mn))*(h-pad.t-pad.b);
+  let grid="";for(let g=mn;g<=mx;g+=2){const y=py(g);grid+=`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${w-pad.r}" y2="${y.toFixed(1)}" stroke="#22304a"/><text x="${pad.l-6}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="9" fill="#9dabc7">${g}</text>`;}
+  let bars="";
+  for(let i=0;i<6;i++){const cx=pad.l+bw*i+bw/2,tv=train[i],cv=comp[i];
+    if(tv!=null){const y=py(tv);bars+=`<rect x="${(cx-barw-2).toFixed(1)}" y="${y.toFixed(1)}" width="${barw.toFixed(1)}" height="${(h-pad.b-y).toFixed(1)}" rx="2.5" fill="url(#gbBlue)"/><text x="${(cx-barw/2-2).toFixed(1)}" y="${(y-3).toFixed(1)}" text-anchor="middle" font-size="8.5" fill="#8fb6ff">${tv.toFixed(1)}</text>`;}
+    if(cv!=null){const y=py(cv);bars+=`<rect x="${(cx+2).toFixed(1)}" y="${y.toFixed(1)}" width="${barw.toFixed(1)}" height="${(h-pad.b-y).toFixed(1)}" rx="2.5" fill="url(#gbGold)"/><text x="${(cx+barw/2+2).toFixed(1)}" y="${(y-3).toFixed(1)}" text-anchor="middle" font-size="8.5" fill="#e7c86b">${cv.toFixed(1)}</text>`;}
+    bars+=`<text x="${cx.toFixed(1)}" y="${h-8}" text-anchor="middle" font-size="10" fill="#9dabc7">S${i+1}</text>`;}
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="max-width:100%"><defs>
+    <linearGradient id="gbBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fb6ff"/><stop offset="1" stop-color="#3f7fe6"/></linearGradient>
+    <linearGradient id="gbGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2dc96"/><stop offset="1" stop-color="#c69b3e"/></linearGradient></defs>${grid}${bars}</svg>`;
+}
+// stacked medal bar chart per year (individual G/S/B solid + team faded)
+function medalBars(years){
+  if(!years||!years.length)return `<span class="muted">${t("noData")}</span>`;
+  const w=Math.min(560,window.innerWidth-70),h=210;const pad={l:26,r:10,t:14,b:34};
+  const totals=years.map(y=>totalMedals(y.ind)+totalMedals(y.team));
+  const mx=Math.max(3,...totals);const n=years.length,bw=(w-pad.l-pad.r)/n,barw=Math.min(50,bw*0.52);
+  const py=v=>h-pad.b-(v/mx)*(h-pad.t-pad.b);
+  let grid="";const step=Math.max(1,Math.ceil(mx/4));
+  for(let g=0;g<=mx;g+=step){const y=py(g);grid+=`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${w-pad.r}" y2="${y.toFixed(1)}" stroke="#22304a"/><text x="${pad.l-4}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="9" fill="#9dabc7">${g}</text>`;}
+  const cols=[['#e7c86b',0],['#cfd6e6',1],['#c9905a',2]];
+  let bars="";
+  years.forEach((y,i)=>{const cx=pad.l+bw*i+bw/2;let base=0,svg="";
+    const stack=[[y.ind[0],'#e7c86b'],[y.ind[1],'#cfd6e6'],[y.ind[2],'#c9905a'],
+      [y.team[0],'rgba(231,200,107,.42)'],[y.team[1],'rgba(207,214,230,.36)'],[y.team[2],'rgba(201,144,90,.42)']];
+    stack.forEach(([c,col])=>{c=c||0;if(c){const y0=py(base+c),hgt=py(base)-py(base+c);
+      svg+=`<rect x="${(cx-barw/2).toFixed(1)}" y="${y0.toFixed(1)}" width="${barw.toFixed(1)}" height="${hgt.toFixed(1)}" fill="${col}"/>`;base+=c;}});
+    const tot=totalMedals(y.ind)+totalMedals(y.team);
+    bars+=svg+`${tot?`<text x="${cx.toFixed(1)}" y="${(py(base)-4).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="#e7c86b">${tot}</text>`:''}
+      <text x="${cx.toFixed(1)}" y="${h-18}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#eff3fc">${y.year}</text>
+      <text x="${cx.toFixed(1)}" y="${h-6}" text-anchor="middle" font-size="8.5" fill="#9dabc7">${t("ry_finals")} ${y.finals||0}</text>`;});
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="max-width:100%">${grid}${bars}</svg>`;
+}
+function medalDot(m){return m==='gold'?'#e7c86b':m==='silver'?'#cfd6e6':m==='bronze'?'#c9905a':'#6aa8ff';}
 function qualTimeline(pts,w,h){
   w=w||Math.min(560,window.innerWidth-70);h=h||156;
   const pad={l:34,r:12,t:12,b:24};
@@ -517,6 +569,13 @@ function recordAnalysis(a){
       <td>${y.finals||'—'}</td><td>${y.q10avg?y.q10avg.toFixed(1):'—'}</td><td><b>${y.q10max||'—'}</b></td><td>${y.innerAvg!=null?y.innerAvg.toFixed(1):'—'}</td>`;
     bd.append(tr);});
   tb.append(bd);c1.append(tb);wrap.append(c1);
+  // yearly medal bar chart
+  wrap.append(el("h2","sec",t("rec_medalbar")));
+  const cb=el("div","card");
+  cb.innerHTML=`<div style="text-align:center">${medalBars(ar.yearsArr||[])}</div>
+    <div class="muted" style="font-size:11.5px;text-align:center;margin-top:4px">
+    <span style="color:#e7c86b">■</span> ${t("lgGold")} <span style="color:#cfd6e6">■</span> ${t("lgSilver")} <span style="color:#c9905a">■</span> ${t("lgBronze")} &nbsp;·&nbsp; ${LANG==="ko"?"진한색=개인, 연한색=단체":"đậm=cá nhân, nhạt=đồng đội"}</div>`;
+  wrap.append(cb);
   // timeline
   wrap.append(el("h2","sec",t("rec_timeline")));
   const c2=el("div","card");
@@ -590,6 +649,11 @@ function renderTeam(){
     ty.n+=y.n;ty.finals+=y.finals;for(let i=0;i<3;i++){ty.ind[i]+=y.ind[i];ty.team[i]+=y.team[i];}});});
   const yrs=Object.keys(teamYears).sort();
   if(yrs.length){app.append(el("h2","sec",t("rec_teamyear")));
+    const yArr=yrs.map(y=>({year:y,ind:teamYears[y].ind,team:teamYears[y].team,finals:teamYears[y].finals,n:teamYears[y].n}));
+    const cbar=el("div","card");
+    cbar.innerHTML=`<div style="text-align:center">${medalBars(yArr)}</div>
+      <div class="muted" style="font-size:11.5px;text-align:center;margin-top:4px"><span style="color:#e7c86b">■</span> ${t("lgGold")} <span style="color:#cfd6e6">■</span> ${t("lgSilver")} <span style="color:#c9905a">■</span> ${t("lgBronze")} &nbsp;·&nbsp; ${LANG==="ko"?"진한색=개인, 연한색=단체":"đậm=cá nhân, nhạt=đồng đội"}</div>`;
+    app.append(cbar);
     const cy=el("div","card");cy.style.overflowX="auto";const ty=el("table");
     ty.innerHTML=`<thead><tr><th>${t("ry_year")}</th><th>${t("ry_n")}</th><th>${t("ry_ind")}</th><th>${t("ry_team")}</th><th>${t("ry_finals")}</th></tr></thead>`;
     const bd=el("tbody");yrs.forEach(y=>{const d=teamYears[y];const tr=el("tr");
@@ -765,7 +829,7 @@ function renderCompare(){
   d.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
     <b>${a.name.split(" ").slice(-1)} ${a.kr}</b>
     <div style="font-size:12px"><span style="color:var(--acc)">■</span> ${t("vs_train")} &nbsp; <span style="color:var(--gold)">■</span> ${t("vs_match")}</div></div>
-    <div style="text-align:center;margin:6px 0">${seriesChart(train,comp)}</div>`;
+    <div style="text-align:center;margin:6px 0">${seriesBars(train,comp)}</div>`;
   // per-series numeric + gap
   const g=el("div");g.style.marginTop="6px";
   const line=el("div","bar");line.style.gridTemplateColumns="70px repeat(6,1fr)";
