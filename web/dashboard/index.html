@@ -159,6 +159,7 @@
     <div class="live">
       <span class="dot"></span><span id="updated">—</span>
     </div>
+    <a class="btn" id="archive-link" href="../" title="기록 아카이브">🗄 <span data-t="archive">기록 아카이브</span></a>
     <button class="btn" id="refresh" data-t="refresh">새로고침</button>
     <div class="seg" id="lang">
       <button data-lang="ko" class="on">한국어</button>
@@ -269,7 +270,7 @@ const NAMES = ATH.map(a=>a.name);
 const I18N = {
   ko:{title:"베트남 청소년 권총 대표팀",subtitle:"실시간 통합 대시보드 · 전문가 선우룡",refresh:"새로고침",
     m_meet:"선수 대면 회의용",m_meet_d:"선수 1명 집중 · 강점과 다음 행동",m_coach:"감독 확인용",m_coach_d:"팀 전체 현황 · 위험 · 랭킹",
-    m_report:"상세 분석",m_report_d:"선수별 전문 분석 · 인쇄 가능",m_vs:"훈련 vs 대회",m_vs_d:"시리즈별 격차 · 압박 분석",
+    archive:"기록 아카이브",m_report:"상세 분석",m_report_d:"선수별 전문 분석 · 인쇄 가능",m_vs:"훈련 vs 대회",m_vs_d:"시리즈별 격차 · 압박 분석",
     m_team:"전체 선수 보기",m_team_d:"팀 현황 · 훈련vs대회 · 위험 · 랭킹",m_solo:"선수 개인 보기",m_solo_d:"선수 1명 · 회의·시리즈·전문분석 통합",loading:"실시간 데이터를 불러오는 중…",
     vs_head:"훈련 vs 대회 — 한눈에",vs_desc:"'대회 한발당'이 '훈련 한발당'보다 낮을수록 실전 압박·피로의 영향이 큽니다. Δ(격차)가 클수록 대회에서 훈련 실력을 못 냅니다.",
     c_train:"훈련 한발당",c_match:"대회 한발당",c_gap:"격차 Δ",vs_series:"시리즈별 (S1~S6) 훈련 vs 대회",
@@ -293,7 +294,7 @@ const I18N = {
     fl_none:"결선 진출 기록 없음",rec_teamyear:"연도별 팀 성과",rec_medalbar:"연도별 메달 획득",colDate:"일자",colEvent:"종목",colFinal:"결선점수",colFrank:"결선순위",lgGold:"금",lgSilver:"은",lgBronze:"동",lgOther:"입상외",lgFinal:"결선진출"},
   vi:{title:"Đội tuyển súng ngắn trẻ Việt Nam",subtitle:"Dashboard thời gian thực · Chuyên gia Sunwoo Ryong",refresh:"Làm mới",
     m_meet:"Họp với VĐV",m_meet_d:"Tập trung 1 VĐV · điểm mạnh & việc cần làm",m_coach:"Cho HLV trưởng",m_coach_d:"Toàn đội · nguy cơ · xếp hạng",
-    m_report:"Phân tích chi tiết",m_report_d:"Phân tích chuyên sâu · có thể in",m_vs:"Tập vs Thi đấu",m_vs_d:"Chênh lệch theo loạt · phân tích áp lực",
+    archive:"Kho dữ liệu",m_report:"Phân tích chi tiết",m_report_d:"Phân tích chuyên sâu · có thể in",m_vs:"Tập vs Thi đấu",m_vs_d:"Chênh lệch theo loạt · phân tích áp lực",
     m_team:"Xem toàn đội",m_team_d:"Toàn đội · Tập vs Thi · nguy cơ · xếp hạng",m_solo:"Xem từng VĐV",m_solo_d:"1 VĐV · họp·loạt·phân tích tích hợp",loading:"Đang tải dữ liệu thời gian thực…",
     vs_head:"Tập luyện vs Thi đấu — tổng quan",vs_desc:"'TB/phát khi thi' càng thấp hơn 'TB/phát khi tập' thì ảnh hưởng của áp lực·mệt mỏi càng lớn. Δ (chênh lệch) càng lớn, VĐV càng không phát huy được như khi tập.",
     c_train:"Tập TB/phát",c_match:"Thi TB/phát",c_gap:"Chênh Δ",vs_series:"Theo loạt (S1~S6): Tập vs Thi",

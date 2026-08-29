@@ -95,6 +95,21 @@
     </div>
   </div>
 
+  <!-- 실시간 선수 대시보드 배너 (로그인 여부와 무관하게 항상 표시) -->
+  <a href="dashboard/" id="dash-banner" aria-label="실시간 선수 대시보드 열기"
+     style="position:fixed;right:16px;bottom:16px;z-index:99999;display:flex;align-items:center;gap:10px;
+     padding:11px 16px 11px 15px;border-radius:999px;text-decoration:none;color:#fff;
+     background:linear-gradient(135deg,#0a63a8,#0092d6);
+     box-shadow:0 10px 26px rgba(3,52,92,.45);border:1.5px solid rgba(255,255,255,.35);
+     font-family:'Malgun Gothic','Segoe UI',system-ui,sans-serif">
+    <span style="font-size:19px;line-height:1">🏅</span>
+    <span style="display:flex;flex-direction:column;line-height:1.18">
+      <b style="font-size:13.5px;font-weight:800;letter-spacing:.2px">실시간 대시보드</b>
+      <small style="font-size:10.5px;opacity:.9">Bảng điều khiển VĐV</small>
+    </span>
+    <span style="font-size:16px;line-height:1;opacity:.9">→</span>
+  </a>
+  <div id="dash-banner-strip" style="height:0"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
   <script src="i18n.js?v=60"></script>
   <script src="config.js?v=60"></script>
