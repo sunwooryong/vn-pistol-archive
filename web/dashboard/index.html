@@ -140,7 +140,19 @@
   .md-c{font-size:12px}
   .ynone{color:var(--mut);font-size:12px}
   .hide{display:none!important}
-  @media print{header,.modes,.chips,.btn,.seg{display:none!important} body{background:#fff;color:#000}}
+  @media print{
+    @page{margin:12mm}
+    header,.modes,.chips,.btn,.seg,.live,.foot{display:none!important}
+    html,body{background:#fff!important}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .wrap{padding:0;max-width:100%}
+    h2.sec{break-after:avoid;margin-top:14px}
+    .card,.kpi,.yearcard,.goal,.pledge,.rp .verdict,table{break-inside:avoid;page-break-inside:avoid}
+    .card{box-shadow:none;border:1px solid #cbd6e4}
+    .kpi{box-shadow:none}
+    .grid.kpis{grid-template-columns:repeat(4,1fr)}
+    tbody tr:hover td{background:transparent}
+  }
 </style>
 </head>
 <body>
@@ -573,18 +585,23 @@ function medalDetail(a){
   return wrap;
 }
 function qualTimeline(pts,w,h){
-  w=w||Math.min(560,window.innerWidth-70);h=h||156;
-  const pad={l:34,r:12,t:12,b:24};
+  w=w||Math.min(600,window.innerWidth-70);h=h||186;
+  const pad={l:36,r:14,t:28,b:38};
   const ys=pts.map(p=>p.q).filter(v=>v!=null); if(ys.length<2)return `<span class="muted">${t("noData")}</span>`;
-  const mn=Math.min(...ys)-3,mx=Math.max(...ys)+3;
+  const mn=Math.min(...ys)-4,mx=Math.max(...ys)+4;
   const px=i=>pad.l+(pts.length<2?0:i/(pts.length-1))*(w-pad.l-pad.r);
   const py=v=>h-pad.b-((v-mn)/(mx-mn))*(h-pad.t-pad.b);
   let grid="";for(let g=Math.ceil(mn/10)*10;g<=mx;g+=10){const y=py(g);grid+=`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${w-pad.r}" y2="${y.toFixed(1)}" stroke="#dbe4f1"/><text x="${pad.l-6}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="9" fill="#7688a0">${g}</text>`;}
   const lp=pts.map((p,i)=>p.q!=null?`${px(i).toFixed(1)},${py(p.q).toFixed(1)}`:null).filter(Boolean).join(" ");
-  const dots=pts.map((p,i)=>p.q==null?"":`${p.final!=null?`<circle cx="${px(i).toFixed(1)}" cy="${py(p.q).toFixed(1)}" r="7" fill="none" stroke="${medalDot(p.medal)}" stroke-width="1.4" opacity=".55"/>`:''}<circle cx="${px(i).toFixed(1)}" cy="${py(p.q).toFixed(1)}" r="${p.medal?4.6:3.2}" fill="${medalDot(p.medal)}" stroke="${p.medal?'#ffffff':'none'}" stroke-width="1"/>`).join("");
-  const lab=i=>{const d=pts[i]&&pts[i].d?pts[i].d.slice(0,7):'';return `<text x="${px(i).toFixed(1)}" y="${h-7}" text-anchor="middle" font-size="9" fill="#7688a0">${d}</text>`;};
-  let xl=lab(0)+lab(pts.length-1)+(pts.length>4?lab(Math.floor(pts.length/2)):'');
-  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="max-width:100%">${grid}<polyline points="${lp}" fill="none" stroke="#0081C8" stroke-width="2"/>${dots}${xl}</svg>`;
+  const dots=pts.map((p,i)=>p.q==null?"":`${p.final!=null?`<circle cx="${px(i).toFixed(1)}" cy="${py(p.q).toFixed(1)}" r="7.5" fill="none" stroke="${medalDot(p.medal)}" stroke-width="1.6" opacity=".6"/>`:''}<circle cx="${px(i).toFixed(1)}" cy="${py(p.q).toFixed(1)}" r="${p.medal?4.8:3.4}" fill="${medalDot(p.medal)}" stroke="#ffffff" stroke-width="1.2"/>`).join("");
+  // score value labels at each point (above; below when point is near the top)
+  const vlab=pts.map((p,i)=>{if(p.q==null)return"";const x=px(i),y=py(p.q);const above=y>pad.t+16;
+    const ly=above?y-9:y+15; const col=p.medal?medalDot(p.medal):'#0a3d63';
+    return `<text x="${x.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" font-size="10.5" font-weight="800" fill="${col}">${p.q}</text>`;}).join("");
+  // date labels: first, mid, last (avoid clutter)
+  const idxs=pts.length<=4?pts.map((_,i)=>i):[0,Math.floor(pts.length/2),pts.length-1];
+  const xl=idxs.map(i=>{const d=pts[i]&&pts[i].d?pts[i].d.slice(0,7):'';return `<text x="${px(i).toFixed(1)}" y="${h-6}" text-anchor="middle" font-size="9" fill="#7688a0">${d}</text>`;}).join("");
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="max-width:100%">${grid}<polyline points="${lp}" fill="none" stroke="#0081C8" stroke-width="2.2"/>${dots}${vlab}${xl}</svg>`;
 }
 function recordAnalysis(a){
   const ar=DATA.archive[a.name]||{};
