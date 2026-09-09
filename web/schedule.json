@@ -1,0 +1,79 @@
+{
+  "_comment": "ETL(build/*.json)이 건드리지 않는 수동 예정일정 오버레이. app.js가 달력·홈에 병합. 성적이 시트에 들어오면 동명·동일 시작일 대회는 자동 숨김.",
+  "competitions": [
+    {
+      "id": "dhtttq10-2026",
+      "year": 2026,
+      "name": "Đại hội Thể thao toàn quốc lần thứ X 2026 (Bắn súng)",
+      "location": "TP Hồ Chí Minh",
+      "scope": "domestic",
+      "date_start": "2026-11-22",
+      "date_end": "2026-12-05",
+      "note_ko": "제32회 전국체육대회 사격 · 51개 금메달",
+      "days": {
+        "2026-11-22": { "prep": "BTC đón tiếp các đoàn · tập luyện · họp trọng tài" },
+        "2026-11-23": { "prep": "Tập luyện · họp lãnh đội · kiểm tra vũ khí" },
+        "2026-11-24": [
+          { "disc": "pistol_50", "g": "M" },
+          { "disc": "sport", "g": "W", "final": "13:00" },
+          { "disc": "air_rifle", "g": "W", "final": "13:00" },
+          { "disc": "shotgun", "g": "M", "name": "Trap" },
+          { "disc": "shotgun", "g": "W", "name": "Trap" }
+        ],
+        "2026-11-25": [
+          { "disc": "rt_std", "g": "W", "final": "14:00" },
+          { "disc": "rapid_fire", "g": "M", "final": "15:00" },
+          { "disc": "air_rifle", "g": "M", "final": "13:00" },
+          { "disc": "shotgun", "g": "M", "name": "Trap" },
+          { "disc": "shotgun", "g": "W", "name": "Trap" }
+        ],
+        "2026-11-26": [
+          { "disc": "rt_std", "g": "M", "final": "14:00" },
+          { "disc": "air_rifle", "g": "X", "team": "mixed", "final": "11:30" },
+          { "disc": "standard", "g": "M" },
+          { "disc": "shotgun", "g": "M", "name": "Trap", "final": "14:00" },
+          { "disc": "shotgun", "g": "W", "name": "Trap", "final": "15:30" }
+        ],
+        "2026-11-27": [
+          { "disc": "rt_mix", "g": "W" },
+          { "disc": "rifle_3p", "g": "W", "final": "14:00" },
+          { "disc": "air", "g": "W", "final": "13:00" },
+          { "disc": "shotgun", "g": "X", "team": "mixed", "name": "Trap", "final": "14:00" }
+        ],
+        "2026-11-28": [
+          { "disc": "rt_mix", "g": "M" },
+          { "disc": "air", "g": "M", "final": "13:30" },
+          { "disc": "rifle_3p", "g": "M", "final": "14:00" },
+          { "disc": "shotgun", "g": "W", "name": "Double Trap" },
+          { "disc": "shotgun", "g": "M", "name": "Double Trap" }
+        ],
+        "2026-11-29": [
+          { "disc": "air", "g": "X", "team": "mixed", "final": "13:00" },
+          { "disc": "rifle_prone", "g": "W" },
+          { "disc": "shotgun", "g": "M", "name": "Skeet" },
+          { "disc": "shotgun", "g": "W", "name": "Skeet" }
+        ],
+        "2026-11-30": [
+          { "disc": "rifle_prone", "g": "M" },
+          { "disc": "centre_fire", "g": "M" },
+          { "disc": "shotgun", "g": "M", "name": "Skeet" },
+          { "disc": "shotgun", "g": "W", "name": "Skeet" }
+        ],
+        "2026-12-01": [
+          { "disc": "shotgun", "g": "M", "name": "Skeet", "final": "14:00" },
+          { "disc": "shotgun", "g": "W", "name": "Skeet", "final": "15:30" }
+        ],
+        "2026-12-02": [
+          { "disc": "shotgun", "g": "X", "team": "mixed", "name": "Skeet", "final": "14:00" }
+        ],
+        "2026-12-03": [
+          { "disc": "shotgun", "g": "M", "team": "team", "name": "Compak Sporting" }
+        ],
+        "2026-12-04": [
+          { "disc": "shotgun", "g": "M", "team": "team", "name": "Compak Sporting" }
+        ],
+        "2026-12-05": { "prep": "Các đoàn ra về" }
+      }
+    }
+  ]
+}

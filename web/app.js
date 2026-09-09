@@ -8,6 +8,7 @@ const DISC = {
   air_rifle: t('10m 공기소총'), air_rifle_std: t('10m 공기소총 보급'),
   rifle_3p: t('50m 소총 3자세'), rifle_prone: t('50m 소총 복사'),
   rt: t('10m 이동표적'), rt_mix: t('10m 이동표적 혼합'), rt_std: t('10m 이동표적 표준'),
+  shotgun: t('클레이사격'),
 };
 // 무기별 그룹 (종목 드롭다운 optgroup)
 const WEAPON_GROUP = [
@@ -544,6 +545,15 @@ async function renderAthleteEval(a, rows, year) {
 const MON = { ko: m => `${m}월`, vi: m => `Th.${m}` };
 async function buildSchedule(out, year) {
   let cs = []; try { cs = await DB.competitions(String(year)); } catch (e) { }
+  // 예정 일정 오버레이 병합 (동명·동일 시작일 실대회 있으면 제외)
+  try {
+    const ov = await loadScheduleOverlay();
+    (ov.competitions || []).forEach(c => {
+      if (year && c.year !== +year) return;
+      if (cs.some(x => x.name === c.name && x.date_start === c.date_start)) return;
+      cs.push({ id: c.id, year: c.year, name: c.name, date_start: c.date_start, date_end: c.date_end, location: c.location, scope: c.scope, _overlay: true });
+    });
+  } catch (e) { }
   if (!cs.length) { out.innerHTML = `<div class="muted">${t('일정 정보가 없습니다.')}</div>`; return; }
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const p2 = n => String(n).padStart(2, '0');
@@ -558,12 +568,13 @@ async function buildSchedule(out, year) {
     const st = status === 'now' ? t('진행중') : status === 'up' ? t('예정') : t('종료');
     const range = s && e && s !== e ? `${s.slice(5).replace('-', '.')}–${e.slice(5).replace('-', '.')}` : (s || '').slice(5).replace('-', '.');
     const dd = status === 'up' && s ? `<span class="dday">D-${daysTo(s)}</span>` : '';
-    return `<div class="sched-item ${status}${emph ? ' emph' : ''}${clickable ? ' clickable' : ''}" data-cid="${c.id}">
+    const clk = clickable && !c._overlay;
+    return `<div class="sched-item ${status}${emph ? ' emph' : ''}${clk ? ' clickable' : ''}"${c._overlay ? '' : ` data-cid="${c.id}"`}>
       <div class="sched-cal ${status}">${dchip(s || e)}</div>
       <div class="sched-body">
-        <div class="sched-top"><span class="sd-badge ${status}">${st}</span>${dd}<span class="sd-range">${range}</span></div>
+        <div class="sched-top"><span class="sd-badge ${status}">${st}</span>${dd}<span class="sd-range">${range}</span>${c._overlay ? `<span class="cd-plan">📋 ${t('예정 일정')}</span>` : ''}</div>
         <div class="sched-name">${esc(c.name)}</div>
-        <div class="sched-meta">${esc(c.location || '')} <span class="scope ${c.scope}">${SCOPE[c.scope] || ''}</span>${clickable ? '<span class="sched-go">›</span>' : ''}</div>
+        <div class="sched-meta">${esc(c.location || '')} <span class="scope ${c.scope}">${SCOPE[c.scope] || ''}</span>${clk ? '<span class="sched-go">›</span>' : ''}</div>
       </div></div>`;
   };
   const i4 = new Date(today.getTime() + 28 * 86400000);
@@ -598,20 +609,52 @@ const DISC_COLOR = {
   air: '#2563EB', pistol_50: '#1E40AF', rapid_fire: '#0EA5C4', sport: '#7C5CFC',
   standard: '#9B8AFB', centre_fire: '#0E7C86',
   air_rifle: '#2F9E44', air_rifle_std: '#74B816', rifle_3p: '#0B8457', rifle_prone: '#37946E',
-  rt: '#E8590C', rt_mix: '#D9480F', rt_std: '#F59F00',
+  rt: '#E8590C', rt_mix: '#D9480F', rt_std: '#F59F00', shotgun: '#B5179E',
 };
 const DISC_SHORT = {
   air: '10m공기권', pistol_50: '50m권총', rapid_fire: '25m속사', sport: '25m스포츠',
   standard: '25m표준', centre_fire: '25m센터', air_rifle: '10m공기소', air_rifle_std: '10m보급소',
-  rifle_3p: '50m3자세', rifle_prone: '50m복사', rt: '10m이동', rt_mix: '10m이동혼', rt_std: '10m이동표',
+  rifle_3p: '50m3자세', rifle_prone: '50m복사', rt: '10m이동', rt_mix: '10m이동혼', rt_std: '10m이동표', shotgun: '클레이',
 };
 const DISC_SHORT_VI = {
   air: '10m SN', pistol_50: '50m SN', rapid_fire: '25m BN', sport: '25m TT',
   standard: '25m TC', centre_fire: '25m OQ', air_rifle: '10m ST', air_rifle_std: '10m PT',
-  rifle_3p: '50m 3TT', rifle_prone: '50m Nằm', rt: '10m DĐ', rt_mix: '10m DĐH', rt_std: '10m DĐC',
+  rifle_3p: '50m 3TT', rifle_prone: '50m Nằm', rt: '10m DĐ', rt_mix: '10m DĐH', rt_std: '10m DĐC', shotgun: 'Đĩa bay',
 };
 const discShort = k => (window.I18N.lang === 'vi' ? DISC_SHORT_VI[k] : DISC_SHORT[k]) || DISC[k] || k;
-const CAL_ORDER = ['air', 'rapid_fire', 'sport', 'standard', 'centre_fire', 'pistol_50', 'air_rifle', 'air_rifle_std', 'rifle_3p', 'rifle_prone', 'rt', 'rt_mix', 'rt_std'];
+const CAL_ORDER = ['air', 'rapid_fire', 'sport', 'standard', 'centre_fire', 'pistol_50', 'air_rifle', 'air_rifle_std', 'rifle_3p', 'rifle_prone', 'rt', 'rt_mix', 'rt_std', 'shotgun'];
+// 예정 일정 오버레이 (web/schedule.json) — ETL(build/*) 이 건드리지 않는 수동 등록 대회
+let SCHED_OVERLAY = null;
+async function loadScheduleOverlay() {
+  if (SCHED_OVERLAY) return SCHED_OVERLAY;
+  try { SCHED_OVERLAY = await fetch('schedule.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : { competitions: [] }); }
+  catch (e) { SCHED_OVERLAY = { competitions: [] }; }
+  return SCHED_OVERLAY;
+}
+// 오버레이 대회를 달력 데이터(D)에 병합. 시트에 동명·동일 시작일 실대회가 생기면 건너뜀.
+function mergeOverlayIntoCalendar(D, ov, year) {
+  const dayItems = {};   // date -> {items|prep, comp} (상세용) — 항상 재구성(멱등)
+  (ov.competitions || []).forEach(c => {
+    if (year && c.year !== +year) return;
+    const real = D.comps.some(x => x.name === c.name && x.date_start === c.date_start && !x._overlay);
+    if (real) return;   // 시트에 실대회 생기면 오버레이 숨김
+    const already = D.comps.some(x => x.name === c.name && x.date_start === c.date_start && x._overlay);
+    if (!already) {
+      D.comps.push({ id: c.id, name: c.name, date_start: c.date_start, date_end: c.date_end, scope: c.scope, location: c.location, _overlay: true, note_ko: c.note_ko });
+      for (const date in (c.days || {})) {
+        const v = c.days[date]; if (!Array.isArray(v)) continue;
+        const dd = D.dayDiscs[date] || (D.dayDiscs[date] = {});
+        v.forEach(it => { dd[it.disc] = (dd[it.disc] || 0) + 1; });
+      }
+    }
+    for (const date in (c.days || {})) {   // dayItems 는 dedup 여부와 무관하게 항상 채움
+      const v = c.days[date];
+      dayItems[date] = Array.isArray(v) ? { items: v, comp: c } : { prep: v.prep, comp: c };
+    }
+  });
+  D.comps.sort((a, b) => (a.date_start || '').localeCompare(b.date_start || ''));
+  return dayItems;
+}
 const FAV_PAL = ['#E8590C', '#1971C2', '#2F9E44', '#9C36B5', '#C2255C', '#0C8599', '#F08C00', '#5F3DC4', '#495057', '#A61E4D', '#087F5B', '#1864AB', '#862E9C', '#D9480F', '#2B8A3E', '#5C7CFA'];
 function shortNameOf(full) { const p = (full || '').trim().split(/\s+/); return p[p.length - 1] || full || '?'; }
 
@@ -623,6 +666,8 @@ async function renderCalendar() {
   if (!CAL.data || CAL.sig !== sig) {
     box.innerHTML = `<div class="muted" style="padding:24px">${t('불러오는 중…')}</div>`;
     try { CAL.data = await DB.calendarData(null, favs.map(f => f.key)); } catch (e) { CAL.data = { comps: [], dayDiscs: {}, favByDate: {}, favMeta: {} }; }
+    const ov = await loadScheduleOverlay();
+    CAL.overlayDays = mergeOverlayIntoCalendar(CAL.data, ov, null);
     CAL.sig = sig;
   }
   const D = CAL.data;
@@ -732,14 +777,31 @@ async function renderCalendar() {
     const monLabel = MON[window.I18N.lang] || MON.ko;
     const clickable = !!window.APP_ROLE;
     let h = `<div class="cd-h">${Y}. ${monLabel(+M)} ${+Dd}</div>`;
-    // 대회
-    if (acomps.length) h += acomps.map(c => `<div class="cd-comp ${clickable ? 'clickable' : ''}" data-cid="${c.id}">
-      <span class="scope ${c.scope}">${SCOPE[c.scope] || ''}</span> <b>${esc(c.name)}</b>
-      <span class="cd-loc">${esc(c.location || '')}</span>${clickable ? '<span class="sched-go">›</span>' : ''}</div>`).join('');
+    // 대회 (오버레이=예정일정은 클릭 불가·배지)
+    if (acomps.length) h += acomps.map(c => {
+      const ovc = c._overlay;
+      const clk = clickable && !ovc;
+      return `<div class="cd-comp ${clk ? 'clickable' : ''}"${ovc ? '' : ` data-cid="${c.id}"`}>
+        <span class="scope ${c.scope}">${SCOPE[c.scope] || ''}</span> <b>${esc(c.name)}</b>
+        ${ovc ? `<span class="cd-plan">📋 ${t('예정 일정')}</span>` : ''}
+        <span class="cd-loc">${esc(c.location || '')}</span>${clk ? '<span class="sched-go">›</span>' : ''}</div>`;
+    }).join('');
+    // 오버레이 당일 상세(준비일/세부 종목·성별·결선)
+    const od = CAL.overlayDays && CAL.overlayDays[date];
+    if (od && od.prep) h += `<div class="cd-prep">${esc(od.prep)}</div>`;
     // 종목
     if (dObj) {
       const order = Object.keys(dObj).sort((a, b) => CAL_ORDER.indexOf(a) - CAL_ORDER.indexOf(b));
       h += `<div class="cd-discs">${order.map(k => `<span class="cd-disc" style="background:${DISC_COLOR[k] || '#888'}">${esc(DISC[k] || k)} <i>${dObj[k]}</i></span>`).join('')}</div>`;
+    }
+    // 오버레이 세부 경기 목록 (종목 · 성별 · 결선시간)
+    if (od && od.items) {
+      const gl = { M: t('남'), W: t('여'), X: t('혼성') };
+      h += `<div class="cd-plan-list">${od.items.map(it => {
+        const sub = it.name ? ` <span class="cd-sub">${esc(it.name)}</span>` : '';
+        const gtxt = it.team === 'mixed' ? t('혼성단체') : (gl[it.g] || '') + (it.team === 'team' ? ' ' + t('단체') : '');
+        return `<div class="cd-pl-row"><span class="cd-pl-dot" style="background:${DISC_COLOR[it.disc] || '#888'}"></span><b>${esc(DISC[it.disc] || it.disc)}</b>${sub} <span class="cd-pl-g">${gtxt}</span>${it.final ? `<span class="cd-pl-f">🏅 ${it.final}</span>` : ''}</div>`;
+      }).join('')}</div>`;
     }
     // 즐겨찾기 선수
     const fl = CAL.data.favByDate[date];
