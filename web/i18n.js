@@ -65,6 +65,9 @@
     '개인전만': 'Chỉ cá nhân', '개인+단체': 'Cá nhân + đồng đội',
     '관리 선수 명단': 'Danh sách VĐV phụ trách', '2026 기록': 'KQ 2026', '기록 없음': 'Chưa có KQ',
     '대회별 획득 메달': 'HC theo từng giải', '종목': 'Nội dung',
+    // 대회 달력
+    '달력': 'Lịch', '오늘': 'Hôm nay', '이번 달 대회가 없습니다.': 'Không có giải trong tháng này.',
+    '즐겨찾기(★)한 선수가 여기에 색상·숏네임으로 표시됩니다.': 'VĐV đã ghim (★) sẽ hiện ở đây theo màu và tên rút gọn.',
     // 선수 평가 보고서 (연말 총결산)
     '평가 보고서': 'Báo cáo đánh giá', '선수 평가 보고서': 'Báo cáo đánh giá VĐV', '연도': 'Năm', '선수를 선택하세요.': 'Vui lòng chọn VĐV.',
     '기록이 없습니다.': 'Không có dữ liệu.', '종목별 성적': 'Thành tích theo nội dung', '단계 약점': 'Điểm yếu theo giai đoạn',

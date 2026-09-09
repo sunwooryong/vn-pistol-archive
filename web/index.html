@@ -7,7 +7,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#0f1216">
   <link rel="apple-touch-icon" href="icon.svg">
-  <link rel="stylesheet" href="style.css?v=60">
+  <link rel="stylesheet" href="style.css?v=61">
 </head>
 <body>
   <!-- 로그인 게이트 (로그인 전까지 표시) -->
@@ -34,6 +34,7 @@
       <button class="tab" data-tab="me" hidden>내 정보</button>
       <button class="tab" data-tab="athlete">선수</button>
       <button class="tab" data-tab="comp">대회별</button>
+      <button class="tab" data-tab="cal">달력</button>
       <button class="tab" data-tab="medals">입상실적</button>
       <button class="tab" data-tab="rank">랭킹</button>
       <button class="tab" data-tab="fav" hidden>★</button>
@@ -61,6 +62,8 @@
         <div id="comp-count" class="count"></div>
         <div id="comp-list" class="comp-list"></div>
       </section>
+
+      <section id="view-cal" class="view" hidden></section>
 
       <section id="view-medals" class="view" hidden>
         <div class="filters">
@@ -111,12 +114,12 @@
   </a>
   <div id="dash-banner-strip" style="height:0"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-  <script src="i18n.js?v=60"></script>
-  <script src="config.js?v=60"></script>
-  <script src="data.js?v=60"></script>
-  <script src="analytics.js?v=60"></script>
-  <script src="favorites.js?v=60"></script>
-  <script src="app.js?v=60"></script>
-  <script src="auth.js?v=60"></script>
+  <script src="i18n.js?v=61"></script>
+  <script src="config.js?v=61"></script>
+  <script src="data.js?v=61"></script>
+  <script src="analytics.js?v=61"></script>
+  <script src="favorites.js?v=61"></script>
+  <script src="app.js?v=61"></script>
+  <script src="auth.js?v=61"></script>
 </body>
 </html>

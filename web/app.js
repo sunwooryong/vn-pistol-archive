@@ -591,6 +591,172 @@ window.openCompetition = function (cid) {
   tryOpen();
 };
 
+// =====================================================================
+//  대회 달력 (다이어리형): 종목별 색상 + 즐겨찾기 선수 색상·숏네임
+// =====================================================================
+const DISC_COLOR = {
+  air: '#2563EB', pistol_50: '#1E40AF', rapid_fire: '#0EA5C4', sport: '#7C5CFC',
+  standard: '#9B8AFB', centre_fire: '#0E7C86',
+  air_rifle: '#2F9E44', air_rifle_std: '#74B816', rifle_3p: '#0B8457', rifle_prone: '#37946E',
+  rt: '#E8590C', rt_mix: '#D9480F', rt_std: '#F59F00',
+};
+const DISC_SHORT = {
+  air: '10m공기권', pistol_50: '50m권총', rapid_fire: '25m속사', sport: '25m스포츠',
+  standard: '25m표준', centre_fire: '25m센터', air_rifle: '10m공기소', air_rifle_std: '10m보급소',
+  rifle_3p: '50m3자세', rifle_prone: '50m복사', rt: '10m이동', rt_mix: '10m이동혼', rt_std: '10m이동표',
+};
+const DISC_SHORT_VI = {
+  air: '10m SN', pistol_50: '50m SN', rapid_fire: '25m BN', sport: '25m TT',
+  standard: '25m TC', centre_fire: '25m OQ', air_rifle: '10m ST', air_rifle_std: '10m PT',
+  rifle_3p: '50m 3TT', rifle_prone: '50m Nằm', rt: '10m DĐ', rt_mix: '10m DĐH', rt_std: '10m DĐC',
+};
+const discShort = k => (window.I18N.lang === 'vi' ? DISC_SHORT_VI[k] : DISC_SHORT[k]) || DISC[k] || k;
+const CAL_ORDER = ['air', 'rapid_fire', 'sport', 'standard', 'centre_fire', 'pistol_50', 'air_rifle', 'air_rifle_std', 'rifle_3p', 'rifle_prone', 'rt', 'rt_mix', 'rt_std'];
+const FAV_PAL = ['#E8590C', '#1971C2', '#2F9E44', '#9C36B5', '#C2255C', '#0C8599', '#F08C00', '#5F3DC4', '#495057', '#A61E4D', '#087F5B', '#1864AB', '#862E9C', '#D9480F', '#2B8A3E', '#5C7CFA'];
+function shortNameOf(full) { const p = (full || '').trim().split(/\s+/); return p[p.length - 1] || full || '?'; }
+
+let CAL = { data: null, sig: '', y: 0, m: 0, sel: null };
+async function renderCalendar() {
+  const box = $('#view-cal');
+  const favs = ((window.Fav && Fav.list()) || []).slice().sort((a, b) => (a.added || 0) - (b.added || 0));
+  const sig = favs.map(f => f.key).join(',');
+  if (!CAL.data || CAL.sig !== sig) {
+    box.innerHTML = `<div class="muted" style="padding:24px">${t('불러오는 중…')}</div>`;
+    try { CAL.data = await DB.calendarData(null, favs.map(f => f.key)); } catch (e) { CAL.data = { comps: [], dayDiscs: {}, favByDate: {}, favMeta: {} }; }
+    CAL.sig = sig;
+  }
+  const D = CAL.data;
+  // 즐겨찾기 색상·숏네임 (aid 기준) — 숏네임 충돌 시 앞 토큰 이니셜 추가
+  const favByKey = new Map(favs.map((f, i) => [f.key, { color: FAV_PAL[i % FAV_PAL.length], name: f.name, short: shortNameOf(f.name) }]));
+  const shortCount = {}; favByKey.forEach(v => shortCount[v.short] = (shortCount[v.short] || 0) + 1);
+  favByKey.forEach(v => { if (shortCount[v.short] > 1) { const p = (v.name || '').trim().split(/\s+/); if (p.length > 1) v.short = p[0][0] + '.' + v.short; } });
+  const favInfo = new Map();  // aid -> {color, short, name}
+  for (const aid in D.favMeta) { const meta = D.favMeta[aid], fi = favByKey.get(meta.key); if (fi) favInfo.set(+aid, fi); }
+
+  // 기본 월: 오늘이 속한 달 (데이터 유무와 무관) — 최초 1회
+  const today = new Date(); const p2 = n => String(n).padStart(2, '0');
+  const todayIso = `${today.getFullYear()}-${p2(today.getMonth() + 1)}-${p2(today.getDate())}`;
+  if (!CAL.y) { CAL.y = today.getFullYear(); CAL.m = today.getMonth(); }
+
+  // 활성 종목·월 집합 (범례/네비 힌트)
+  const monthsWithData = new Set(Object.keys(D.dayDiscs).map(d => d.slice(0, 7)));
+  const discsPresent = new Set(); Object.values(D.dayDiscs).forEach(o => Object.keys(o).forEach(k => discsPresent.add(k)));
+
+  function render() {
+    const y = CAL.y, m = CAL.m;
+    const monLabel = MON[window.I18N.lang] || MON.ko;
+    const wd = window.I18N.lang === 'vi' ? ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'] : ['일', '월', '화', '수', '목', '금', '토'];
+    const first = new Date(y, m, 1); const startDow = first.getDay();
+    const dim = new Date(y, m + 1, 0).getDate();
+    const prevDim = new Date(y, m, 0).getDate();
+    const iso = (yy, mm, dd) => `${yy}-${p2(mm + 1)}-${p2(dd)}`;
+    const compsOn = date => D.comps.filter(c => (c.date_start || '') <= date && date <= (c.date_end || c.date_start || ''));
+
+    let cells = '';
+    for (let i = 0; i < 42; i++) {
+      const dow = i % 7;
+      let dy = y, dm = m, dd = i - startDow + 1, out = false;
+      if (dd < 1) { dm = m - 1; dy = m === 0 ? y - 1 : y; if (dm < 0) dm = 11; dd = prevDim + dd; out = true; }
+      else if (dd > dim) { dm = m + 1; dy = m === 11 ? y + 1 : y; if (dm > 11) dm = 0; dd = dd - dim; out = true; }
+      const date = iso(dy, dm, dd);
+      const isToday = date === todayIso;
+      const dObj = D.dayDiscs[date]; const acomps = compsOn(date);
+      // 종목 칩
+      let chips = '';
+      if (dObj) {
+        const order = Object.keys(dObj).sort((a, b) => (CAL_ORDER.indexOf(a)) - (CAL_ORDER.indexOf(b)));
+        chips = order.map(k => `<span class="cal-dc" style="background:${DISC_COLOR[k] || '#888'}" title="${esc(DISC[k] || k)}">${esc(discShort(k))}</span>`).join('');
+      }
+      // 즐겨찾기 선수 칩
+      let favc = '';
+      const fl = D.favByDate[date];
+      if (fl && favInfo.size) {
+        const byA = new Map();
+        fl.forEach(x => { const fi = favInfo.get(x.aid); if (!fi) return; const o = byA.get(x.aid) || { fi, medal: null }; const mrank = { gold: 3, silver: 2, bronze: 1 }; if ((mrank[x.medal] || 0) > (mrank[o.medal] || 0)) o.medal = x.medal; if ((mrank[x.team_medal] || 0) > (mrank[o.medal] || 0)) o.medal = x.team_medal; byA.set(x.aid, o); });
+        favc = [...byA.values()].map(o => `<span class="cal-fav" style="border-color:${o.fi.color}"><span class="cal-fav-dot" style="background:${o.fi.color}"></span>${esc(o.fi.short)}${o.medal ? `<span class="cal-fav-m ${o.medal}"></span>` : ''}</span>`).join('');
+      }
+      // 대회 표시(연속 바)
+      let compBar = '';
+      if (acomps.length) {
+        compBar = acomps.slice(0, 2).map(c => {
+          const isStart = (c.date_start || c.date_end) === date || dow === 0;
+          return `<span class="cal-comp ${c.scope}" title="${esc(c.name)}">${isStart ? esc(c.name) : '›'}</span>`;
+        }).join('') + (acomps.length > 2 ? `<span class="cal-comp more">+${acomps.length - 2}</span>` : '');
+      }
+      const has = dObj || acomps.length;
+      cells += `<div class="cal-cell${out ? ' out' : ''}${isToday ? ' today' : ''}${dow === 0 ? ' sun' : dow === 6 ? ' sat' : ''}${has ? ' has' : ''}${CAL.sel === date ? ' sel' : ''}" data-date="${date}">
+        <div class="cal-dnum">${dd}</div>
+        ${compBar ? `<div class="cal-comps">${compBar}</div>` : ''}
+        ${chips ? `<div class="cal-chips">${chips}</div>` : ''}
+        ${favc ? `<div class="cal-favs">${favc}</div>` : ''}
+      </div>`;
+    }
+
+    // 범례
+    const discLeg = CAL_ORDER.filter(k => discsPresent.has(k)).map(k =>
+      `<span class="lg-item"><span class="lg-sw" style="background:${DISC_COLOR[k]}"></span>${esc(DISC[k] || k)}</span>`).join('');
+    const favLeg = [...favInfo.values()].map(fi =>
+      `<span class="lg-item"><span class="lg-dot" style="background:${fi.color}"></span><b>${esc(fi.short)}</b> ${esc(fi.name)}</span>`).join('');
+
+    const noData = !monthsWithData.has(`${y}-${p2(m + 1)}`);
+    box.innerHTML = `
+      <div class="cal-bar">
+        <button class="cal-nav" id="cal-prev">‹</button>
+        <div class="cal-title">${y}. ${monLabel(m + 1)}</div>
+        <button class="cal-nav" id="cal-next">›</button>
+        <button class="cal-today" id="cal-today">${t('오늘')}</button>
+      </div>
+      ${noData ? `<div class="cal-empty">${t('이번 달 대회가 없습니다.')}</div>` : ''}
+      <div class="cal-grid">
+        ${wd.map((w, i) => `<div class="cal-wd${i === 0 ? ' sun' : i === 6 ? ' sat' : ''}">${w}</div>`).join('')}
+        ${cells}
+      </div>
+      <div class="cal-detail" id="cal-detail"></div>
+      <div class="cal-legend">
+        ${discLeg ? `<div class="lg-row"><span class="lg-h">${t('종목')}</span>${discLeg}</div>` : ''}
+        ${favLeg ? `<div class="lg-row"><span class="lg-h">${t('즐겨찾기 선수')}</span>${favLeg}</div>` : `<div class="lg-row muted">${t('즐겨찾기(★)한 선수가 여기에 색상·숏네임으로 표시됩니다.')}</div>`}
+      </div>`;
+
+    $('#cal-prev').onclick = () => { CAL.m--; if (CAL.m < 0) { CAL.m = 11; CAL.y--; } CAL.sel = null; render(); };
+    $('#cal-next').onclick = () => { CAL.m++; if (CAL.m > 11) { CAL.m = 0; CAL.y++; } CAL.sel = null; render(); };
+    $('#cal-today').onclick = () => { CAL.y = today.getFullYear(); CAL.m = today.getMonth(); CAL.sel = todayIso; render(); showDetail(todayIso); };
+    box.querySelectorAll('.cal-cell.has').forEach(c => c.onclick = () => { CAL.sel = c.dataset.date; box.querySelectorAll('.cal-cell').forEach(x => x.classList.toggle('sel', x === c)); showDetail(c.dataset.date); });
+    if (CAL.sel) showDetail(CAL.sel);
+  }
+
+  function showDetail(date) {
+    const panel = $('#cal-detail'); if (!panel) return;
+    const dObj = CAL.data.dayDiscs[date]; const acomps = CAL.data.comps.filter(c => (c.date_start || '') <= date && date <= (c.date_end || c.date_start || ''));
+    if (!dObj && !acomps.length) { panel.innerHTML = ''; return; }
+    const [Y, M, Dd] = date.split('-');
+    const monLabel = MON[window.I18N.lang] || MON.ko;
+    const clickable = !!window.APP_ROLE;
+    let h = `<div class="cd-h">${Y}. ${monLabel(+M)} ${+Dd}</div>`;
+    // 대회
+    if (acomps.length) h += acomps.map(c => `<div class="cd-comp ${clickable ? 'clickable' : ''}" data-cid="${c.id}">
+      <span class="scope ${c.scope}">${SCOPE[c.scope] || ''}</span> <b>${esc(c.name)}</b>
+      <span class="cd-loc">${esc(c.location || '')}</span>${clickable ? '<span class="sched-go">›</span>' : ''}</div>`).join('');
+    // 종목
+    if (dObj) {
+      const order = Object.keys(dObj).sort((a, b) => CAL_ORDER.indexOf(a) - CAL_ORDER.indexOf(b));
+      h += `<div class="cd-discs">${order.map(k => `<span class="cd-disc" style="background:${DISC_COLOR[k] || '#888'}">${esc(DISC[k] || k)} <i>${dObj[k]}</i></span>`).join('')}</div>`;
+    }
+    // 즐겨찾기 선수
+    const fl = CAL.data.favByDate[date];
+    if (fl) {
+      const byA = new Map();
+      fl.forEach(x => { const fi = favInfo.get(x.aid); if (!fi) return; const o = byA.get(x.aid) || { fi, discs: new Set(), medals: [] }; o.discs.add(x.disc); if (x.medal) o.medals.push(x.medal); if (x.team_medal) o.medals.push(x.team_medal); byA.set(x.aid, o); });
+      if (byA.size) h += `<div class="cd-favs">${[...byA.values()].map(o => `<div class="cd-fav"><span class="cal-fav-dot" style="background:${o.fi.color}"></span><b>${esc(o.fi.name)}</b> <span class="cd-fdisc">${[...o.discs].map(d => esc(discShort(d))).join(', ')}</span> ${o.medals.map(m => `<span class="medal ${m}">${MEDAL[m]}</span>`).join('')}</div>`).join('')}</div>`;
+    }
+    panel.innerHTML = h;
+    if (clickable) panel.querySelectorAll('.cd-comp[data-cid]').forEach(el2 => el2.onclick = () => window.openCompetition(+el2.dataset.cid));
+  }
+
+  render();
+}
+init.cal = () => renderCalendar();
+window.renderCalendar = renderCalendar;
+
 // 로그인한 선수 본인 대시보드
 async function renderMe() {
   const box = $('#view-me');
@@ -1343,7 +1509,7 @@ window.startApp = function (opts) {
   window.APP_ROLE = opts || { role: 'coach' };
   const role = window.APP_ROLE.role;
   // 다국어: 헤더·탭 라벨
-  const TABS = { home: '홈', me: '내 정보', athlete: '선수', comp: '대회별', medals: '입상실적', rank: '랭킹', admin: '관리' };
+  const TABS = { home: '홈', me: '내 정보', athlete: '선수', comp: '대회별', cal: '달력', medals: '입상실적', rank: '랭킹', admin: '관리' };
   document.querySelectorAll('.tab').forEach(tab => {
     const k = TABS[tab.dataset.tab]; if (k) tab.textContent = t(k);
     tab.onclick = () => show(tab.dataset.tab);

@@ -195,6 +195,31 @@
           })
           .sort((a, b) => (a.match_date || '').localeCompare(b.match_date || '') || a.event_code.localeCompare(b.event_code));
       },
+      // 대회 달력: 날짜별 종목(색상) + 즐겨찾기 선수 출전 표시
+      async calendarData(year, favKeys = []) {
+        const d = await ensure();
+        const favIdSet = new Set(), favMeta = {};
+        favKeys.forEach(k => { const a = d.athByKey.get(k); if (a) { favIdSet.add(a.id); favMeta[a.id] = { name: a.full_name, key: a.identity_key, gender: a.gender }; } });
+        const inYear = c => !year || c.year === +year;
+        const compIds = new Set(d.competitions.filter(inYear).map(c => c.id));
+        const comps = d.competitions.filter(c => compIds.has(c.id))
+          .map(c => ({ id: c.id, name: c.name, date_start: c.date_start, date_end: c.date_end, scope: c.scope, location: c.location }))
+          .sort((a, b) => (a.date_start || '').localeCompare(b.date_start || ''));
+        const dayDiscSet = {};   // date -> Map(disc -> Set(event_id))
+        const favByDate = {};    // date -> [{aid, disc, medal, team_medal, event_id, comp_id}]
+        for (const r of d.results) {
+          const e = d.evById.get(r.event_id); if (!e || !compIds.has(e.competition_id)) continue;
+          const c = d.compById.get(e.competition_id);
+          const date = r.match_date || (c ? c.date_start : null); if (!date) continue;
+          const mp = dayDiscSet[date] || (dayDiscSet[date] = new Map());
+          (mp.get(e.discipline) || mp.set(e.discipline, new Set()).get(e.discipline)).add(e.id);
+          if (favIdSet.has(r.athlete_id))
+            (favByDate[date] || (favByDate[date] = [])).push({ aid: r.athlete_id, disc: e.discipline, medal: r.medal, team_medal: r.team_medal, event_id: e.id, comp_id: e.competition_id });
+        }
+        const dayDiscs = {};     // date -> {disc: nEvents}
+        for (const date in dayDiscSet) { dayDiscs[date] = {}; dayDiscSet[date].forEach((set, disc) => dayDiscs[date][disc] = set.size); }
+        return { comps, dayDiscs, favByDate, favMeta };
+      },
       async eventRanking(eventId) {
         const d = await ensure();
         return (d.resByEv.get(+eventId) || []).map(r => enrich(r, d))
@@ -314,6 +339,7 @@
       async eventsOf(compId) {
         return get(`events?competition_id=eq.${compId}&order=event_code.asc&limit=200`).then(es => es.map(e => ({ ...e, n: null })));
       },
+      async calendarData() { return { comps: [], dayDiscs: {}, favByDate: {}, favMeta: {} }; },
       async eventRanking(eventId) {
         const rows = await get(`v_event_ranking?event_id=eq.${eventId}&order=placement.asc&limit=300`);
         return rows.map(r => ({

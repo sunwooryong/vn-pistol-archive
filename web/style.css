@@ -874,3 +874,65 @@ svg.stg-spark circle { fill: var(--acc); }
   background: var(--card2); border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px 2px 7px; font-variant-numeric: tabular-nums; }
 .ma-mg.team { border-color: color-mix(in srgb, var(--acc) 40%, var(--line)); background: color-mix(in srgb, var(--acc) 7%, var(--card2)); }
 .ma-mg i { font-style: normal; font-size: 10px; color: var(--mut); font-weight: 800; margin-right: 2px; }
+
+/* =============== 대회 달력 (다이어리형) =============== */
+.cal-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0 10px; }
+.cal-nav { width: 34px; height: 34px; border: 1px solid var(--line); background: var(--card); color: var(--tx); border-radius: 9px; font-size: 18px; font-weight: 800; line-height: 1; }
+.cal-nav:hover { border-color: var(--acc); color: var(--acc); }
+.cal-title { font-size: 17px; font-weight: 800; color: var(--navy); min-width: 118px; text-align: center; }
+.cal-today { margin-left: auto; border: 1px solid var(--line); background: var(--card2); color: var(--tx); border-radius: 8px; padding: 7px 12px; font-size: 12.5px; font-weight: 700; }
+.cal-today:hover { border-color: var(--acc); color: var(--acc); }
+.cal-empty { text-align: center; color: var(--mut); font-size: 12.5px; padding: 6px 0 10px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-wd { text-align: center; font-size: 11px; font-weight: 800; color: var(--mut); padding: 2px 0 4px; }
+.cal-wd.sun { color: #d6336c; } .cal-wd.sat { color: #1971c2; }
+.cal-cell { min-height: 84px; border: 1px solid var(--line2); border-radius: 8px; background: var(--card); padding: 3px 3px 4px; overflow: hidden; display: flex; flex-direction: column; gap: 2px; }
+.cal-cell.out { background: var(--bg2); opacity: .5; }
+.cal-cell.sun .cal-dnum { color: #d6336c; } .cal-cell.sat .cal-dnum { color: #1971c2; }
+.cal-cell.has { cursor: pointer; }
+.cal-cell.has:hover { border-color: var(--acc); }
+.cal-cell.today { border-color: var(--acc); box-shadow: inset 0 0 0 1px var(--acc); }
+.cal-cell.sel { border-color: var(--gold2); box-shadow: inset 0 0 0 2px var(--gold2); }
+.cal-dnum { font-size: 12px; font-weight: 800; color: var(--tx); line-height: 1.2; padding-left: 1px; }
+.cal-cell.today .cal-dnum { color: var(--acc); }
+.cal-comps { display: flex; flex-direction: column; gap: 1px; }
+.cal-comp { font-size: 9.5px; font-weight: 700; color: var(--mut); background: var(--card2); border-left: 3px solid var(--mut); border-radius: 3px; padding: 1px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cal-comp.domestic { border-left-color: var(--dom); } .cal-comp.international { border-left-color: var(--intl); }
+.cal-comp.more { border-left: 0; background: transparent; }
+.cal-chips { display: flex; flex-wrap: wrap; gap: 2px; }
+.cal-dc { font-size: 9px; font-weight: 800; color: #fff; border-radius: 3px; padding: 1px 3px; line-height: 1.35; letter-spacing: -.02em; white-space: nowrap; }
+.cal-favs { display: flex; flex-wrap: wrap; gap: 2px; margin-top: auto; }
+.cal-fav { display: inline-flex; align-items: center; gap: 2px; font-size: 9px; font-weight: 800; color: var(--tx); background: var(--card); border: 1px solid; border-radius: 999px; padding: 0 4px 0 2px; line-height: 1.5; }
+.cal-fav-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex: none; }
+.cal-fav-m { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.cal-fav-m.gold { background: var(--gold); } .cal-fav-m.silver { background: var(--silver); } .cal-fav-m.bronze { background: var(--bronze); }
+
+/* 날짜 상세 패널 */
+.cal-detail:empty { display: none; }
+.cal-detail { margin: 12px 0 4px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.cd-h { font-size: 14px; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+.cd-comp { display: flex; align-items: center; gap: 6px; font-size: 13px; padding: 6px 0; border-bottom: 1px dashed var(--line2); }
+.cd-comp.clickable { cursor: pointer; }
+.cd-comp.clickable:hover b { color: var(--acc); }
+.cd-loc { color: var(--mut); font-size: 11.5px; }
+.cd-comp .sched-go { margin-left: auto; color: var(--mut); font-weight: 800; }
+.cd-discs { display: flex; flex-wrap: wrap; gap: 4px; margin: 9px 0 4px; }
+.cd-disc { font-size: 11px; font-weight: 700; color: #fff; border-radius: 6px; padding: 3px 8px; }
+.cd-disc i { font-style: normal; opacity: .85; font-weight: 800; margin-left: 2px; }
+.cd-favs { margin-top: 8px; display: flex; flex-direction: column; gap: 5px; }
+.cd-fav { display: flex; align-items: center; gap: 6px; font-size: 12.5px; }
+.cd-fdisc { color: var(--mut); font-size: 11px; }
+
+/* 범례 */
+.cal-legend { margin-top: 12px; display: flex; flex-direction: column; gap: 7px; }
+.lg-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.lg-h { font-size: 11px; font-weight: 800; color: var(--mut); text-transform: uppercase; letter-spacing: .04em; }
+.lg-item { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; color: var(--tx); }
+.lg-sw { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+.lg-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+@media (max-width: 520px) {
+  .cal-cell { min-height: 72px; }
+  .cal-dc { font-size: 8px; }
+  .cal-fav { font-size: 8px; }
+}
