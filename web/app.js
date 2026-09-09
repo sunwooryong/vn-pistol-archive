@@ -712,13 +712,19 @@ async function renderCalendar() {
         const order = Object.keys(dObj).sort((a, b) => (CAL_ORDER.indexOf(a)) - (CAL_ORDER.indexOf(b)));
         chips = order.map(k => `<span class="cal-dc" style="background:${DISC_COLOR[k] || '#888'}" title="${esc(DISC[k] || k)}">${esc(discShort(k))}</span>`).join('');
       }
-      // 즐겨찾기 선수 칩
-      let favc = '';
+      // 즐겨찾기 선수 칩 (메달·결선 진출 강조)
+      let favc = '', favHot = false;
       const fl = D.favByDate[date];
       if (fl && favInfo.size) {
         const byA = new Map();
-        fl.forEach(x => { const fi = favInfo.get(x.aid); if (!fi) return; const o = byA.get(x.aid) || { fi, medal: null }; const mrank = { gold: 3, silver: 2, bronze: 1 }; if ((mrank[x.medal] || 0) > (mrank[o.medal] || 0)) o.medal = x.medal; if ((mrank[x.team_medal] || 0) > (mrank[o.medal] || 0)) o.medal = x.team_medal; byA.set(x.aid, o); });
-        favc = [...byA.values()].map(o => `<span class="cal-fav" style="border-color:${o.fi.color}"><span class="cal-fav-dot" style="background:${o.fi.color}"></span>${esc(o.fi.short)}${o.medal ? `<span class="cal-fav-m ${o.medal}"></span>` : ''}</span>`).join('');
+        fl.forEach(x => { const fi = favInfo.get(x.aid); if (!fi) return; const o = byA.get(x.aid) || { fi, medal: null, fin: false }; const mrank = { gold: 3, silver: 2, bronze: 1 }; if ((mrank[x.medal] || 0) > (mrank[o.medal] || 0)) o.medal = x.medal; if ((mrank[x.team_medal] || 0) > (mrank[o.medal] || 0)) o.medal = x.team_medal; if (x.final) o.fin = true; byA.set(x.aid, o); });
+        favc = [...byA.values()].map(o => {
+          if (o.medal || o.fin) favHot = true;
+          const cls = o.medal ? ` m-${o.medal}` : (o.fin ? ' fin' : '');
+          const bg = o.medal ? '' : ` style="border-color:${o.fi.color}"`;
+          const mark = o.medal ? `<span class="cal-fav-m ${o.medal}"></span>` : (o.fin ? '<span class="cal-fav-f">●</span>' : '');
+          return `<span class="cal-fav${cls}"${bg}><span class="cal-fav-dot" style="background:${o.fi.color}"></span>${esc(o.fi.short)}${mark}</span>`;
+        }).join('');
       }
       // 대회 표시(연속 바)
       let compBar = '';
@@ -729,8 +735,8 @@ async function renderCalendar() {
         }).join('') + (acomps.length > 2 ? `<span class="cal-comp more">+${acomps.length - 2}</span>` : '');
       }
       const has = dObj || acomps.length;
-      cells += `<div class="cal-cell${out ? ' out' : ''}${isToday ? ' today' : ''}${dow === 0 ? ' sun' : dow === 6 ? ' sat' : ''}${has ? ' has' : ''}${CAL.sel === date ? ' sel' : ''}" data-date="${date}">
-        <div class="cal-dnum">${dd}</div>
+      cells += `<div class="cal-cell${out ? ' out' : ''}${isToday ? ' today' : ''}${dow === 0 ? ' sun' : dow === 6 ? ' sat' : ''}${has ? ' has' : ''}${favHot ? ' fav-hot' : ''}${CAL.sel === date ? ' sel' : ''}" data-date="${date}">
+        <div class="cal-dnum">${dd}${favHot ? '<span class="cal-hot">★</span>' : ''}</div>
         ${compBar ? `<div class="cal-comps">${compBar}</div>` : ''}
         ${chips ? `<div class="cal-chips">${chips}</div>` : ''}
         ${favc ? `<div class="cal-favs">${favc}</div>` : ''}
@@ -807,8 +813,8 @@ async function renderCalendar() {
     const fl = CAL.data.favByDate[date];
     if (fl) {
       const byA = new Map();
-      fl.forEach(x => { const fi = favInfo.get(x.aid); if (!fi) return; const o = byA.get(x.aid) || { fi, discs: new Set(), medals: [] }; o.discs.add(x.disc); if (x.medal) o.medals.push(x.medal); if (x.team_medal) o.medals.push(x.team_medal); byA.set(x.aid, o); });
-      if (byA.size) h += `<div class="cd-favs">${[...byA.values()].map(o => `<div class="cd-fav"><span class="cal-fav-dot" style="background:${o.fi.color}"></span><b>${esc(o.fi.name)}</b> <span class="cd-fdisc">${[...o.discs].map(d => esc(discShort(d))).join(', ')}</span> ${o.medals.map(m => `<span class="medal ${m}">${MEDAL[m]}</span>`).join('')}</div>`).join('')}</div>`;
+      fl.forEach(x => { const fi = favInfo.get(x.aid); if (!fi) return; const o = byA.get(x.aid) || { fi, discs: new Set(), medals: [], fin: false }; o.discs.add(x.disc); if (x.medal) o.medals.push(x.medal); if (x.team_medal) o.medals.push(x.team_medal); if (x.final) o.fin = true; byA.set(x.aid, o); });
+      if (byA.size) h += `<div class="cd-favs">${[...byA.values()].map(o => `<div class="cd-fav${o.medals.length || o.fin ? ' hot' : ''}"><span class="cal-fav-dot" style="background:${o.fi.color}"></span><b>${esc(o.fi.name)}</b> <span class="cd-fdisc">${[...o.discs].map(d => esc(discShort(d))).join(', ')}</span> ${o.medals.map(m => `<span class="medal ${m}">${MEDAL[m]}</span>`).join('')}${o.fin && !o.medals.length ? `<span class="cd-fin">${t('결선 진출')}</span>` : ''}</div>`).join('')}</div>`;
     }
     panel.innerHTML = h;
     if (clickable) panel.querySelectorAll('.cd-comp[data-cid]').forEach(el2 => el2.onclick = () => window.openCompetition(+el2.dataset.cid));

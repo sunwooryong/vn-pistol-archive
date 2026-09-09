@@ -214,7 +214,7 @@
           const mp = dayDiscSet[date] || (dayDiscSet[date] = new Map());
           (mp.get(e.discipline) || mp.set(e.discipline, new Set()).get(e.discipline)).add(e.id);
           if (favIdSet.has(r.athlete_id))
-            (favByDate[date] || (favByDate[date] = [])).push({ aid: r.athlete_id, disc: e.discipline, medal: r.medal, team_medal: r.team_medal, event_id: e.id, comp_id: e.competition_id });
+            (favByDate[date] || (favByDate[date] = [])).push({ aid: r.athlete_id, disc: e.discipline, medal: r.medal, team_medal: r.team_medal, final: r.final_score != null, placement: r.placement, event_id: e.id, comp_id: e.competition_id });
         }
         const dayDiscs = {};     // date -> {disc: nEvents}
         for (const date in dayDiscSet) { dayDiscs[date] = {}; dayDiscSet[date].forEach((set, disc) => dayDiscs[date][disc] = set.size); }

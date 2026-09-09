@@ -462,7 +462,8 @@ svg.rings { height: 19px; width: auto; display: block; }
 .lang-sel { display: inline-flex; gap: 5px; background: transparent; border: 0; padding: 0; }
 .flag-btn { padding: 0; width: 34px; height: 24px; border: 1px solid var(--line); background: var(--card2); border-radius: 7px; display: grid; place-items: center; opacity: .5; overflow: hidden; transition: opacity .15s, box-shadow .15s; }
 .flag-btn.on { opacity: 1; border-color: var(--acc); box-shadow: 0 0 0 2px color-mix(in srgb, var(--acc) 35%, transparent); }
-.flag-btn svg.flag { width: 30px; height: 20px; display: block; }
+.flag-btn svg.flag, .flag-btn img.flag { width: 30px; height: 20px; display: block; }
+.flag-btn img.flag { object-fit: cover; border-radius: 2px; }
 
 /* 홈 헤더 */
 .home-head { display: flex; align-items: center; gap: 8px; margin: 2px 0 12px; }
@@ -947,3 +948,15 @@ svg.stg-spark circle { fill: var(--acc); }
 .cd-sub { color: var(--mut); font-size: 11.5px; }
 .cd-pl-g { color: var(--mut); font-size: 11.5px; }
 .cd-pl-f { margin-left: auto; font-size: 11px; color: var(--gold); font-weight: 700; }
+
+/* 달력: 즐겨찾기 선수 메달·결선 강조 */
+.cal-cell.fav-hot { background: color-mix(in srgb, var(--gold) 9%, var(--card)); border-color: color-mix(in srgb, var(--gold) 45%, var(--line)); }
+.cal-hot { color: var(--gold2); font-size: 9px; margin-left: 2px; vertical-align: top; }
+.cal-fav.m-gold, .cal-fav.m-silver, .cal-fav.m-bronze { color: #fff; font-weight: 800; border: 0 !important; }
+.cal-fav.m-gold { background: var(--gold); } .cal-fav.m-silver { background: var(--silver); } .cal-fav.m-bronze { background: var(--bronze); }
+.cal-fav.m-gold .cal-fav-dot, .cal-fav.m-silver .cal-fav-dot, .cal-fav.m-bronze .cal-fav-dot { box-shadow: 0 0 0 1px rgba(255,255,255,.6); }
+.cal-fav.fin { border-width: 1.5px; box-shadow: 0 0 0 2px color-mix(in srgb, var(--acc) 22%, transparent); }
+.cal-fav-f { color: var(--acc); font-size: 8px; margin-left: 1px; }
+.cal-fav.m-gold .cal-fav-m, .cal-fav.m-silver .cal-fav-m, .cal-fav.m-bronze .cal-fav-m { display: none; }
+.cd-fav.hot { font-weight: 700; }
+.cd-fin { font-size: 10px; font-weight: 800; color: var(--acc); background: color-mix(in srgb, var(--acc) 12%, var(--card)); border: 1px solid color-mix(in srgb, var(--acc) 30%, var(--line)); border-radius: 999px; padding: 1px 7px; }

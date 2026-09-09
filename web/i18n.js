@@ -179,11 +179,7 @@
 
   // 국기 SVG (윈도우에서 이모지 국기가 안 나오므로 SVG 사용)
   const FLAG = {
-    ko: `<svg viewBox="0 0 36 24" class="flag"><rect width="36" height="24" rx="3" fill="#fff"/>
-      <clipPath id="kc"><circle cx="18" cy="12" r="6"/></clipPath>
-      <g clip-path="url(#kc)"><rect x="12" y="6" width="12" height="12" fill="#cd2e3a"/>
-      <path d="M18 6a3 3 0 0 1 0 6 3 3 0 0 0 0 6 6 6 0 0 1 0-12z" fill="#0047a0"/></g>
-      <g stroke="#222" stroke-width="1"><path d="M6 6.5l3 1.7M6 8l3 1.7M6 9.5l3 1.7"/><path d="M30 14.6l-3 1.7M30 16.1l-3 1.7M30 17.6l-3 1.7"/></g></svg>`,
+    ko: `<img class="flag" src="flag-kr.png" alt="한국어" width="30" height="20">`,
     vi: `<svg viewBox="0 0 36 24" class="flag"><rect width="36" height="24" rx="3" fill="#da251d"/>
       <path fill="#ff0" d="M18 6l1.76 5.42h5.7l-4.61 3.35 1.76 5.42L18 16.84l-4.61 3.35 1.76-5.42-4.61-3.35h5.7z"/></svg>`,
   };
