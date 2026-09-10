@@ -6,20 +6,24 @@
 <title>가입 틀 미리보기</title>
 <link rel="stylesheet" href="style.css?v=63">
 <style>
-  body { padding: 20px 12px 60px; }
+  body { padding: 18px 12px 60px; }
   .su-wrap { max-width: 460px; margin: 0 auto; }
-  .su-card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px 18px; box-shadow: var(--sh-sm, 0 6px 24px rgba(16,25,42,.08)); }
-  .su-title { font-size: 20px; font-weight: 800; color: var(--navy); text-align: center; margin: 2px 0 2px; }
-  .su-sub { font-size: 12.5px; color: var(--mut); text-align: center; margin-bottom: 14px; }
-  .su-roles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-  .su-role { border: 1.5px solid var(--line); background: var(--card2); border-radius: 12px; padding: 12px 10px; cursor: pointer; text-align: center; transition: .15s; }
+  .su-card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 18px 20px; box-shadow: 0 6px 24px rgba(16,25,42,.08); }
+  .su-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .su-title { font-size: 20px; font-weight: 800; color: var(--navy); }
+  .su-sub { font-size: 12px; color: var(--mut); margin: 2px 0 14px; }
+  .su-langs { display: flex; gap: 5px; flex: none; }
+  .su-lang { width: 34px; height: 24px; border: 1px solid var(--line); background: var(--card2); border-radius: 7px; display: grid; place-items: center; opacity: .45; overflow: hidden; cursor: pointer; padding: 0; }
+  .su-lang.on { opacity: 1; border-color: var(--acc); box-shadow: 0 0 0 2px color-mix(in srgb, var(--acc) 35%, transparent); }
+  .su-lang img, .su-lang svg { width: 30px; height: 20px; display: block; object-fit: cover; border-radius: 2px; }
+  .su-roles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .su-role { border: 1.5px solid var(--line); background: var(--card2); border-radius: 12px; padding: 11px 10px; cursor: pointer; text-align: center; transition: .15s; }
   .su-role.on { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 8%, var(--card)); box-shadow: 0 0 0 2px color-mix(in srgb, var(--acc) 25%, transparent); }
   .su-role b { display: block; font-size: 15px; color: var(--navy); }
   .su-role span { font-size: 11px; color: var(--mut); }
-  .su-sec { font-size: 11px; font-weight: 800; color: var(--mut); text-transform: uppercase; letter-spacing: .04em; margin: 16px 0 8px; padding-bottom: 5px; border-bottom: 1px solid var(--line2); }
+  .su-sec { font-size: 11px; font-weight: 800; color: var(--mut); text-transform: uppercase; letter-spacing: .04em; margin: 15px 0 8px; padding-bottom: 5px; border-bottom: 1px solid var(--line2); }
   .su-field { margin-bottom: 11px; }
-  .su-lab { display: block; font-size: 12px; font-weight: 700; color: var(--tx); margin-bottom: 4px; }
-  .su-lab .vn { color: var(--mut); font-weight: 500; }
+  .su-lab { display: block; font-size: 12.5px; font-weight: 700; color: var(--tx); margin-bottom: 4px; }
   .su-lab .req { color: #e03131; margin-left: 2px; }
   .su-field input, .su-field select { width: 100%; padding: 11px 12px; background: var(--bg); color: var(--tx); border: 1px solid var(--line); border-radius: 10px; font-size: 14px; box-sizing: border-box; }
   .su-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -32,147 +36,141 @@
   .only-athlete, .only-coach { display: none; }
   body.r-athlete .only-athlete { display: block; }
   body.r-coach .only-coach { display: block; }
-  .pv-flag { position: fixed; top: 8px; left: 8px; font-size: 11px; background: #ffe066; color: #665; padding: 4px 10px; border-radius: 6px; font-weight: 700; }
+  .pv-flag { position: fixed; top: 8px; left: 8px; font-size: 11px; background: #ffe066; color: #665; padding: 4px 10px; border-radius: 6px; font-weight: 700; z-index: 9; }
 </style>
 </head>
 <body class="r-athlete">
-  <div class="pv-flag">미리보기 (PREVIEW) — 저장 안 됨</div>
+  <div class="pv-flag">미리보기 PREVIEW</div>
   <div class="su-wrap">
     <div class="su-card">
-      <div class="su-title">회원가입 <span style="font-weight:500;color:var(--mut);font-size:14px">Đăng ký</span></div>
-      <div class="su-sub">베트남 사격연맹 기록 아카이브 · Lưu trữ hồ sơ bắn súng</div>
+      <div class="su-top">
+        <div>
+          <div class="su-title" data-t="title">회원가입</div>
+        </div>
+        <div class="su-langs">
+          <button class="su-lang on" data-lang="ko" title="한국어"><img src="flag-kr.png" alt="한국어"></button>
+          <button class="su-lang" data-lang="vi" title="Tiếng Việt">
+            <svg viewBox="0 0 36 24"><rect width="36" height="24" rx="3" fill="#da251d"/><path fill="#ff0" d="M18 6l1.76 5.42h5.7l-4.61 3.35 1.76 5.42L18 16.84l-4.61 3.35 1.76-5.42-4.61-3.35h5.7z"/></svg>
+          </button>
+          <button class="su-lang" data-lang="en" title="English">
+            <svg viewBox="0 0 36 24"><rect width="36" height="24" fill="#fff"/>
+              <g fill="#b22234"><rect width="36" height="1.85"/><rect y="3.7" width="36" height="1.85"/><rect y="7.4" width="36" height="1.85"/><rect y="11.1" width="36" height="1.85"/><rect y="14.8" width="36" height="1.85"/><rect y="18.5" width="36" height="1.85"/><rect y="22.2" width="36" height="1.8"/></g>
+              <rect width="15" height="12.9" fill="#3c3b6e"/>
+              <g fill="#fff"><circle cx="2.5" cy="2.2" r=".7"/><circle cx="6" cy="2.2" r=".7"/><circle cx="9.5" cy="2.2" r=".7"/><circle cx="12.5" cy="2.2" r=".7"/><circle cx="4.2" cy="4.5" r=".7"/><circle cx="7.7" cy="4.5" r=".7"/><circle cx="11" cy="4.5" r=".7"/><circle cx="2.5" cy="6.6" r=".7"/><circle cx="6" cy="6.6" r=".7"/><circle cx="9.5" cy="6.6" r=".7"/><circle cx="12.5" cy="6.6" r=".7"/><circle cx="4.2" cy="8.8" r=".7"/><circle cx="7.7" cy="8.8" r=".7"/><circle cx="11" cy="8.8" r=".7"/><circle cx="2.5" cy="11" r=".7"/><circle cx="6" cy="11" r=".7"/><circle cx="9.5" cy="11" r=".7"/><circle cx="12.5" cy="11" r=".7"/></g>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="su-sub" data-t="sub">베트남 사격연맹 기록 아카이브</div>
 
-      <!-- 역할 -->
       <div class="su-roles">
-        <div class="su-role on" data-role="athlete">
-          <b>🎯 선수</b><span>Vận động viên</span>
-        </div>
-        <div class="su-role" data-role="coach">
-          <b>📋 지도자</b><span>Huấn luyện viên</span>
-        </div>
+        <div class="su-role on" data-role="athlete"><b>🎯 <span data-t="r_ath">선수</span></b></div>
+        <div class="su-role" data-role="coach"><b>📋 <span data-t="r_coach">지도자</span></b></div>
       </div>
 
-      <!-- 계정 -->
-      <div class="su-sec">계정 / Tài khoản</div>
-      <div class="su-field">
-        <label class="su-lab">이메일 <span class="vn">Email</span><span class="req">*</span></label>
-        <input type="email" placeholder="you@example.com">
+      <div class="su-sec" data-t="s_acc">계정</div>
+      <div class="su-field"><label class="su-lab"><span data-t="email">이메일</span><span class="req">*</span></label><input type="email" placeholder="you@example.com"></div>
+      <div class="su-field"><label class="su-lab"><span data-t="pw">비밀번호 (6자 이상)</span><span class="req">*</span></label><input type="password" placeholder="••••••"></div>
+
+      <div class="su-sec" data-t="s_basic">기본 정보</div>
+      <div class="su-field"><label class="su-lab"><span data-t="name">이름 (베트남어 표기)</span><span class="req">*</span></label><input type="text" placeholder="Nguyễn Văn A"><div class="su-hint" data-t="name_hint">대회·훈련 기록 연결에 사용됩니다.</div></div>
+      <div class="su-row">
+        <div class="su-field"><label class="su-lab"><span data-t="gender">성별</span><span class="req">*</span></label><select><option data-t="sel">선택</option><option data-t="male">남</option><option data-t="female">여</option></select></div>
+        <div class="su-field"><label class="su-lab"><span data-t="dob">생년월일</span><span class="req">*</span></label><input type="date"></div>
       </div>
-      <div class="su-field">
-        <label class="su-lab">비밀번호 <span class="vn">Mật khẩu (≥6)</span><span class="req">*</span></label>
-        <input type="password" placeholder="••••••">
+      <div class="su-row">
+        <div class="su-field"><label class="su-lab" data-t="phone">연락처</label><input type="tel" placeholder="09xx xxx xxx"></div>
+        <div class="su-field"><label class="su-lab" data-t="nat">국적</label><select><option data-t="vn">베트남</option><option data-t="kr">대한민국</option><option data-t="etc">기타</option></select></div>
+      </div>
+      <div class="su-row">
+        <div class="su-field"><label class="su-lab" data-t="unit">소속 (클럽/시도)</label><input type="text" placeholder="Hà Nội…"></div>
+        <div class="su-field"><label class="su-lab" data-t="region">지역 (성/시)</label><input type="text" placeholder="Hà Nội"></div>
       </div>
 
-      <!-- 기본 정보 -->
-      <div class="su-sec">기본 정보 / Thông tin cơ bản</div>
-      <div class="su-field">
-        <label class="su-lab">이름 (베트남어) <span class="vn">Họ tên (VN)</span><span class="req">*</span></label>
-        <input type="text" placeholder="Nguyễn Văn A">
-        <div class="su-hint">대회·훈련 기록 연결에 사용됩니다 / Dùng để liên kết hồ sơ thi đấu & tập luyện</div>
-      </div>
-      <div class="su-row">
-        <div class="su-field">
-          <label class="su-lab">성별 <span class="vn">Giới tính</span><span class="req">*</span></label>
-          <select><option value="">선택</option><option>남 / Nam</option><option>여 / Nữ</option></select>
-        </div>
-        <div class="su-field">
-          <label class="su-lab">생년월일 <span class="vn">Ngày sinh</span><span class="req">*</span></label>
-          <input type="date">
-        </div>
-      </div>
-      <div class="su-row">
-        <div class="su-field">
-          <label class="su-lab">연락처 <span class="vn">Điện thoại</span></label>
-          <input type="tel" placeholder="09xx xxx xxx">
-        </div>
-        <div class="su-field">
-          <label class="su-lab">국적 <span class="vn">Quốc tịch</span></label>
-          <select><option>베트남 / Việt Nam</option><option>대한민국 / Hàn Quốc</option><option>기타 / Khác</option></select>
-        </div>
-      </div>
-      <div class="su-row">
-        <div class="su-field">
-          <label class="su-lab">소속 <span class="vn">Đơn vị / CLB</span></label>
-          <input type="text" placeholder="Hà Nội, Quân đội…">
-        </div>
-        <div class="su-field">
-          <label class="su-lab">지역(성/시) <span class="vn">Tỉnh/TP</span></label>
-          <input type="text" placeholder="Hà Nội">
-        </div>
-      </div>
-
-      <!-- 선수 전용 -->
       <div class="only-athlete">
-        <div class="su-sec">선수 정보 / Thông tin VĐV</div>
-        <div class="su-field">
-          <label class="su-lab">주 종목 (복수 선택) <span class="vn">Nội dung chính</span></label>
+        <div class="su-sec" data-t="s_ath">선수 정보</div>
+        <div class="su-field"><label class="su-lab" data-t="events">주 종목 (복수 선택)</label>
           <div class="su-chips">
-            <span class="su-chip on">10m 공기권총</span><span class="su-chip">25m 속사권총</span>
-            <span class="su-chip">25m 스포츠권총</span><span class="su-chip">50m 권총</span>
-            <span class="su-chip">10m 공기소총</span><span class="su-chip">50m 소총 3자세</span>
-            <span class="su-chip">50m 소총 복사</span><span class="su-chip">10m 이동표적</span>
+            <span class="su-chip on">10m AP</span><span class="su-chip">25m RFP</span><span class="su-chip">25m SP</span><span class="su-chip">50m FP</span>
+            <span class="su-chip">10m AR</span><span class="su-chip">50m 3P</span><span class="su-chip">50m Prone</span><span class="su-chip">10m RT</span>
           </div>
         </div>
         <div class="su-row">
-          <div class="su-field">
-            <label class="su-lab">주손 <span class="vn">Tay thuận</span></label>
-            <select><option>오른손 / Phải</option><option>왼손 / Trái</option></select>
-          </div>
-          <div class="su-field">
-            <label class="su-lab">구분 <span class="vn">Cấp độ</span></label>
-            <select><option>일반 / Thường</option><option>국가대표 / ĐTQG</option><option>청소년 국가대표 / ĐT trẻ</option><option>후보 / Dự bị</option></select>
-          </div>
+          <div class="su-field"><label class="su-lab" data-t="hand">주손</label><select><option data-t="right">오른손</option><option data-t="left">왼손</option></select></div>
+          <div class="su-field"><label class="su-lab" data-t="level">구분</label><select><option data-t="lv_norm">일반</option><option data-t="lv_nt">국가대표</option><option data-t="lv_ynt">청소년 국가대표</option><option data-t="lv_res">후보</option></select></div>
         </div>
-        <div class="su-row">
-          <div class="su-field">
-            <label class="su-lab">입문 연도 <span class="vn">Năm bắt đầu</span></label>
-            <input type="number" placeholder="2022" min="1990" max="2026">
-          </div>
-          <div class="su-field">
-            <label class="su-lab">연맹 등록번호 <span class="vn">Mã VĐV (nếu có)</span></label>
-            <input type="text" placeholder="선택 / tùy chọn">
-          </div>
-        </div>
-        <div class="su-hint">가입 후 코치가 본인 기록(이름+생년)과 연결·승인하면 본인 대회·훈련 기록이 표시됩니다.<br>Sau khi đăng ký, HLV sẽ liên kết & duyệt hồ sơ của bạn.</div>
+        <div class="su-field"><label class="su-lab" data-t="start">입문 연도</label><input type="number" placeholder="2022" min="1990" max="2026"></div>
+        <div class="su-hint" data-t="ath_hint">가입 후 코치가 본인 기록(이름+생년월일)과 연결·승인하면 본인 대회·훈련 기록이 표시됩니다.</div>
       </div>
 
-      <!-- 지도자 전용 -->
       <div class="only-coach">
-        <div class="su-sec">지도자 정보 / Thông tin HLV</div>
+        <div class="su-sec" data-t="s_coach">지도자 정보</div>
         <div class="su-row">
-          <div class="su-field">
-            <label class="su-lab">직위 <span class="vn">Chức danh</span></label>
-            <select><option>감독 / Trưởng đoàn</option><option>코치 / HLV</option><option>트레이너 / Trợ lý</option></select>
-          </div>
-          <div class="su-field">
-            <label class="su-lab">지도 경력(년) <span class="vn">Số năm</span></label>
-            <input type="number" placeholder="10" min="0" max="60">
-          </div>
+          <div class="su-field"><label class="su-lab" data-t="pos">직위</label><select><option data-t="p_head">감독</option><option data-t="p_coach">코치</option><option data-t="p_tr">트레이너</option></select></div>
+          <div class="su-field"><label class="su-lab" data-t="exp">지도 경력 (년)</label><input type="number" placeholder="10" min="0" max="60"></div>
         </div>
-        <div class="su-field">
-          <label class="su-lab">담당 팀/소속 <span class="vn">Đội phụ trách</span></label>
-          <input type="text" placeholder="ĐT trẻ quốc gia…">
+        <div class="su-field"><label class="su-lab" data-t="team">담당 팀/소속</label><input type="text" placeholder="ĐT trẻ quốc gia…"></div>
+        <div class="su-field"><label class="su-lab" data-t="c_events">지도 종목 (복수 선택)</label>
+          <div class="su-chips"><span class="su-chip on" data-t="w_pistol">권총</span><span class="su-chip" data-t="w_rifle">소총</span><span class="su-chip" data-t="w_rt">이동표적</span></div>
         </div>
-        <div class="su-field">
-          <label class="su-lab">지도 종목 (복수 선택) <span class="vn">Nội dung phụ trách</span></label>
-          <div class="su-chips">
-            <span class="su-chip on">권총 / Súng ngắn</span><span class="su-chip">소총 / Súng trường</span>
-            <span class="su-chip">이동표적 / Bia di động</span>
-          </div>
-        </div>
-        <div class="su-hint">지도자 계정은 관리자 승인 후 전체 선수 기록·관리 기능을 사용할 수 있습니다.<br>Tài khoản HLV cần quản trị viên phê duyệt.</div>
+        <div class="su-hint" data-t="coach_hint">지도자 계정은 관리자 승인 후 전체 선수 기록·관리 기능을 사용할 수 있습니다.</div>
       </div>
 
-      <button class="su-primary">가입 신청 / Đăng ký</button>
-      <div class="su-note">가입 후 관리자(코치) 승인이 필요합니다 · Cần quản trị viên duyệt</div>
+      <button class="su-primary" data-t="submit">가입 신청</button>
+      <div class="su-note" data-t="note">가입 후 관리자(코치) 승인이 필요합니다.</div>
     </div>
   </div>
   <script>
+    const L = {
+      ko: { title:'회원가입', sub:'베트남 사격연맹 기록 아카이브', r_ath:'선수', r_coach:'지도자',
+        s_acc:'계정', email:'이메일', pw:'비밀번호 (6자 이상)', s_basic:'기본 정보',
+        name:'이름 (베트남어 표기)', name_hint:'대회·훈련 기록 연결에 사용됩니다.', gender:'성별', sel:'선택', male:'남', female:'여',
+        dob:'생년월일', phone:'연락처', nat:'국적', vn:'베트남', kr:'대한민국', etc:'기타', unit:'소속 (클럽/시도)', region:'지역 (성/시)',
+        s_ath:'선수 정보', events:'주 종목 (복수 선택)', hand:'주손', right:'오른손', left:'왼손',
+        level:'구분', lv_norm:'일반', lv_nt:'국가대표', lv_ynt:'청소년 국가대표', lv_res:'후보', start:'입문 연도',
+        ath_hint:'가입 후 코치가 본인 기록(이름+생년월일)과 연결·승인하면 본인 대회·훈련 기록이 표시됩니다.',
+        s_coach:'지도자 정보', pos:'직위', p_head:'감독', p_coach:'코치', p_tr:'트레이너', exp:'지도 경력 (년)',
+        team:'담당 팀/소속', c_events:'지도 종목 (복수 선택)', w_pistol:'권총', w_rifle:'소총', w_rt:'이동표적',
+        coach_hint:'지도자 계정은 관리자 승인 후 전체 선수 기록·관리 기능을 사용할 수 있습니다.',
+        submit:'가입 신청', note:'가입 후 관리자(코치) 승인이 필요합니다.' },
+      vi: { title:'Đăng ký', sub:'Lưu trữ hồ sơ bắn súng Việt Nam', r_ath:'Vận động viên', r_coach:'Huấn luyện viên',
+        s_acc:'Tài khoản', email:'Email', pw:'Mật khẩu (≥6 ký tự)', s_basic:'Thông tin cơ bản',
+        name:'Họ tên (tiếng Việt)', name_hint:'Dùng để liên kết hồ sơ thi đấu & tập luyện.', gender:'Giới tính', sel:'Chọn', male:'Nam', female:'Nữ',
+        dob:'Ngày sinh', phone:'Điện thoại', nat:'Quốc tịch', vn:'Việt Nam', kr:'Hàn Quốc', etc:'Khác', unit:'Đơn vị (CLB/Tỉnh)', region:'Tỉnh/Thành',
+        s_ath:'Thông tin VĐV', events:'Nội dung chính (chọn nhiều)', hand:'Tay thuận', right:'Tay phải', left:'Tay trái',
+        level:'Cấp độ', lv_norm:'Thường', lv_nt:'ĐTQG', lv_ynt:'ĐT trẻ QG', lv_res:'Dự bị', start:'Năm bắt đầu',
+        ath_hint:'Sau khi đăng ký, HLV liên kết hồ sơ (tên + ngày sinh) và duyệt thì hồ sơ thi đấu & tập luyện của bạn sẽ hiển thị.',
+        s_coach:'Thông tin HLV', pos:'Chức danh', p_head:'Trưởng đoàn', p_coach:'HLV', p_tr:'Trợ lý', exp:'Số năm kinh nghiệm',
+        team:'Đội phụ trách', c_events:'Nội dung phụ trách (chọn nhiều)', w_pistol:'Súng ngắn', w_rifle:'Súng trường', w_rt:'Bia di động',
+        coach_hint:'Tài khoản HLV cần quản trị viên phê duyệt để dùng đầy đủ chức năng.',
+        submit:'Đăng ký', note:'Cần quản trị viên (HLV) phê duyệt sau khi đăng ký.' },
+      en: { title:'Sign Up', sub:'Vietnam Shooting Records Archive', r_ath:'Athlete', r_coach:'Coach',
+        s_acc:'Account', email:'Email', pw:'Password (≥6 chars)', s_basic:'Basic Info',
+        name:'Full name (Vietnamese)', name_hint:'Used to link competition & training records.', gender:'Gender', sel:'Select', male:'Male', female:'Female',
+        dob:'Date of birth', phone:'Phone', nat:'Nationality', vn:'Vietnam', kr:'South Korea', etc:'Other', unit:'Club/Unit', region:'Province/City',
+        s_ath:'Athlete Info', events:'Main events (multiple)', hand:'Handedness', right:'Right', left:'Left',
+        level:'Level', lv_norm:'General', lv_nt:'National team', lv_ynt:'Youth national team', lv_res:'Reserve', start:'Started year',
+        ath_hint:'After sign-up, once the coach links your record (name + birth date) and approves, your competition & training records appear.',
+        s_coach:'Coach Info', pos:'Position', p_head:'Head coach', p_coach:'Coach', p_tr:'Trainer', exp:'Experience (yrs)',
+        team:'Team in charge', c_events:'Events coached (multiple)', w_pistol:'Pistol', w_rifle:'Rifle', w_rt:'Running target',
+        coach_hint:'Coach accounts need admin approval to access full features.',
+        submit:'Register', note:'Requires admin (coach) approval after sign-up.' },
+    };
+    function applyLang(lang){
+      const d = L[lang];
+      document.querySelectorAll('[data-t]').forEach(el => { const k = el.dataset.t; if (d[k] != null) el.textContent = d[k]; });
+      document.documentElement.lang = lang;
+    }
+    document.querySelectorAll('.su-lang').forEach(b => b.onclick = () => {
+      document.querySelectorAll('.su-lang').forEach(x => x.classList.toggle('on', x === b));
+      applyLang(b.dataset.lang);
+    });
     document.querySelectorAll('.su-role').forEach(r => r.onclick = () => {
       document.querySelectorAll('.su-role').forEach(x => x.classList.toggle('on', x === r));
       document.body.className = 'r-' + r.dataset.role;
     });
     document.querySelectorAll('.su-chip').forEach(c => c.onclick = () => c.classList.toggle('on'));
+    applyLang('ko');
   </script>
 </body>
 </html>
