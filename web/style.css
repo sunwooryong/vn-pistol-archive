@@ -1008,3 +1008,15 @@ table.tr-tab td { padding: 6px 8px; border-bottom: 1px solid var(--line2); font-
 .tr-type { font-size: 10px; font-weight: 800; padding: 1px 7px; border-radius: 999px; }
 .tr-type.t { background: color-mix(in srgb, var(--acc) 12%, var(--card)); color: var(--acc); }
 .tr-type.m { background: color-mix(in srgb, var(--gold) 20%, var(--card)); color: var(--gold); }
+
+/* 훈련유형별 평균 */
+.tr-typewrap { border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; margin-bottom: 12px; background: var(--card); }
+.tr-types { display: flex; flex-wrap: wrap; gap: 6px; }
+.tr-typerow { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line2); border-radius: 999px; padding: 4px 10px 4px 5px; background: var(--card2); font-size: 12px; }
+.tr-typerow b { font-variant-numeric: tabular-nums; color: var(--navy); }
+.tr-tc { font-size: 10px; font-weight: 800; color: #fff; border-radius: 999px; padding: 2px 8px; }
+.tr-tc.official { background: #0b5cab; } .tr-tc.practice { background: #2f9e44; } .tr-tc.predict { background: #9c36b5; } .tr-tc.research { background: #e8590c; } .tr-tc.train { background: #868e96; } .tr-tc.match { background: var(--gold); }
+.tr-tcn { font-size: 10.5px; color: var(--mut); }
+/* 팀 훈련 표 보조 */
+.tt-sub { font-size: 9.5px; color: var(--mut); margin-left: 1px; }
+.team-tab td.tt-nm .lnk { font-weight: 700; }

@@ -210,9 +210,11 @@ async function renderMyAthletesComps(box, year) {
   };
   box.innerHTML = `<h3>${t('관리 선수 일정·기록')} <span class="sub2">${cards.length}</span>
       <button class="report-btn ghost" id="team-ov-btn">📊 ${t('팀 종합')}</button>
+      <button class="report-btn ghost" id="team-train-btn">🏋️ ${t('팀 훈련')}</button>
       <button class="report-btn ghost" id="team-eval-btn">📄 ${t('평가 보고서')}</button>
       <button class="report-btn" id="coach-report-btn">🖨️ ${t('지도 실적 증명')}</button></h3>
-    <div id="team-overview" class="team-ov" hidden></div>` +
+    <div id="team-overview" class="team-ov" hidden></div>
+    <div id="team-training" class="team-ov" hidden></div>` +
     cards.map(c => `
       <div class="ma-card">
         <div class="ma-top">
@@ -243,6 +245,57 @@ async function renderMyAthletesComps(box, year) {
     tov.hidden = false; tb.classList.add('on');
     if (!tov.dataset.done) { tov.dataset.done = '1'; await renderTeamOverview(tov, year); }
   };
+  const ttb = $('#team-train-btn'); const ttv = $('#team-training');
+  if (ttb && ttv) ttb.onclick = async () => {
+    if (!ttv.hidden) { ttv.hidden = true; ttb.classList.remove('on'); return; }
+    ttv.hidden = false; ttb.classList.add('on');
+    if (!ttv.dataset.done) { ttv.dataset.done = '1'; await renderTeamTraining(ttv, cards.map(c => c.a)); }
+  };
+}
+
+// 코치용 팀 훈련 대시보드: 담당 선수별 최근 훈련 요약
+async function renderTeamTraining(box, athletes) {
+  box.innerHTML = `<div class="muted" style="padding:8px">${t('계산 중…')}</div>`;
+  const today = new Date(); const d14 = new Date(today.getTime() - 14 * 86400000);
+  const p2 = n => String(n).padStart(2, '0'); const iso14 = `${d14.getFullYear()}-${p2(d14.getMonth() + 1)}-${p2(d14.getDate())}`;
+  const per10 = s => s.avg != null ? s.avg : (s.series && s.series.length ? s.total / s.series.length : null);
+  const rowsD = [];
+  for (const a of athletes) {
+    let TR = null; try { TR = await DB.trainingOf(a.full_name); } catch (e) { }
+    if (!TR || !TR.sessions.length) continue;
+    const S = TR.sessions;
+    const last = S[S.length - 1];
+    const recent2w = S.filter(s => s.date >= iso14);
+    // 주력 종목(세션 최다)의 최근 10세션 평균
+    const byDk = new Map(); S.forEach(s => { const k = s.dk || s.disc; (byDk.get(k) || byDk.set(k, []).get(k)).push(s); });
+    const main = [...byDk.entries()].sort((x, y) => y[1].length - x[1].length)[0];
+    const recentVals = main[1].map(per10).filter(v => v != null).slice(-10);
+    const recentAvg = recentVals.length ? recentVals.reduce((s, v) => s + v, 0) / recentVals.length : null;
+    // 이전 10세션 대비 변화
+    const prevVals = main[1].map(per10).filter(v => v != null).slice(-20, -10);
+    const prevAvg = prevVals.length ? prevVals.reduce((s, v) => s + v, 0) / prevVals.length : null;
+    const trend = (recentAvg != null && prevAvg != null) ? recentAvg - prevAvg : null;
+    rowsD.push({ a, key: a.identity_key, last: last.date, recent2w: recent2w.length, total: S.length, mainDk: main[0], recentAvg, trend });
+  }
+  if (!rowsD.length) { box.innerHTML = `<div class="muted" style="padding:8px">${t('훈련 데이터가 있는 선수가 없습니다.')}</div>`; return; }
+  rowsD.sort((x, y) => (y.recent2w - x.recent2w) || (y.last.localeCompare(x.last)));
+  const fmtd = d => d.slice(2).replace(/-/g, '.');
+  const arrow = tr => tr == null ? '' : tr > 0.15 ? `<span class="form-up up">▲${tr.toFixed(1)}</span>` : tr < -0.15 ? `<span class="form-up dn">▼${Math.abs(tr).toFixed(1)}</span>` : `<span class="form-up flat">▬</span>`;
+  const dkLabel = k => DISC[k] || (k === 'std25' ? t('25m 정밀') : k);
+  box.innerHTML = `<div class="table-wrap"><table class="team-tab"><thead><tr>
+      <th>${t('선수')}</th><th>${t('주 종목')}</th><th>${t('최근 훈련')}</th><th>${t('추세')}</th><th>${t('주간 훈련량')}</th><th>${t('마지막 훈련')}</th><th>${t('세션')}</th></tr></thead><tbody>` +
+    rowsD.map(r => `<tr>
+      <td class="tt-nm"><button class="lnk" data-akey="${esc(r.key || '')}">${esc(r.a.full_name)}</button></td>
+      <td>${esc(dkLabel(r.mainDk))}</td>
+      <td><b>${r.recentAvg != null ? r.recentAvg.toFixed(1) : '–'}</b></td>
+      <td>${arrow(r.trend)}</td>
+      <td>${r.recent2w}<span class="tt-sub">/2주</span></td>
+      <td>${fmtd(r.last)}</td>
+      <td>${r.total}</td></tr>`).join('') + `</tbody></table></div>`;
+  box.querySelectorAll('.lnk[data-akey]').forEach(b => b.onclick = async () => {
+    const a = await DB.athleteByKey(b.dataset.akey); if (!a) return;
+    show('athlete'); renderCareer({ id: a.id, ...a }, $('#ath-detail'), $('#ath-list'));
+  });
 }
 
 // 팀 종합 대시보드 (코치): 관리 선수 전원 한눈 — 주 종목·최고·전국순위·폼·메달
@@ -831,6 +884,10 @@ async function renderTraining(a, rows, box) {
   if (!TR || !TR.sessions || !TR.sessions.length) { box.remove(); return; }
   const S = TR.sessions;
   const per10 = s => s.avg != null ? s.avg : (s.series && s.series.length ? s.total / s.series.length : null);
+  const sd = vs => { if (vs.length < 2) return null; const m = vs.reduce((s, v) => s + v, 0) / vs.length; return Math.sqrt(vs.reduce((s, v) => s + (v - m) ** 2, 0) / vs.length); };
+  const typeCat = s => { if (s.is_match) return 'match'; const x = s.type || ''; if (/dự đoán|예언/i.test(x)) return 'predict'; if (/chính thức trong|공식기록/i.test(x)) return 'official'; if (/luyện tập|연습/i.test(x)) return 'practice'; if (/nghiên cứu|연구/i.test(x)) return 'research'; return 'train'; };
+  const CAT = { predict: t('예언사격'), official: t('공식기록'), practice: t('연습사격'), research: t('연구사격'), match: t('실전'), train: t('훈련') };
+  const CAT_ORDER = ['official', 'practice', 'predict', 'research', 'train', 'match'];
   const dkLabel = k => DISC[k] || (k === 'std25' ? t('25m 정밀') : k);
   // 종목별 그룹
   const byDk = new Map();
@@ -865,20 +922,28 @@ async function renderTraining(a, rows, box) {
     const avg = vs.reduce((s, v) => s + v, 0) / vs.length, best = Math.max(...vs);
     const cmpDisc = k; const cA = compAvg.get(cmpDisc);
     const delta = cA != null ? avg - cA : null;
+    const sig = sd(vs);
     cards += `<div class="tr-card"><div class="tr-dk">${esc(dkLabel(k))}</div>
       <div class="tr-nums"><span><i>${t('세션')}</i><b>${arr.length}</b></span>
         <span><i>${t('세션 평균')}</i><b>${avg.toFixed(1)}</b></span>
         <span><i>${t('최고')}</i><b>${best.toFixed(1)}</b></span>
+        ${sig != null ? `<span><i>${t('일관성')} σ</i><b>±${sig.toFixed(1)}</b></span>` : ''}
         ${cA != null ? `<span><i>${t('대회 평균')}</i><b>${cA.toFixed(1)}</b></span>
         <span class="tr-delta ${delta >= 0 ? 'up' : 'dn'}"><i>${t('대회 대비')}</i><b>${delta >= 0 ? '+' : ''}${delta.toFixed(1)}</b></span>` : ''}
       </div></div>`;
   }
+  // 훈련유형별 평균 (주력 종목 기준)
+  const mainSess = mainDk[1];
+  const catAgg = new Map();
+  mainSess.forEach(s => { const v = per10(s); if (v == null) return; const c = typeCat(s); const o = catAgg.get(c) || { n: 0, s: 0 }; o.n++; o.s += v; catAgg.set(c, o); });
+  const typeRows = CAT_ORDER.filter(c => catAgg.has(c)).map(c => { const o = catAgg.get(c); return `<div class="tr-typerow"><span class="tr-tc ${c}">${esc(CAT[c])}</span><span class="tr-tcn">${o.n}${t('세션')}</span><b>${(o.s / o.n).toFixed(1)}</b></div>`; }).join('');
   const recent = S.slice(-8).reverse().map(s => `<tr><td>${fmtd(s.date)}</td><td>${esc(dkLabel(s.dk || s.disc))}</td>
     <td><span class="tr-type ${s.is_match ? 'm' : 't'}">${s.is_match ? t('실전') : t('훈련')}</span></td>
     <td>${s.total}</td><td><b>${per10(s) != null ? per10(s).toFixed(1) : '–'}</b></td></tr>`).join('');
 
   box.innerHTML = `<h3>🏋️ ${t('훈련 기록')} <span class="sub2">${S.length}${t('세션')} · ${fmtd(dates[0])}–${fmtd(dates[dates.length - 1])} · ${t('훈련')} ${S.length - mt}·${t('실전')} ${mt}</span></h3>
     <div class="tr-cards">${cards}</div>
+    ${typeRows ? `<div class="tr-typewrap"><div class="tr-tl">🧩 ${t('훈련유형별 평균')} · ${esc(dkLabel(mainDk[0]))}</div><div class="tr-types">${typeRows}</div></div>` : ''}
     ${spark ? `<div class="tr-trendwrap"><div class="tr-tl">📈 ${t('훈련 추이')} · ${esc(dkLabel(mainDk[0]))} <span class="sub2">${t('최근')} ${trend.length}${t('세션')}</span></div>${spark}</div>` : ''}
     <div class="tr-tl">🎯 ${t('최근 세션')}</div>
     <div class="table-wrap"><table class="tr-tab"><thead><tr><th>${t('날짜')}</th><th>${t('종목')}</th><th>${t('유형')}</th><th>${t('총점')}</th><th>${t('세션 평균')}</th></tr></thead><tbody>${recent}</tbody></table></div>`;
