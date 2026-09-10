@@ -68,6 +68,10 @@
     // 대회 달력
     '달력': 'Lịch', '오늘': 'Hôm nay', '이번 달 대회가 없습니다.': 'Không có giải trong tháng này.',
     '클레이사격': 'Đĩa bay', '예정 일정': 'Lịch dự kiến', '혼성': 'Hỗn hợp', '혼성단체': 'Đồng đội hỗn hợp',
+    // 훈련 기록
+    '훈련 기록': 'Nhật ký tập luyện', '세션': ' buổi', '세션 평균': 'TB buổi', '대회 평균': 'TB giải', '대회 대비': 'So với giải',
+    '훈련': 'Tập luyện', '실전': 'Thi đấu', '훈련 추이': 'Xu hướng tập luyện', '최근 세션': 'Buổi gần đây',
+    '유형': 'Loại', '날짜': 'Ngày', '총점': 'Tổng điểm', '최근': 'Gần đây', '25m 정밀': '25m chính xác',
     '즐겨찾기(★)한 선수가 여기에 색상·숏네임으로 표시됩니다.': 'VĐV đã ghim (★) sẽ hiện ở đây theo màu và tên rút gọn.',
     // 선수 평가 보고서 (연말 총결산)
     '평가 보고서': 'Báo cáo đánh giá', '선수 평가 보고서': 'Báo cáo đánh giá VĐV', '연도': 'Năm', '선수를 선택하세요.': 'Vui lòng chọn VĐV.',

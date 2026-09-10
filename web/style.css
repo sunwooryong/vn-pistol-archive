@@ -989,3 +989,22 @@ svg.stg-spark circle { fill: var(--acc); }
 .appr-role { font-size: 10px; font-weight: 800; padding: 1px 7px; border-radius: 999px; margin-left: 6px; }
 .appr-role.coach { background: color-mix(in srgb, var(--gold) 18%, var(--card)); color: var(--gold); }
 .appr-role.athlete { background: color-mix(in srgb, var(--acc) 12%, var(--card)); color: var(--acc); }
+
+/* =============== 훈련 기록 분석 =============== */
+.tr-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 8px 0 12px; }
+.tr-card { border: 1px solid var(--line); border-radius: 10px; background: var(--card2); padding: 9px 11px; }
+.tr-dk { font-size: 12.5px; font-weight: 800; color: var(--navy); margin-bottom: 6px; }
+.tr-nums { display: flex; flex-wrap: wrap; gap: 8px 12px; }
+.tr-nums span { display: flex; flex-direction: column; }
+.tr-nums i { font-style: normal; font-size: 9.5px; color: var(--mut); font-weight: 700; }
+.tr-nums b { font-size: 16px; font-weight: 800; color: var(--tx); font-variant-numeric: tabular-nums; }
+.tr-delta.up b { color: #2f9e44; } .tr-delta.dn b { color: #e03131; }
+.tr-trendwrap { border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; margin-bottom: 12px; background: var(--card); }
+.tr-tl { font-size: 12px; font-weight: 800; color: var(--navy); margin: 4px 0 6px; }
+.tr-spark { width: 100%; height: 44px; display: block; }
+table.tr-tab { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+table.tr-tab th { background: var(--card2); color: var(--mut); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; text-align: left; padding: 6px 8px; border-bottom: 1.5px solid var(--line); }
+table.tr-tab td { padding: 6px 8px; border-bottom: 1px solid var(--line2); font-variant-numeric: tabular-nums; }
+.tr-type { font-size: 10px; font-weight: 800; padding: 1px 7px; border-radius: 999px; }
+.tr-type.t { background: color-mix(in srgb, var(--acc) 12%, var(--card)); color: var(--acc); }
+.tr-type.m { background: color-mix(in srgb, var(--gold) 20%, var(--card)); color: var(--gold); }

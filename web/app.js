@@ -825,6 +825,65 @@ async function renderCalendar() {
 init.cal = () => renderCalendar();
 window.renderCalendar = renderCalendar;
 
+// 훈련 기록 분석 (일일 훈련시트) — 대회기록과 함께 조회·분석
+async function renderTraining(a, rows, box) {
+  let TR = null; try { TR = await DB.trainingOf(a.full_name); } catch (e) { }
+  if (!TR || !TR.sessions || !TR.sessions.length) { box.remove(); return; }
+  const S = TR.sessions;
+  const per10 = s => s.avg != null ? s.avg : (s.series && s.series.length ? s.total / s.series.length : null);
+  const dkLabel = k => DISC[k] || (k === 'std25' ? t('25m 정밀') : k);
+  // 종목별 그룹
+  const byDk = new Map();
+  S.forEach(s => { const k = s.dk || s.disc; (byDk.get(k) || byDk.set(k, []).get(k)).push(s); });
+  // 대회 per-10 평균 (동일 종목 비교용)
+  const compAvg = new Map();
+  const cAgg = new Map();
+  rows.forEach(r => { if (r.event.team_type !== 'individual' || r.is_dnf || r.qual_total == null) return; const ns = r.event.n_series || 6; const o = cAgg.get(r.event.discipline) || { s: 0, n: 0 }; o.s += r.qual_total / ns; o.n++; cAgg.set(r.event.discipline, o); });
+  cAgg.forEach((o, d) => compAvg.set(d, o.s / o.n));
+
+  const mt = S.filter(s => s.is_match).length;
+  const dates = S.map(s => s.date).sort();
+  const fmtd = d => d.slice(2).replace(/-/g, '.');
+  // 주력(세션 최다) 종목 추이
+  const mainDk = [...byDk.entries()].sort((x, y) => y[1].length - x[1].length)[0];
+  const trend = mainDk[1].filter(s => per10(s) != null).slice(-24).map(s => per10(s));
+  const spark = (() => {
+    if (trend.length < 2) return '';
+    const w = 220, h = 44, mn = Math.min(...trend), mx = Math.max(...trend), rng = mx - mn || 1;
+    const pts = trend.map((v, i) => `${(i / (trend.length - 1) * w).toFixed(1)},${(h - (v - mn) / rng * (h - 6) - 3).toFixed(1)}`).join(' ');
+    // 추세선(선형회귀)
+    const n = trend.length, xm = (n - 1) / 2, ym = trend.reduce((s, v) => s + v, 0) / n;
+    let num = 0, den = 0; trend.forEach((y, x) => { num += (x - xm) * (y - ym); den += (x - xm) ** 2; });
+    const sl = den ? num / den : 0; const col = sl > 0.05 ? '#2f9e44' : sl < -0.05 ? '#e03131' : '#868e96';
+    return `<svg class="tr-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/></svg>`;
+  })();
+
+  let cards = '';
+  for (const [k, arr] of [...byDk.entries()].sort((x, y) => y[1].length - x[1].length)) {
+    const vs = arr.map(per10).filter(v => v != null);
+    if (!vs.length) continue;
+    const avg = vs.reduce((s, v) => s + v, 0) / vs.length, best = Math.max(...vs);
+    const cmpDisc = k; const cA = compAvg.get(cmpDisc);
+    const delta = cA != null ? avg - cA : null;
+    cards += `<div class="tr-card"><div class="tr-dk">${esc(dkLabel(k))}</div>
+      <div class="tr-nums"><span><i>${t('세션')}</i><b>${arr.length}</b></span>
+        <span><i>${t('세션 평균')}</i><b>${avg.toFixed(1)}</b></span>
+        <span><i>${t('최고')}</i><b>${best.toFixed(1)}</b></span>
+        ${cA != null ? `<span><i>${t('대회 평균')}</i><b>${cA.toFixed(1)}</b></span>
+        <span class="tr-delta ${delta >= 0 ? 'up' : 'dn'}"><i>${t('대회 대비')}</i><b>${delta >= 0 ? '+' : ''}${delta.toFixed(1)}</b></span>` : ''}
+      </div></div>`;
+  }
+  const recent = S.slice(-8).reverse().map(s => `<tr><td>${fmtd(s.date)}</td><td>${esc(dkLabel(s.dk || s.disc))}</td>
+    <td><span class="tr-type ${s.is_match ? 'm' : 't'}">${s.is_match ? t('실전') : t('훈련')}</span></td>
+    <td>${s.total}</td><td><b>${per10(s) != null ? per10(s).toFixed(1) : '–'}</b></td></tr>`).join('');
+
+  box.innerHTML = `<h3>🏋️ ${t('훈련 기록')} <span class="sub2">${S.length}${t('세션')} · ${fmtd(dates[0])}–${fmtd(dates[dates.length - 1])} · ${t('훈련')} ${S.length - mt}·${t('실전')} ${mt}</span></h3>
+    <div class="tr-cards">${cards}</div>
+    ${spark ? `<div class="tr-trendwrap"><div class="tr-tl">📈 ${t('훈련 추이')} · ${esc(dkLabel(mainDk[0]))} <span class="sub2">${t('최근')} ${trend.length}${t('세션')}</span></div>${spark}</div>` : ''}
+    <div class="tr-tl">🎯 ${t('최근 세션')}</div>
+    <div class="table-wrap"><table class="tr-tab"><thead><tr><th>${t('날짜')}</th><th>${t('종목')}</th><th>${t('유형')}</th><th>${t('총점')}</th><th>${t('세션 평균')}</th></tr></thead><tbody>${recent}</tbody></table></div>`;
+}
+
 // 로그인한 선수 본인 대시보드
 async function renderMe() {
   const box = $('#view-me');
@@ -994,6 +1053,11 @@ async function buildCareer(a, rows, detail) {
   const stageBox = el('div', 'block');
   detail.appendChild(stageBox);
   render25mStages(a, stageBox);
+
+  // 훈련 기록 분석 (일일 훈련시트, 있을 때만)
+  const trainBox = el('div', 'block');
+  detail.appendChild(trainBox);
+  renderTraining(a, rows, trainBox);
 
   // 연도별 성적
   detail.appendChild(yearlyStats(rows));

@@ -459,6 +459,61 @@ async function main() {
   console.log('\n[build/ 에 레코드셋 + qa-report.txt 저장 완료]');
 
   await buildNews();
+  await buildTraining();
+}
+
+// 일일 훈련점수 시트 → build/training.json (선수 이름으로 매칭, 실패해도 본 빌드 유지)
+const TRAIN_URL =
+  'https://docs.google.com/spreadsheets/d/16zdF1VFnNFNR36zQuSu5dzas9ZM-v_NDFF-me-o6Oco/export?format=csv&gid=1804031283';
+function tDate(s) {
+  const m = String(s || '').match(/(\d{4})[-.\s]+(\d{1,2})[-.\s]+(\d{1,2})/);
+  return m ? `${m[1]}-${String(m[2]).padStart(2, '0')}-${String(m[3]).padStart(2, '0')}` : null;
+}
+function tDisc(s) {
+  const x = String(s || '').toLowerCase();
+  if (x.includes('10m') && x.includes('ap')) return 'air';
+  if (x.startsWith('50m') || x.includes('50m')) return 'pistol_50';
+  if (x.includes('25m') && x.includes('sp')) return 'sport';
+  if (x.includes('25m')) return 'std25';
+  return null;
+}
+function tIsMatch(type) {
+  const n = P.norm(type);
+  return /\bmatch\b/.test(n) || /thi dau/.test(n) || /대회/.test(type || '');
+}
+async function buildTraining() {
+  try {
+    const raw = await fetchCSV(TRAIN_URL);
+    const rows = P.parseCSV(raw).slice(4);   // 상단 4행(설명/헤더) 제외
+    const byName = new Map();
+    let n = 0;
+    for (const r of rows) {
+      if (r.length < 8) continue;
+      const date = tDate(r[0]); const name = (r[1] || '').trim();
+      const total = P.num(r[7]);
+      if (!date || !name || total == null) continue;
+      const by = (String(r[2] || '').match(/\b(19|20)\d{2}\b/) || [])[0] || null;
+      const disc = (r[4] || '').trim(); const type = (r[5] || '').trim();
+      const series = r.slice(8, 14).map(P.num).filter(v => v != null);
+      const shots = P.num(r[6]);
+      const key = P.norm(name);
+      let o = byName.get(key);
+      if (!o) { o = { name, birth_year: by ? +by : null, sessions: [] }; byName.set(key, o); }
+      if (!o.birth_year && by) o.birth_year = +by;
+      o.sessions.push({
+        date, disc, dk: tDisc(disc), type, is_match: tIsMatch(type),
+        shots: shots, total, series, avg: series.length ? Math.round(total / series.length * 10) / 10 : null,
+      });
+      n++;
+    }
+    const athletes = {};
+    for (const [k, o] of byName) { o.sessions.sort((a, b) => a.date.localeCompare(b.date)); athletes[k] = o; }
+    fs.writeFileSync(path.join(BUILD, 'training.json'),
+      JSON.stringify({ generated_at: new Date().toISOString().slice(0, 10), n_sessions: n, athletes }, null, 0));
+    console.log(`[training.json 저장: ${n}세션 · 선수 ${byName.size}명]`);
+  } catch (e) {
+    console.log('[training 가져오기 실패(건너뜀):', e.message + ']');
+  }
 }
 
 // 연맹 공지/뉴스 시트 → build/news.json (실패해도 본 빌드는 유지)

@@ -13,6 +13,19 @@
   const norm = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase().replace(/\s+/g, ' ').trim();
 
+  // 훈련기록(정적 training.json) — 모드 무관 공통 로더. 선수 이름으로 매칭.
+  let trainCache = null;
+  async function loadTraining() {
+    if (trainCache) return trainCache;
+    trainCache = await fetch(DATA_BASE + 'training.json', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : { athletes: {} }).catch(() => ({ athletes: {} }));
+    return trainCache;
+  }
+  async function trainingOf(fullName) {
+    const t = await loadTraining();
+    return (t.athletes && t.athletes[norm(fullName)]) || null;
+  }
+
   // ---------- LOCAL ----------
   const Local = (() => {
     let db = null, metaCache = null;
@@ -61,6 +74,7 @@
       },
       async meta() { await ensure(); return metaCache; },
       async news() { return fetch(DATA_BASE + 'news.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : []).catch(() => []); },
+      async trainingOf(name) { return trainingOf(name); },
       // 지역(소속) 분석: 소속 내/전국 등위 · 라이벌 · 지역 강도 · 백분위
       async regionalAnalysis(athleteId, year) {
         const d = await ensure();
@@ -300,6 +314,7 @@
         return { generated_at: (m.started_at || '').slice(0, 10), source: m.source_url, loaded_results: m.loaded_rows, counts: {} };
       },
       async news() { return fetch(DATA_BASE + 'news.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : []).catch(() => []); },
+      async trainingOf(name) { return trainingOf(name); },
       async regionalAnalysis() { return null; },
       async stageAnalysis() { return []; },
       async eventScores({ discipline, gender } = {}) {
