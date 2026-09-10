@@ -13,8 +13,12 @@ create table if not exists public.profiles (
   requested_key text,        -- 선수가 신청한 본인 식별키(이름|출생연도|성별)
   athlete_key   text,        -- 코치 승인 후 연결된 식별키 (null=미연결)
   approved      boolean not null default false,
+  details       jsonb not null default '{}'::jsonb,  -- 상세 가입정보(이름VN·성별·생년·소속·종목·역할신청 등)
   created_at    timestamptz default now()
 );
+
+-- 기존 설치본 업그레이드: details 컬럼 추가 (한 번만 실행하면 됨)
+alter table public.profiles add column if not exists details jsonb not null default '{}'::jsonb;
 
 -- 즐겨찾기: 사용자당 1행(그룹/항목을 jsonb 로 통째 저장)
 create table if not exists public.favorites (

@@ -960,3 +960,32 @@ svg.stg-spark circle { fill: var(--acc); }
 .cal-fav.m-gold .cal-fav-m, .cal-fav.m-silver .cal-fav-m, .cal-fav.m-bronze .cal-fav-m { display: none; }
 .cd-fav.hot { font-weight: 700; }
 .cd-fin { font-size: 10px; font-weight: 800; color: var(--acc); background: color-mix(in srgb, var(--acc) 12%, var(--card)); border: 1px solid color-mix(in srgb, var(--acc) 30%, var(--line)); border-radius: 999px; padding: 1px 7px; }
+
+/* =============== 상세 회원가입 폼 =============== */
+.su-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.su-langs { display: flex; gap: 5px; flex: none; }
+.su-lang { width: 34px; height: 24px; border: 1px solid var(--line); background: var(--card2); border-radius: 7px; display: grid; place-items: center; opacity: .45; overflow: hidden; cursor: pointer; padding: 0; }
+.su-lang.on { opacity: 1; border-color: var(--acc); box-shadow: 0 0 0 2px color-mix(in srgb, var(--acc) 35%, transparent); }
+.su-lang img, .su-lang svg { width: 30px; height: 20px; display: block; object-fit: cover; border-radius: 2px; }
+.su-roles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.su-role { border: 1.5px solid var(--line); background: var(--card2); border-radius: 12px; padding: 11px 10px; cursor: pointer; text-align: center; transition: .15s; }
+.su-role.on { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 8%, var(--card)); box-shadow: 0 0 0 2px color-mix(in srgb, var(--acc) 25%, transparent); }
+.su-role b { font-size: 15px; color: var(--navy); }
+.su-sec { font-size: 11px; font-weight: 800; color: var(--mut); text-transform: uppercase; letter-spacing: .04em; margin: 15px 0 8px; padding-bottom: 5px; border-bottom: 1px solid var(--line2); }
+.su-field { margin-bottom: 11px; text-align: left; }
+.su-lab { display: block; font-size: 12.5px; font-weight: 700; color: var(--tx); margin-bottom: 4px; }
+.su-lab .req { color: #e03131; margin-left: 2px; }
+.su-field input, .su-field select { width: 100%; padding: 11px 12px; background: var(--bg); color: var(--tx); border: 1px solid var(--line); border-radius: 10px; font-size: 14px; box-sizing: border-box; }
+.su-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.su-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.su-chip { border: 1.5px solid var(--line); background: var(--card2); border-radius: 999px; padding: 6px 12px; font-size: 12.5px; cursor: pointer; color: var(--tx); user-select: none; }
+.su-chip.on { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 12%, var(--card)); color: var(--acc); font-weight: 700; }
+.su-hint { font-size: 11px; color: var(--mut); margin-top: 3px; line-height: 1.5; text-align: left; }
+.only-athlete, .only-coach { display: none; }
+.su-form.r-athlete .only-athlete { display: block; }
+.su-form.r-coach .only-coach { display: block; }
+.appr-detail { font-size: 11.5px; color: var(--mut); margin-top: 3px; line-height: 1.6; }
+.appr-detail b { color: var(--tx); font-weight: 700; }
+.appr-role { font-size: 10px; font-weight: 800; padding: 1px 7px; border-radius: 999px; margin-left: 6px; }
+.appr-role.coach { background: color-mix(in srgb, var(--gold) 18%, var(--card)); color: var(--gold); }
+.appr-role.athlete { background: color-mix(in srgb, var(--acc) 12%, var(--card)); color: var(--acc); }
