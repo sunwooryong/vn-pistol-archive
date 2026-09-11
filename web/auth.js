@@ -216,9 +216,19 @@
     }
     window.CURRENT.profile = profile; window.CURRENT.role = profile ? profile.role : 'athlete';
 
+    // 소유자(코치) 계정은 항상 coach 보장 + DB 자가복구 (강등 사고 방지)
+    if ((session.user.email || '').toLowerCase() === OWNER_EMAIL) {
+      window.CURRENT.role = 'coach';
+      if (!profile || profile.role !== 'coach' || !profile.approved) {
+        try { await sb.from('profiles').update({ role: 'coach', approved: true }).eq('id', session.user.id); } catch (e) { }
+        if (profile) { profile.role = 'coach'; profile.approved = true; }
+      }
+      return startCoach();
+    }
     if (profile && profile.role === 'coach') return startCoach();
     return startAthlete();
   }
+  const OWNER_EMAIL = 'sunwooryong@gmail.com';
 
   async function loadProfile(id) {
     const { data } = await sb.from('profiles').select('*').eq('id', id).maybeSingle();
@@ -239,9 +249,24 @@
       window.startApp({ role: 'athlete', athleteKey: profile.athlete_key });
       return;
     }
+    // 지도자 신청자(승인 대기)
+    if (profile && profile.details && profile.details.requested_role === 'coach' && !profile.approved) return coachPending();
     // 미연결 또는 승인대기
     if (profile && profile.requested_key && !profile.approved) return athletePending();
     return athleteClaim();
+  }
+
+  function coachPending() {
+    showGate(`
+      <div class="auth-card">
+        <h1>${T('승인 대기 중')}</h1>
+        <p class="auth-sub">${T('지도자 가입 신청이 접수되었습니다. 관리자 승인 후 이용할 수 있습니다.')}</p>
+        <button id="au-refresh" class="au-primary">${T('새로고침')}</button>
+        <div class="auth-alt"><button id="au-logout" class="au-link">${T('로그아웃')}</button></div>
+      </div>`);
+    $('#au-refresh').onclick = boot;
+    $('#au-logout').onclick = logout;
+    mountGateExtras();
   }
 
   function athletePending() {
@@ -337,14 +362,27 @@
         <div>${okBtn} <button class="appr-no" data-id="${p.id}">${T('거절')}</button></div></div>`;
     });
     h += `<h3 style="margin-top:16px">${T('연결된 선수')} <span class="sub2">${linked.length}${T('명')}</span></h3>`;
-    linked.forEach(p => { h += `<div class="appr-row"><div><b>${esc((p.details && p.details.name_vn) || p.display_name || p.email)}</b>${p.role === 'coach' ? `<span class="appr-role coach">${T('지도자')}</span>` : ''} <span class="appr-sub">${esc((p.athlete_key || '').split('|')[0])}</span></div><button class="appr-unlink" data-id="${p.id}">${T('해제')}</button></div>`; });
+    linked.forEach(p => {
+      const isCoach = p.role === 'coach';
+      const self = window.CURRENT.user && p.id === window.CURRENT.user.id;
+      h += `<div class="appr-row"><div><b>${esc((p.details && p.details.name_vn) || p.display_name || p.email)}</b>${isCoach ? `<span class="appr-role coach">${T('지도자')}</span>` : ''} <span class="appr-sub">${esc(isCoach ? p.email : (p.athlete_key || '').split('|')[0])}</span></div>`;
+      // 코치 본인은 강등 버튼 없음(사고 방지). 다른 코치는 코치 해제, 선수는 연결 해제.
+      if (self) h += `<span class="appr-sub">${T('나')}</span>`;
+      else if (isCoach) h += `<button class="appr-unlink" data-id="${p.id}" data-kind="coach">${T('코치 해제')}</button>`;
+      else h += `<button class="appr-unlink" data-id="${p.id}" data-kind="athlete">${T('해제')}</button>`;
+      h += `</div>`;
+    });
     container.innerHTML = h;
     container.querySelectorAll('.appr-ok').forEach(b => b.onclick = async () => {
       const upd = b.dataset.role === 'coach' ? { approved: true, role: 'coach' } : { approved: true, athlete_key: b.dataset.key };
       await sb.from('profiles').update(upd).eq('id', b.dataset.id); window.coachApprovals(container);
     });
     container.querySelectorAll('.appr-no').forEach(b => b.onclick = async () => { await sb.from('profiles').update({ requested_key: null }).eq('id', b.dataset.id); window.coachApprovals(container); });
-    container.querySelectorAll('.appr-unlink').forEach(b => b.onclick = async () => { await sb.from('profiles').update({ approved: false, athlete_key: null, role: 'athlete' }).eq('id', b.dataset.id); window.coachApprovals(container); });
+    container.querySelectorAll('.appr-unlink').forEach(b => b.onclick = async () => {
+      // 선수: 연결 해제(역할 변경 없음). 코치: 코치 권한만 회수(athlete로).
+      const upd = b.dataset.kind === 'coach' ? { approved: false, role: 'athlete' } : { approved: false, athlete_key: null };
+      await sb.from('profiles').update(upd).eq('id', b.dataset.id); window.coachApprovals(container);
+    });
   };
 
   // ---------- 시작 ----------
