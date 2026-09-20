@@ -1,16 +1,16 @@
 {
   "source": "https://docs.google.com/spreadsheets/d/1MATLspvOeL4MFObWUIiYqjKkw-PkEEQ7IqXCw-kRheQ/export?format=csv&gid=1558133737",
-  "generated_from_rows": 17376,
-  "loaded_results": 11536,
+  "generated_from_rows": 17706,
+  "loaded_results": 11838,
   "dropped_vie": 211,
   "min_year": 2000,
-  "generated_at": "2026-09-19",
-  "generated_at_full": "2026-09-19T21:28:11.580Z",
+  "generated_at": "2026-09-20",
+  "generated_at_full": "2026-09-20T21:35:08.336Z",
   "counts": {
-    "competitions": 37,
-    "events": 543,
-    "athletes": 2652,
-    "results": 11536,
-    "series": 57851
+    "competitions": 42,
+    "events": 551,
+    "athletes": 2762,
+    "results": 11838,
+    "series": 59357
   }
 }
