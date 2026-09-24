@@ -1020,3 +1020,50 @@ table.tr-tab td { padding: 6px 8px; border-bottom: 1px solid var(--line2); font-
 /* 팀 훈련 표 보조 */
 .tt-sub { font-size: 9.5px; color: var(--mut); margin-left: 1px; }
 .team-tab td.tt-nm .lnk { font-weight: 700; }
+
+/* =============== 선수 종합 프로파일(도시에) =============== */
+.dos-doc { max-width: 1040px; color: #14181f; font-variant-numeric: tabular-nums; }
+.dos-doc .dos-b, .dos-doc .dos-pb, .dos-tile b, .dos-tab td { font-variant-numeric: tabular-nums; }
+.dos-head { display: grid; grid-template-columns: 46px 1fr auto; gap: 12px; align-items: center; border-bottom: 3px double #c9a13a; padding-bottom: 12px; margin-bottom: 12px; }
+.dos-rings { width: 46px; }
+.dos-kick { font-size: 10px; font-weight: 800; letter-spacing: .06em; color: #b08a2c; text-transform: uppercase; }
+.dos-name { font-size: 24px; font-weight: 800; color: #0c1a30; margin: 1px 0 2px; }
+.dos-meta { font-size: 12px; color: #55617a; }
+.dos-id { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 11px; color: #7a869c; }
+.dos-asof { text-align: right; }
+.dos-asof i { display: block; font-style: normal; font-size: 9px; color: #8a94a6; font-weight: 700; text-transform: uppercase; }
+.dos-asof b { font-size: 14px; color: #0c1a30; } .dos-asof s { display: block; text-decoration: none; font-size: 10px; color: #8a94a6; }
+.dos-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)); gap: 6px; margin-bottom: 14px; }
+.dos-kpis.sm { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); margin: 8px 0 10px; }
+.dos-tile { border: 1px solid #e2e7ef; border-radius: 8px; background: #f8fafd; padding: 7px 9px; }
+.dos-tile i { display: block; font-style: normal; font-size: 9px; font-weight: 800; color: #667; text-transform: uppercase; letter-spacing: .03em; }
+.dos-tile b { font-size: 20px; font-weight: 800; color: #0c1a30; line-height: 1.15; }
+.dos-tile b s2 { font-size: 12px; font-weight: 600; color: #8a94a6; text-decoration: none; }
+.dos-tile s { display: block; text-decoration: none; font-size: 10.5px; color: #55617a; margin-top: 1px; }
+.dos-tile .medal { width: 12px; height: 12px; font-size: 8px; }
+.dos-sec { display: flex; align-items: baseline; gap: 8px; font-size: 13px; font-weight: 800; color: #0c1a30; margin: 16px 0 7px; padding-left: 8px; border-left: 3px solid #0b5cab; }
+.dos-sec span { font-size: 10.5px; font-weight: 600; color: #8a94a6; }
+table.dos-tab { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+table.dos-tab th { background: #eef2f8; color: #556; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; text-align: right; padding: 5px 7px; border-bottom: 1.5px solid #d6dde7; white-space: nowrap; }
+table.dos-tab th:first-child, table.dos-tab td:first-child { text-align: left; }
+table.dos-tab td { padding: 4px 7px; border-bottom: 1px solid #eef1f6; text-align: right; white-space: nowrap; }
+table.dos-tab tbody tr:nth-child(even) { background: #fafbfd; }
+.dos-tab .dos-nm { font-weight: 700; color: #1a2233; text-align: left; white-space: normal; }
+.dos-tab .dos-b { font-weight: 800; color: #0b3a6b; }
+.dos-tab .dos-pb { font-weight: 800; color: #b0810c; } .dos-tab .dos-pb s { text-decoration: none; font-size: 8.5px; color: #a9b2c0; margin-left: 3px; font-weight: 600; }
+.dos-tab .up { color: #2f9e44; font-weight: 800; } .dos-tab .dn { color: #e03131; font-weight: 800; }
+.dos-tab .dos-weak { color: #e03131; font-weight: 800; }
+.dos-tab .dos-sp { width: 120px; padding: 2px 7px; } .dos-spark { width: 120px; height: 26px; display: block; }
+.dos-tab .dos-md s { text-decoration: none; font-size: 8px; color: #8a94a6; margin-left: 1px; }
+.dos-tab.compact td, .dos-tab.compact th { padding: 3px 7px; }
+.dos-tab.log { font-size: 11px; }
+.dos-foot { margin-top: 16px; padding-top: 12px; border-top: 1px solid #e2e7ef; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+.dos-note { font-size: 10px; color: #8a94a6; max-width: 66%; line-height: 1.5; }
+.rv-ttl { font-size: 14px; font-weight: 800; color: var(--tx); }
+.dos-btn { }
+@media print {
+  .dos-doc { max-width: none !important; }
+  .dos-sec, table.dos-tab tr, .dos-kpis { break-inside: avoid; }
+  table.dos-tab { font-size: 10px; }
+  .dos-tab .dos-sp, .dos-spark { width: 90px; }
+}
