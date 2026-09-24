@@ -736,18 +736,24 @@ function REPORT_SPARKCELL(vals) {
   const arr = d > 0.05 ? '▲' : d < -0.05 ? '▼' : '▬', cls = d > 0.05 ? 'up' : d < -0.05 ? 'dn' : 'flat';
   return `<span class="sp2" title="${first.toFixed(1)} → ${last.toFixed(1)} (${t('최저')} ${mn.toFixed(1)} · ${t('최고')} ${mx.toFixed(1)})">${REPORT_SPARK(v, 84, 22)}<span class="sp2-e ${cls}">${last.toFixed(1)} ${arr}</span></span>`;
 }
-// 큰 라인 차트 (대회 본선 추이): 균일 스케일(텍스트 왜곡X), 메달 색 점, min/mid/max 눈금
-function REPORT_LINE(pts, w = 680, h = 150) {
+// 큰 라인 차트 (대회 본선 추이): 점마다 점수(위)·날짜(아래) 라벨, 메달 색 점, min/mid/max 눈금
+function REPORT_LINE(pts, w = 700, h = 188) {
   if (!pts || pts.length < 2) return '';
   const vals = pts.map(p => p.val), mn = Math.min(...vals), mx = Math.max(...vals), rng = mx - mn || 1;
-  const L = 32, Rp = 8, T = 10, B = 16;
+  const L = 30, Rp = 12, T = 24, B = 40;
   const X = i => L + i / (pts.length - 1) * (w - L - Rp), Y = v => T + (1 - (v - mn) / rng) * (h - T - B);
   const mc = { gold: '#b8860b', silver: '#8a8f98', bronze: '#a9622f' };
+  const dd = d => (d || '').slice(2).replace(/-/g, '.');
+  const step = pts.length > 13 ? 2 : 1;
   let g = '';
-  [mx, (mn + mx) / 2, mn].forEach(gv => { const y = Y(gv); g += `<line x1="${L}" y1="${y.toFixed(1)}" x2="${w - Rp}" y2="${y.toFixed(1)}" stroke="#eef1f6"/><text x="${L - 4}" y="${(y + 3).toFixed(1)}" text-anchor="end" font-size="9" fill="#a9b2c0">${gv.toFixed(0)}</text>`; });
+  [mx, (mn + mx) / 2, mn].forEach(gv => { const y = Y(gv); g += `<line x1="${L}" y1="${y.toFixed(1)}" x2="${w - Rp}" y2="${y.toFixed(1)}" stroke="#eef1f6"/><text x="${L - 4}" y="${(y + 3).toFixed(1)}" text-anchor="end" font-size="9" fill="#c2c9d4">${gv.toFixed(0)}</text>`; });
   g += `<polyline points="${pts.map((p, i) => `${X(i).toFixed(1)},${Y(p.val).toFixed(1)}`).join(' ')}" fill="none" stroke="#0b5cab" stroke-width="1.8"/>`;
-  pts.forEach((p, i) => { const c = p.medal ? mc[p.medal] : '#0b5cab'; g += `<circle cx="${X(i).toFixed(1)}" cy="${Y(p.val).toFixed(1)}" r="${p.medal ? 3.4 : 2}" fill="${c}"${p.medal ? ' stroke="#fff" stroke-width="0.8"' : ''}><title>${p.date} · ${p.val}</title></circle>`; });
-  g += `<text x="${L}" y="${h - 4}" font-size="9" fill="#8a94a6">${(pts[0].date || '').slice(2).replace(/-/g, '.')}</text><text x="${w - Rp}" y="${h - 4}" text-anchor="end" font-size="9" fill="#8a94a6">${(pts[pts.length - 1].date || '').slice(2).replace(/-/g, '.')}</text>`;
+  pts.forEach((p, i) => {
+    const x = X(i), y = Y(p.val), c = p.medal ? mc[p.medal] : '#0b5cab';
+    g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${p.medal ? 3.8 : 2.4}" fill="${c}"${p.medal ? ' stroke="#fff" stroke-width="0.9"' : ''}/>`;
+    g += `<text x="${x.toFixed(1)}" y="${(y - 7).toFixed(1)}" text-anchor="middle" font-size="9" font-weight="700" fill="${p.medal ? c : '#0c1a30'}">${p.val}</text>`;
+    if (i % step === 0 || i === pts.length - 1) g += `<text x="${x.toFixed(1)}" y="${h - 16}" text-anchor="middle" font-size="7.5" fill="#8a94a6">${dd(p.date)}</text>`;
+  });
   return `<svg class="dos-line" viewBox="0 0 ${w} ${h}">${g}</svg>`;
 }
 function REPORT_RADAR(axes, size = 200) {
@@ -822,7 +828,7 @@ async function buildReportSection(a, allRows, year) {
     ${TR ? tile(t('훈련 세션'), TR.sessions.length, '') : ''}</div>`;
 
   // 종목별 성적
-  h += `<div class="dos-sec">🎯 ${t('종목별 성적')} <span>${periodLab}</span></div>
+  h += `<div class="dos-sec">🎯 ${t('종목별 성적')} <span class="dos-help">${t('평균·PB·일관성·전국순위')}</span> <span>${periodLab}</span></div>
     <table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('경기')}</th><th>${t('평균')}</th><th>PB</th><th>${t('최저')}</th><th>σ</th><th>10x</th><th>${t('추이')}</th><th>${t('전국')}</th></tr></thead><tbody>`;
   discRows.forEach(d => { const dz = R && R.disciplines ? R.disciplines.find(x => x.disc === d.k) : null;
     h += `<tr><td class="dos-nm">${esc(DISC[d.k] || d.k)}</td><td>${d.n}</td><td class="dos-b">${fmt(d.avg)}</td><td class="dos-pb">${fmt(d.best)}<s>${d.pbDate ? d.pbDate.replace(/-/g, '.').slice(2) : ''}</s></td><td>${fmt(d.worst)}</td><td>${d.sd != null ? '±' + d.sd.toFixed(1) : '–'}</td><td class="dos-x">${d.itAvg != null ? d.itAvg.toFixed(1) : '–'}</td><td class="dos-sp">${REPORT_SPARKCELL(d.sparkVals)}</td><td>${dz ? `<b>${dz.natRank}</b>/${dz.natN} <s>${dz.pct}%</s>` : '–'}</td></tr>`; });
@@ -832,7 +838,7 @@ async function buildReportSection(a, allRows, year) {
   const barCol = p => p >= 66 ? '#2f9e44' : p >= 33 ? '#f59f00' : '#e03131';
   const pctBars = discRows.map(d => { const dz = R && R.disciplines ? R.disciplines.find(x => x.disc === d.k) : null; return dz ? { label: DISC[d.k] || d.k, pct: dz.pct, rank: dz.natRank, n: dz.natN } : null; }).filter(Boolean).sort((x, y) => y.pct - x.pct);
   if (pctBars.length) {
-    h += `<div class="dos-sec">📊 ${t('강·약점')} <span>${t('종목별 전국 백분위')}</span></div><div class="dos-bars">` +
+    h += `<div class="dos-sec">📊 ${t('강·약점')} <span class="dos-help">${t('전국 백분위 · 길수록 강점')}</span></div><div class="dos-bars">` +
       pctBars.map(b => `<div class="dos-bar"><span class="dos-bl">${esc(b.label)}</span><span class="dos-btrack"><s style="width:${Math.max(3, b.pct)}%;background:${barCol(b.pct)}"></s></span><b class="dos-bv">${t('상위')} ${b.pct}%</b><s class="dos-brk">${b.rank}/${b.n}</s></div>`).join('') + `</div>`;
   }
 
@@ -840,7 +846,7 @@ async function buildReportSection(a, allRows, year) {
   const serByDisc = new Map();
   rows.forEach(r => { if (r.event.team_type !== 'individual' || !scored(r) || !r.series || !r.series.length) return; const m = serByDisc.get(r.event.discipline) || {}; r.series.forEach(s => { (m[s.series_no] = m[s.series_no] || []).push(s.score); }); serByDisc.set(r.event.discipline, m); });
   if (serByDisc.size) {
-    h += `<div class="dos-sec">🔬 ${t('시리즈별 분석')} <span>${t('발사 구간 경향')}</span></div><table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('시리즈 평균')} (S1→)</th><th>${t('초반')}</th><th>${t('후반')}</th><th>${t('격차')}</th><th>${t('경향')}</th></tr></thead><tbody>`;
+    h += `<div class="dos-sec">🔬 ${t('시리즈별 분석')} <span class="dos-help">${t('구간(S1~)별 평균·초반/후반·격차')}</span></div><table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('시리즈 평균')} (S1→)</th><th>${t('초반')}</th><th>${t('후반')}</th><th>${t('격차')}</th><th>${t('경향')}</th></tr></thead><tbody>`;
     [...serByDisc.entries()].sort((x, y) => CAL_ORDER.indexOf(x[0]) - CAL_ORDER.indexOf(y[0])).forEach(([k, m]) => {
       const pos = Object.keys(m).map(Number).sort((x, y) => x - y);
       const avgs = pos.map(p => m[p].reduce((s, v) => s + v, 0) / m[p].length);
@@ -866,7 +872,7 @@ async function buildReportSection(a, allRows, year) {
       const cSeries = mos.map(mo => { const a2 = monthly.get(mo).c; return a2.length ? a2.reduce((s, v) => s + v, 0) / a2.length : null; });
       const tSeries = mos.map(mo => { const a2 = monthly.get(mo).t; return a2.length ? a2.reduce((s, v) => s + v, 0) / a2.length : null; });
       const mrow = (ico, label, arr) => { const v = arr.filter(x => x != null); if (v.length < 2) return ''; const d = v[v.length - 1] - v[0], cls = d > 0.05 ? 'up' : d < -0.05 ? 'dn' : 'flat', ar = d > 0.05 ? '▲' : d < -0.05 ? '▼' : '▬'; return `<div class="dos-mrow"><span class="dos-mlab">${ico} ${label}</span>${REPORT_SPARK(v, 240, 30)}<span class="dos-mval ${cls}">${v[0].toFixed(1)}→<b>${v[v.length - 1].toFixed(1)}</b> ${ar}</span></div>`; };
-      h += `<div class="dos-sec">📈 ${t('월별 추이')} <span>${esc(DISC[mainK] || mainK)} · ${t('10발 평균')}</span></div>
+      h += `<div class="dos-sec">📈 ${t('월별 추이')} <span class="dos-help">${t('월별 평균 점수 흐름')}</span> <span>${esc(DISC[mainK] || mainK)}</span></div>
         <div class="dos-cap">${t('월별 10발당 평균 점수 (높을수록 좋음) · 대회 vs 훈련')}</div>
         <table class="dos-tab month"><thead><tr><th>${t('월')}</th>${mos.map(m => `<th>${m.slice(2).replace('-', '.')}</th>`).join('')}</tr></thead><tbody>
         <tr><td class="dos-nm">🎯 ${t('대회')}</td>${cSeries.map(v => `<td class="dos-b">${v != null ? v.toFixed(1) : '–'}</td>`).join('')}</tr>
@@ -881,11 +887,11 @@ async function buildReportSection(a, allRows, year) {
     let bestPbs = [], bestK = null;
     discRows.forEach(d => { let run = -Infinity; const pbs = []; d.arr.forEach(r => { if (r.qual_total > run) { pbs.push({ date: (dsort(r) || '').slice(0, 10), val: r.qual_total, delta: run === -Infinity ? null : r.qual_total - run, comp: r.competition.name }); run = r.qual_total; } }); if (pbs.length > bestPbs.length) { bestPbs = pbs; bestK = d.k; } });
     if (bestPbs.length >= 2) {
-      h += `<div class="dos-sec">🏆 ${t('PB 경신 타임라인')} <span>${esc(DISC[bestK] || bestK)} · ${bestPbs.length}${t('회')}</span></div>
+      h += `<div class="dos-sec">🏆 ${t('PB 경신 타임라인')} <span class="dos-help">${t('개인 최고기록 이력')}</span> <span>${esc(DISC[bestK] || bestK)} · ${bestPbs.length}${t('회')}</span></div>
         <table class="dos-tab"><thead><tr><th>${t('날짜')}</th><th>${t('대회')}</th><th>PB</th><th>${t('경신폭')}</th></tr></thead><tbody>` +
         bestPbs.map((p, i) => `<tr><td>${(p.date || '').replace(/-/g, '.').slice(2)}</td><td class="dos-nm">${esc(p.comp)}</td><td class="dos-pb">${fmt(p.val)}${i === bestPbs.length - 1 ? ` <span class="pb-cur">${t('현재')}</span>` : ''}</td><td class="up">${p.delta != null ? '+' + fmt(p.delta) : '—'}</td></tr>`).join('') + `</tbody></table>`;
     } else if (discRows.length) {
-      h += `<div class="dos-sec">🏆 ${t('개인 최고기록')} <span>PB</span></div>
+      h += `<div class="dos-sec">🏆 ${t('개인 최고기록')} <span class="dos-help">${t('개인 최고기록 이력')}</span></div>
         <table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>PB</th><th>${t('날짜')}</th><th>${t('대회')}</th></tr></thead><tbody>` +
         discRows.map(d => `<tr><td class="dos-nm">${esc(DISC[d.k] || d.k)}</td><td class="dos-pb">${fmt(d.best)}</td><td>${d.pbDate ? d.pbDate.replace(/-/g, '.').slice(2) : '–'}</td><td class="dos-nm">${esc(d.pbComp || '')}</td></tr>`).join('') + `</tbody></table>`;
     }
@@ -894,7 +900,7 @@ async function buildReportSection(a, allRows, year) {
   // 단계 분석
   const stg = (stages || []).filter(s => s.stages && s.stages.length >= 2);
   if (stg.length) {
-    h += `<div class="dos-sec">📊 ${t('단계 분석')} <span>${anYear}</span></div><table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('단계')}</th><th>${t('평균')}</th><th>${t('최고')}</th><th>${t('전국')}</th></tr></thead><tbody>`;
+    h += `<div class="dos-sec">📊 ${t('단계 분석')} <span class="dos-help">${t('자세·시간 단계별(최약 ▼)')}</span> <span>${anYear}</span></div><table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('단계')}</th><th>${t('평균')}</th><th>${t('최고')}</th><th>${t('전국')}</th></tr></thead><tbody>`;
     stg.forEach(dz => { const weak = dz.stages.reduce((mn, x) => x.avg < mn.avg ? x : mn); dz.stages.forEach((s, i) => { h += `<tr><td class="dos-nm">${i === 0 ? esc(DISC[dz.disc] || dz.disc) : ''}</td><td class="${s === weak ? 'dos-weak' : ''}">${esc(t(s.key))}${s === weak ? ' ▼' : ''}</td><td class="dos-b">${fmt(s.avg)}</td><td>${fmt(s.best)}</td><td>${s.natN ? `${s.natRank}/${s.natN}` : '–'}</td></tr>`; }); });
     h += `</tbody></table>`;
   }
@@ -912,7 +918,7 @@ async function buildReportSection(a, allRows, year) {
       const mainDk = [...byDk.entries()].sort((x, y) => y[1].length - x[1].length)[0];
       const typeCat = s => { if (s.is_match) return 'match'; const x = s.type || ''; if (/dự đoán|예언/i.test(x)) return 'predict'; if (/chính thức trong|공식기록/i.test(x)) return 'official'; if (/luyện tập|연습/i.test(x)) return 'practice'; if (/nghiên cứu|연구/i.test(x)) return 'research'; return 'train'; };
       const CATL = { predict: t('예언사격'), official: t('공식기록'), practice: t('연습사격'), research: t('연구사격'), match: t('실전'), train: t('훈련') };
-      h += `<div class="dos-sec">🏋️ ${t('훈련 분석')} <span>${S.length}${t('세션')} · ${t('훈련')} ${S.length - mt}·${t('실전')} ${mt}</span></div>
+      h += `<div class="dos-sec">🏋️ ${t('훈련 분석')} <span class="dos-help">${t('훈련 vs 실전 · 유형·요일')}</span> <span>${S.length}${t('세션')} · ${t('훈련')} ${S.length - mt}·${t('실전')} ${mt}</span></div>
         <table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('세션')}</th><th>${t('세션 평균')}</th><th>${t('최고')}</th><th>σ</th><th>${t('대회 평균')}</th><th>${t('대회 대비')}</th><th>${t('추이')}</th></tr></thead><tbody>`;
       [...byDk.entries()].sort((x, y) => y[1].length - x[1].length).forEach(([k, arr]) => {
         const vs = arr.map(per10t).filter(v => v != null); if (!vs.length) return;
@@ -936,7 +942,7 @@ async function buildReportSection(a, allRows, year) {
 
   // 연도별 (전체 기간일 때만)
   if (year === 'all' && allYears.length > 1) {
-    h += `<div class="dos-sec">📅 ${t('연도별 성적')}</div><table class="dos-tab"><thead><tr><th>${t('연도')}</th><th>${t('경기')}</th><th>${t('평균')}</th><th>${t('개인 메달')}</th><th>${t('단체 메달')}</th><th>${t('결선 진출')}</th></tr></thead><tbody>`;
+    h += `<div class="dos-sec">📅 ${t('연도별 성적')} <span class="dos-help">${t('연도별 경기·평균·메달')}</span></div><table class="dos-tab"><thead><tr><th>${t('연도')}</th><th>${t('경기')}</th><th>${t('평균')}</th><th>${t('개인 메달')}</th><th>${t('단체 메달')}</th><th>${t('결선 진출')}</th></tr></thead><tbody>`;
     allYears.slice().reverse().forEach(y => {
       const yr = allRows.filter(r => r.competition.year === y);
       const yi = { gold: 0, silver: 0, bronze: 0 }, yt = { gold: 0, silver: 0, bronze: 0 }; let yf = 0;
@@ -947,7 +953,7 @@ async function buildReportSection(a, allRows, year) {
   }
 
   // 대회 기록
-  h += `<div class="dos-sec">🗂️ ${t('대회 기록')} <span>${rows.length}${t('건')}</span></div>`;
+  h += `<div class="dos-sec">🗂️ ${t('대회 기록')} <span class="dos-help">${t('전 대회 성적 상세')}</span> <span>${rows.length}${t('건')}</span></div>`;
   // 대회 본선 추이 라인차트 (주력 종목)
   if (mainK && discRows[0] && discRows[0].arr.length >= 2) {
     const pts = discRows[0].arr.map(r => ({ date: (dsort(r) || '').slice(0, 10), val: r.qual_total, medal: r.medal })).filter(p => p.date);
@@ -966,7 +972,7 @@ async function buildReportSection(a, allRows, year) {
   if (im.gold + im.silver + im.bronze) cm += `${t('개인 메달')} ${im.gold + im.silver + im.bronze}${t('개')}. `;
   const weakStage = stg.length ? stg[0].stages.reduce((mn, x) => x.avg < mn.avg ? x : mn) : null;
   if (weakStage) cm += `${t('보강')}: ${esc(DISC[stg[0].disc] || stg[0].disc)} ${t(weakStage.key)}(${fmt(weakStage.avg)}). `;
-  h += `<div class="dos-sec">📝 ${t('총평')}</div><div class="eval-comment">${cm.trim()}</div>`;
+  h += `<div class="dos-sec">📝 ${t('총평')} <span class="dos-help">${t('자동 분석 요약')}</span></div><div class="eval-comment">${cm.trim()}</div>`;
 
   h += `<div class="dos-foot"><div class="dos-note">${t('본 보고서는 베트남 사격연맹 공개 기록을 기준으로 자동 작성되었습니다.')} · ${t('발급일')} ${dstr}</div><div class="rc-sign"><span class="rc-signname">RYONG</span><span class="rc-signlab">${t('작성')}</span></div></div></div>`;
   return h;
