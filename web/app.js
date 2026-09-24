@@ -728,6 +728,28 @@ const REPORT_SPARK = (vals, w = 120, h = 26) => {
   const sl = de ? nu / de : 0, c = sl > 0.02 ? '#2f9e44' : sl < -0.02 ? '#e03131' : '#868e96';
   return `<svg class="dos-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="${c}" stroke-width="1.6"/></svg>`;
 };
+// 값 라벨 달린 스파크라인 셀 (표 추이 칸): 미니 선 + 끝값 + 추세화살표, title=시작→끝(범위)
+function REPORT_SPARKCELL(vals) {
+  const v = (vals || []).filter(x => x != null);
+  if (v.length < 2) return v.length ? `<b class="sp2-e">${v[0].toFixed(1)}</b>` : '–';
+  const first = v[0], last = v[v.length - 1], d = last - first, mn = Math.min(...v), mx = Math.max(...v);
+  const arr = d > 0.05 ? '▲' : d < -0.05 ? '▼' : '▬', cls = d > 0.05 ? 'up' : d < -0.05 ? 'dn' : 'flat';
+  return `<span class="sp2" title="${first.toFixed(1)} → ${last.toFixed(1)} (${t('최저')} ${mn.toFixed(1)} · ${t('최고')} ${mx.toFixed(1)})">${REPORT_SPARK(v, 84, 22)}<span class="sp2-e ${cls}">${last.toFixed(1)} ${arr}</span></span>`;
+}
+// 큰 라인 차트 (대회 본선 추이): 균일 스케일(텍스트 왜곡X), 메달 색 점, min/mid/max 눈금
+function REPORT_LINE(pts, w = 680, h = 150) {
+  if (!pts || pts.length < 2) return '';
+  const vals = pts.map(p => p.val), mn = Math.min(...vals), mx = Math.max(...vals), rng = mx - mn || 1;
+  const L = 32, Rp = 8, T = 10, B = 16;
+  const X = i => L + i / (pts.length - 1) * (w - L - Rp), Y = v => T + (1 - (v - mn) / rng) * (h - T - B);
+  const mc = { gold: '#b8860b', silver: '#8a8f98', bronze: '#a9622f' };
+  let g = '';
+  [mx, (mn + mx) / 2, mn].forEach(gv => { const y = Y(gv); g += `<line x1="${L}" y1="${y.toFixed(1)}" x2="${w - Rp}" y2="${y.toFixed(1)}" stroke="#eef1f6"/><text x="${L - 4}" y="${(y + 3).toFixed(1)}" text-anchor="end" font-size="9" fill="#a9b2c0">${gv.toFixed(0)}</text>`; });
+  g += `<polyline points="${pts.map((p, i) => `${X(i).toFixed(1)},${Y(p.val).toFixed(1)}`).join(' ')}" fill="none" stroke="#0b5cab" stroke-width="1.8"/>`;
+  pts.forEach((p, i) => { const c = p.medal ? mc[p.medal] : '#0b5cab'; g += `<circle cx="${X(i).toFixed(1)}" cy="${Y(p.val).toFixed(1)}" r="${p.medal ? 3.4 : 2}" fill="${c}"${p.medal ? ' stroke="#fff" stroke-width="0.8"' : ''}><title>${p.date} · ${p.val}</title></circle>`; });
+  g += `<text x="${L}" y="${h - 4}" font-size="9" fill="#8a94a6">${(pts[0].date || '').slice(2).replace(/-/g, '.')}</text><text x="${w - Rp}" y="${h - 4}" text-anchor="end" font-size="9" fill="#8a94a6">${(pts[pts.length - 1].date || '').slice(2).replace(/-/g, '.')}</text>`;
+  return `<svg class="dos-line" viewBox="0 0 ${w} ${h}">${g}</svg>`;
+}
 function REPORT_RADAR(axes, size = 200) {
   const n = axes.length; if (n < 3) return '';
   const cx = size / 2, cy = size / 2 + 4, R = size / 2 - 34;
@@ -769,7 +791,7 @@ async function buildReportSection(a, allRows, year) {
     const pbRow = srt.find(r => r.qual_total === Math.max(...vs));
     const its = srt.filter(r => r.inner_tens != null).map(r => r.inner_tens);
     const itAvg = its.length ? its.reduce((s, v) => s + v, 0) / its.length : null;
-    return { k, n, avg, best: Math.max(...vs), worst: Math.min(...vs), sd: sd(vs), itAvg, itBest: its.length ? Math.max(...its) : null, spark: REPORT_SPARK(vs.slice(-16)), pbDate: pbRow ? dsort(pbRow).slice(0, 10) : '', pbComp: pbRow ? pbRow.competition.name : '', arr: srt };
+    return { k, n, avg, best: Math.max(...vs), worst: Math.min(...vs), sd: sd(vs), itAvg, itBest: its.length ? Math.max(...its) : null, sparkVals: vs.slice(-16), pbDate: pbRow ? dsort(pbRow).slice(0, 10) : '', pbComp: pbRow ? pbRow.competition.name : '', arr: srt };
   }).sort((x, y) => y.n - x.n);
   const mainK = discRows[0] ? discRows[0].k : null;
 
@@ -803,8 +825,8 @@ async function buildReportSection(a, allRows, year) {
   h += `<div class="dos-sec">🎯 ${t('종목별 성적')} <span>${periodLab}</span></div>
     <table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('경기')}</th><th>${t('평균')}</th><th>PB</th><th>${t('최저')}</th><th>σ</th><th>10x</th><th>${t('추이')}</th><th>${t('전국')}</th></tr></thead><tbody>`;
   discRows.forEach(d => { const dz = R && R.disciplines ? R.disciplines.find(x => x.disc === d.k) : null;
-    h += `<tr><td class="dos-nm">${esc(DISC[d.k] || d.k)}</td><td>${d.n}</td><td class="dos-b">${fmt(d.avg)}</td><td class="dos-pb">${fmt(d.best)}<s>${d.pbDate ? d.pbDate.replace(/-/g, '.').slice(2) : ''}</s></td><td>${fmt(d.worst)}</td><td>${d.sd != null ? '±' + d.sd.toFixed(1) : '–'}</td><td class="dos-x">${d.itAvg != null ? d.itAvg.toFixed(1) : '–'}</td><td class="dos-sp">${d.spark}</td><td>${dz ? `<b>${dz.natRank}</b>/${dz.natN} <s>${dz.pct}%</s>` : '–'}</td></tr>`; });
-  h += `</tbody></table>`;
+    h += `<tr><td class="dos-nm">${esc(DISC[d.k] || d.k)}</td><td>${d.n}</td><td class="dos-b">${fmt(d.avg)}</td><td class="dos-pb">${fmt(d.best)}<s>${d.pbDate ? d.pbDate.replace(/-/g, '.').slice(2) : ''}</s></td><td>${fmt(d.worst)}</td><td>${d.sd != null ? '±' + d.sd.toFixed(1) : '–'}</td><td class="dos-x">${d.itAvg != null ? d.itAvg.toFixed(1) : '–'}</td><td class="dos-sp">${REPORT_SPARKCELL(d.sparkVals)}</td><td>${dz ? `<b>${dz.natRank}</b>/${dz.natN} <s>${dz.pct}%</s>` : '–'}</td></tr>`; });
+  h += `</tbody></table><div class="dos-cap">${t('σ=일관성(작을수록 안정) · 10x=이너텐 평균 · 추이=최근 16경기 본선 흐름(끝 숫자=최근값) · 전국=현재 순위/인원')}</div>`;
 
   // 강·약점 막대 그래프 (종목별 전국 백분위)
   const barCol = p => p >= 66 ? '#2f9e44' : p >= 33 ? '#f59f00' : '#e03131';
@@ -843,12 +865,14 @@ async function buildReportSection(a, allRows, year) {
     if (mos.length >= 2) {
       const cSeries = mos.map(mo => { const a2 = monthly.get(mo).c; return a2.length ? a2.reduce((s, v) => s + v, 0) / a2.length : null; });
       const tSeries = mos.map(mo => { const a2 = monthly.get(mo).t; return a2.length ? a2.reduce((s, v) => s + v, 0) / a2.length : null; });
+      const mrow = (ico, label, arr) => { const v = arr.filter(x => x != null); if (v.length < 2) return ''; const d = v[v.length - 1] - v[0], cls = d > 0.05 ? 'up' : d < -0.05 ? 'dn' : 'flat', ar = d > 0.05 ? '▲' : d < -0.05 ? '▼' : '▬'; return `<div class="dos-mrow"><span class="dos-mlab">${ico} ${label}</span>${REPORT_SPARK(v, 240, 30)}<span class="dos-mval ${cls}">${v[0].toFixed(1)}→<b>${v[v.length - 1].toFixed(1)}</b> ${ar}</span></div>`; };
       h += `<div class="dos-sec">📈 ${t('월별 추이')} <span>${esc(DISC[mainK] || mainK)} · ${t('10발 평균')}</span></div>
+        <div class="dos-cap">${t('월별 10발당 평균 점수 (높을수록 좋음) · 대회 vs 훈련')}</div>
         <table class="dos-tab month"><thead><tr><th>${t('월')}</th>${mos.map(m => `<th>${m.slice(2).replace('-', '.')}</th>`).join('')}</tr></thead><tbody>
         <tr><td class="dos-nm">🎯 ${t('대회')}</td>${cSeries.map(v => `<td class="dos-b">${v != null ? v.toFixed(1) : '–'}</td>`).join('')}</tr>
         <tr><td class="dos-nm">🏋️ ${t('훈련')}</td>${tSeries.map(v => `<td>${v != null ? v.toFixed(1) : '–'}</td>`).join('')}</tr>
         </tbody></table>
-        <div class="dos-mchart">${t('대회')} ${REPORT_SPARK(cSeries.filter(v => v != null), 260, 34)} &nbsp; ${t('훈련')} ${REPORT_SPARK(tSeries.filter(v => v != null), 260, 34)}</div>`;
+        <div class="dos-mchart">${mrow('🎯', t('대회'), cSeries)}${mrow('🏋️', t('훈련'), tSeries)}</div>`;
     }
   }
 
@@ -894,7 +918,7 @@ async function buildReportSection(a, allRows, year) {
         const vs = arr.map(per10t).filter(v => v != null); if (!vs.length) return;
         const avg = vs.reduce((s, v) => s + v, 0) / vs.length, cA = compP10.get(k), delta = cA != null ? avg - cA : null;
         const lbl = DISC[k] || (k === 'std25' ? t('25m 정밀') : k);
-        h += `<tr><td class="dos-nm">${esc(lbl)}</td><td>${arr.length}</td><td class="dos-b">${fmt(avg)}</td><td>${fmt(Math.max(...vs))}</td><td>${sd(vs) != null ? '±' + sd(vs).toFixed(1) : '–'}</td><td>${cA != null ? fmt(cA) : '–'}</td><td class="${delta >= 0 ? 'up' : 'dn'}">${delta != null ? (delta >= 0 ? '+' : '') + delta.toFixed(1) : '–'}</td><td class="dos-sp">${REPORT_SPARK(vs.slice(-16))}</td></tr>`;
+        h += `<tr><td class="dos-nm">${esc(lbl)}</td><td>${arr.length}</td><td class="dos-b">${fmt(avg)}</td><td>${fmt(Math.max(...vs))}</td><td>${sd(vs) != null ? '±' + sd(vs).toFixed(1) : '–'}</td><td>${cA != null ? fmt(cA) : '–'}</td><td class="${delta >= 0 ? 'up' : 'dn'}">${delta != null ? (delta >= 0 ? '+' : '') + delta.toFixed(1) : '–'}</td><td class="dos-sp">${REPORT_SPARKCELL(vs.slice(-16))}</td></tr>`;
       });
       h += `</tbody></table>`;
       // 유형별
@@ -923,7 +947,14 @@ async function buildReportSection(a, allRows, year) {
   }
 
   // 대회 기록
-  h += `<div class="dos-sec">🗂️ ${t('대회 기록')} <span>${rows.length}${t('건')}</span></div><table class="dos-tab log"><thead><tr><th>${t('날짜')}</th><th>${t('대회')}</th><th>${t('종목')}</th><th>${t('본선')}</th><th>${t('결선')}</th><th>${t('메달')}</th><th>${t('순위')}</th></tr></thead><tbody>`;
+  h += `<div class="dos-sec">🗂️ ${t('대회 기록')} <span>${rows.length}${t('건')}</span></div>`;
+  // 대회 본선 추이 라인차트 (주력 종목)
+  if (mainK && discRows[0] && discRows[0].arr.length >= 2) {
+    const pts = discRows[0].arr.map(r => ({ date: (dsort(r) || '').slice(0, 10), val: r.qual_total, medal: r.medal })).filter(p => p.date);
+    const vv = pts.map(p => p.val);
+    if (pts.length >= 2) h += `<div class="dos-cap">📈 ${esc(DISC[mainK] || mainK)} ${t('본선 점수 추이')} · ${pts.length}${t('경기')} · ${t('최저')} ${Math.min(...vv)} ~ ${t('최고')} ${Math.max(...vv)} · <span class="dos-medaldot g"></span>${t('메달')}</div><div class="dos-linewrap">${REPORT_LINE(pts)}</div>`;
+  }
+  h += `<table class="dos-tab log"><thead><tr><th>${t('날짜')}</th><th>${t('대회')}</th><th>${t('종목')}</th><th>${t('본선')}</th><th>${t('결선')}</th><th>${t('메달')}</th><th>${t('순위')}</th></tr></thead><tbody>`;
   rows.slice().sort((x, y) => dsort(y).localeCompare(dsort(x))).forEach(r => { h += `<tr><td>${(dsort(r) || '').slice(2, 10).replace(/-/g, '.')}</td><td class="dos-nm">${esc(r.competition.name)} <span class="scope ${r.competition.scope}">${SCOPE[r.competition.scope] || ''}</span></td><td>${esc(eventLabel(r.event))}</td><td class="dos-b">${r.qual_total != null ? fmt(r.qual_total) : (r.is_dnf ? 'DNF' : '–')}</td><td>${r.final_score != null ? r.final_score : ''}</td><td class="dos-md">${r.medal ? medalBadge(r.medal) : ''}${r.team_medal ? medalBadge(r.team_medal) + `<s>${t('단체')}</s>` : ''}</td><td>${r.placement ? r.placement + t('위') : ''}</td></tr>`; });
   h += `</tbody></table>`;
 

@@ -1108,3 +1108,20 @@ table.dos-tab tbody tr:nth-child(even) { background: #fafbfd; }
 .dos-brk { text-decoration: none; font-size: 9.5px; color: #8a94a6; text-align: right; }
 .ser-gap { display: block; text-decoration: none; font-size: 8px; color: #a9b2c0; }
 @media print { .dos-bar { grid-template-columns: 100px 1fr 60px 44px; } }
+
+/* 값 라벨 스파크라인 · 라인차트 · 캡션 */
+.sp2 { display: inline-flex; align-items: center; gap: 5px; }
+.sp2 .dos-spark { width: 84px; height: 22px; }
+.sp2-e { font-weight: 800; font-size: 11px; color: #0c1a30; white-space: nowrap; }
+.sp2-e.up { color: #2f9e44; } .sp2-e.dn { color: #e03131; } .sp2-e.flat { color: #868e96; }
+.dos-cap { font-size: 10px; color: #8a94a6; margin: 3px 0 8px; line-height: 1.5; }
+.dos-medaldot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #b8860b; vertical-align: middle; margin: 0 2px; }
+.dos-linewrap { border: 1px solid #eef1f6; border-radius: 8px; padding: 6px 8px; margin-bottom: 10px; background: #fcfdff; }
+.dos-line { width: 100%; height: auto; display: block; }
+.dos-mchart { display: flex; flex-direction: column; gap: 4px; margin: 4px 0 2px; }
+.dos-mrow { display: flex; align-items: center; gap: 8px; }
+.dos-mlab { font-size: 11px; font-weight: 700; color: #55617a; width: 58px; flex: none; }
+.dos-mrow .dos-spark { width: 240px; height: 30px; flex: 1; }
+.dos-mval { font-size: 11px; font-weight: 700; color: #0c1a30; white-space: nowrap; }
+.dos-mval.up { color: #2f9e44; } .dos-mval.dn { color: #e03131; } .dos-mval b { font-size: 13px; }
+@media print { .dos-mrow .dos-spark { width: 180px; } .sp2 .dos-spark { width: 66px; } }
