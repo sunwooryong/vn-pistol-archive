@@ -74,7 +74,7 @@
     '유형': 'Loại', '날짜': 'Ngày', '총점': 'Tổng điểm', '최근': 'Gần đây', '25m 정밀': '25m chính xác',
     '일관성': 'Ổn định', '훈련유형별 평균': 'TB theo loại tập', '예언사격': 'Bắn dự đoán', '공식기록': 'Ghi điểm chính thức', '연습사격': 'Bắn luyện tập', '연구사격': 'Bắn nghiên cứu',
     '종합 프로파일': 'Hồ sơ tổng hợp', '훈련 분석': 'Phân tích tập luyện',
-    '강·약점 레이더': 'Radar mạnh/yếu', '종목별 전국 백분위': 'Bách phân vị toàn quốc theo nội dung', 'PB 경신 타임라인': 'Dòng thời gian PB', '경신폭': 'Mức cải thiện', '현재': 'Hiện tại',
+    '강·약점 레이더': 'Radar mạnh/yếu', '강·약점': 'Mạnh/Yếu', '격차': 'Chênh lệch', '종목별 전국 백분위': 'Bách phân vị toàn quốc theo nội dung', 'PB 경신 타임라인': 'Dòng thời gian PB', '경신폭': 'Mức cải thiện', '현재': 'Hiện tại',
     '시리즈별 분석': 'Phân tích theo loạt', '발사 구간 경향': 'Xu hướng theo loạt bắn', '시리즈 평균': 'TB mỗi loạt', '초반': 'Đầu', '후반': 'Cuối', '경향': 'Xu hướng', '후반 강세': 'Cuối mạnh', '후반 약세': 'Cuối yếu', '안정': 'Ổn định', '월별 추이': 'Xu hướng theo tháng', '10발 평균': 'TB 10 phát', '월': 'Tháng', '유형별': 'Theo loại', '기간': 'Kỳ', '전체 기간': 'Toàn thời gian', '전국 위상': 'Vị thế toàn quốc', '전국 순위': 'Hạng toàn quốc', '지역 순위': 'Hạng khu vực', '내 평균': 'TB của tôi', '주요 경쟁자': 'Đối thủ chính', '활동': 'Hoạt động', '시즌': ' mùa', '훈련 세션': 'Buổi tập', '대회 기록': 'Lịch sử thi đấu', '단계': 'Giai đoạn', '총 경기': 'Tổng trận', '개인전 · 전 기간': 'Cá nhân · toàn thời gian',
     '코치 해제': 'Gỡ HLV', '지도자 가입 신청이 접수되었습니다. 관리자 승인 후 이용할 수 있습니다.': 'Đã nhận đăng ký HLV. Chờ quản trị viên phê duyệt.',
     '팀 훈련': 'Tập luyện đội', '최근 훈련': 'Tập gần đây', '마지막 훈련': 'Buổi cuối', '주간 훈련량': 'Số buổi/2 tuần', '훈련 데이터가 있는 선수가 없습니다.': 'Chưa có VĐV nào có dữ liệu tập luyện.', '추세': 'Xu hướng',

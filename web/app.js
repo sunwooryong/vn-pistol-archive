@@ -806,39 +806,30 @@ async function buildReportSection(a, allRows, year) {
     h += `<tr><td class="dos-nm">${esc(DISC[d.k] || d.k)}</td><td>${d.n}</td><td class="dos-b">${fmt(d.avg)}</td><td class="dos-pb">${fmt(d.best)}<s>${d.pbDate ? d.pbDate.replace(/-/g, '.').slice(2) : ''}</s></td><td>${fmt(d.worst)}</td><td>${d.sd != null ? '±' + d.sd.toFixed(1) : '–'}</td><td class="dos-x">${d.itAvg != null ? d.itAvg.toFixed(1) : '–'}</td><td class="dos-sp">${d.spark}</td><td>${dz ? `<b>${dz.natRank}</b>/${dz.natN} <s>${dz.pct}%</s>` : '–'}</td></tr>`; });
   h += `</tbody></table>`;
 
-  // 강·약점 레이더 (종목별 전국 백분위; 부족하면 주력 종목 시리즈 레이더)
-  let radarHtml = '', radarSub = '', radarLeg = '';
-  const pctAxes = discRows.map(d => { const dz = R && R.disciplines ? R.disciplines.find(x => x.disc === d.k) : null; return dz ? { label: discShort(d.k), val: dz.pct / 100, pct: dz.pct } : null; }).filter(Boolean);
-  if (pctAxes.length >= 3) {
-    radarHtml = REPORT_RADAR(pctAxes); radarSub = t('종목별 전국 백분위');
-    radarLeg = pctAxes.map(x => `<span class="dos-tchip">${esc(x.label)} <b>${x.pct}%</b></span>`).join('');
-  } else if (mainK && discRows[0]) {
-    const m = {}; discRows[0].arr.forEach(r => (r.series || []).forEach(s => { (m[s.series_no] = m[s.series_no] || []).push(s.score); }));
-    const pos = Object.keys(m).map(Number).sort((x, y) => x - y);
-    if (pos.length >= 3) {
-      const avgs = pos.map(p => m[p].reduce((s, v) => s + v, 0) / m[p].length);
-      const mn = Math.min(...avgs), mx = Math.max(...avgs);
-      radarHtml = REPORT_RADAR(pos.map((p, i) => ({ label: 'S' + p, val: (avgs[i] - mn) / (mx - mn || 1) })));
-      radarSub = `${esc(DISC[mainK] || mainK)} · ${t('시리즈 평균')}`;
-      radarLeg = pos.map((p, i) => `<span class="dos-tchip">S${p} <b>${avgs[i].toFixed(1)}</b></span>`).join('');
-    }
+  // 강·약점 막대 그래프 (종목별 전국 백분위)
+  const barCol = p => p >= 66 ? '#2f9e44' : p >= 33 ? '#f59f00' : '#e03131';
+  const pctBars = discRows.map(d => { const dz = R && R.disciplines ? R.disciplines.find(x => x.disc === d.k) : null; return dz ? { label: DISC[d.k] || d.k, pct: dz.pct, rank: dz.natRank, n: dz.natN } : null; }).filter(Boolean).sort((x, y) => y.pct - x.pct);
+  if (pctBars.length) {
+    h += `<div class="dos-sec">📊 ${t('강·약점')} <span>${t('종목별 전국 백분위')}</span></div><div class="dos-bars">` +
+      pctBars.map(b => `<div class="dos-bar"><span class="dos-bl">${esc(b.label)}</span><span class="dos-btrack"><s style="width:${Math.max(3, b.pct)}%;background:${barCol(b.pct)}"></s></span><b class="dos-bv">${t('상위')} ${b.pct}%</b><s class="dos-brk">${b.rank}/${b.n}</s></div>`).join('') + `</div>`;
   }
-  if (radarHtml) h += `<div class="dos-sec">🕸️ ${t('강·약점 레이더')} <span>${radarSub}</span></div><div class="dos-radarwrap">${radarHtml}<div class="dos-radarleg">${radarLeg}</div></div>`;
 
   // 시리즈별 분석 (개인, series 보유)
   const serByDisc = new Map();
   rows.forEach(r => { if (r.event.team_type !== 'individual' || !scored(r) || !r.series || !r.series.length) return; const m = serByDisc.get(r.event.discipline) || {}; r.series.forEach(s => { (m[s.series_no] = m[s.series_no] || []).push(s.score); }); serByDisc.set(r.event.discipline, m); });
   if (serByDisc.size) {
-    h += `<div class="dos-sec">🔬 ${t('시리즈별 분석')} <span>${t('발사 구간 경향')}</span></div><table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('시리즈 평균')} (S1→)</th><th>${t('초반')}</th><th>${t('후반')}</th><th>${t('경향')}</th></tr></thead><tbody>`;
+    h += `<div class="dos-sec">🔬 ${t('시리즈별 분석')} <span>${t('발사 구간 경향')}</span></div><table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('시리즈 평균')} (S1→)</th><th>${t('초반')}</th><th>${t('후반')}</th><th>${t('격차')}</th><th>${t('경향')}</th></tr></thead><tbody>`;
     [...serByDisc.entries()].sort((x, y) => CAL_ORDER.indexOf(x[0]) - CAL_ORDER.indexOf(y[0])).forEach(([k, m]) => {
       const pos = Object.keys(m).map(Number).sort((x, y) => x - y);
       const avgs = pos.map(p => m[p].reduce((s, v) => s + v, 0) / m[p].length);
       const mx = Math.max(...avgs), mn = Math.min(...avgs);
+      const gap = mx - mn; const bestP = pos[avgs.indexOf(mx)], worstP = pos[avgs.indexOf(mn)];
+      const gapCls = gap >= 3 ? 'dn' : gap <= 1.2 ? 'up' : '';
       const bars = avgs.map((v, i) => `<span class="ser-bar ${avgs[i] === mx ? 'hi' : avgs[i] === mn ? 'lo' : ''}" title="S${pos[i]}: ${v.toFixed(1)}"><s style="height:${Math.max(8, (v - mn) / (mx - mn || 1) * 22 + 6).toFixed(0)}px"></s><em>${v.toFixed(1)}</em></span>`).join('');
       const half = Math.ceil(avgs.length / 2);
       const fa = avgs.slice(0, half).reduce((s, v) => s + v, 0) / half, sa = avgs.slice(half).reduce((s, v) => s + v, 0) / (avgs.length - half);
       const diff = sa - fa; const tr = diff > 0.3 ? `<span class="up">▲ ${t('후반 강세')}</span>` : diff < -0.3 ? `<span class="dn">▼ ${t('후반 약세')}</span>` : `<span class="flat">▬ ${t('안정')}</span>`;
-      h += `<tr><td class="dos-nm">${esc(DISC[k] || k)}</td><td class="ser-cell">${bars}</td><td class="dos-b">${fa.toFixed(1)}</td><td class="dos-b">${sa.toFixed(1)}</td><td>${tr}</td></tr>`;
+      h += `<tr><td class="dos-nm">${esc(DISC[k] || k)}</td><td class="ser-cell">${bars}</td><td class="dos-b">${fa.toFixed(1)}</td><td class="dos-b">${sa.toFixed(1)}</td><td class="${gapCls}">${gap.toFixed(1)}<s class="ser-gap">S${bestP}↔S${worstP}</s></td><td>${tr}</td></tr>`;
     });
     h += `</tbody></table>`;
   }

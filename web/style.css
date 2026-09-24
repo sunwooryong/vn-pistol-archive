@@ -1097,3 +1097,14 @@ table.dos-tab tbody tr:nth-child(even) { background: #fafbfd; }
 .dos-wdc i { font-style: normal; font-size: 11px; font-weight: 800; color: #0c1a30; }
 .dos-wdc em { font-style: normal; font-size: 9px; color: #8a94a6; }
 @media print { .dos-radar { width: 160px; height: 160px; } }
+
+/* 강·약점 가로 막대 */
+.dos-bars { display: flex; flex-direction: column; gap: 5px; margin: 6px 0 4px; }
+.dos-bar { display: grid; grid-template-columns: 116px 1fr 70px 52px; align-items: center; gap: 8px; font-size: 11.5px; }
+.dos-bl { font-weight: 700; color: #1a2233; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dos-btrack { background: #eef2f8; border-radius: 5px; height: 14px; overflow: hidden; }
+.dos-btrack s { display: block; height: 100%; border-radius: 5px; }
+.dos-bv { font-weight: 800; color: #0c1a30; text-align: right; }
+.dos-brk { text-decoration: none; font-size: 9.5px; color: #8a94a6; text-align: right; }
+.ser-gap { display: block; text-decoration: none; font-size: 8px; color: #a9b2c0; }
+@media print { .dos-bar { grid-template-columns: 100px 1fr 60px 44px; } }
