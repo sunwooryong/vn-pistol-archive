@@ -728,6 +728,18 @@ const REPORT_SPARK = (vals, w = 120, h = 26) => {
   const sl = de ? nu / de : 0, c = sl > 0.02 ? '#2f9e44' : sl < -0.02 ? '#e03131' : '#868e96';
   return `<svg class="dos-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="${c}" stroke-width="1.6"/></svg>`;
 };
+function REPORT_RADAR(axes, size = 200) {
+  const n = axes.length; if (n < 3) return '';
+  const cx = size / 2, cy = size / 2 + 4, R = size / 2 - 34;
+  const pt = (i, r) => { const ang = -Math.PI / 2 + i * 2 * Math.PI / n; return [cx + Math.cos(ang) * r, cy + Math.sin(ang) * r]; };
+  let g = '';
+  [0.34, 0.67, 1].forEach(f => { const p = axes.map((_, i) => pt(i, R * f).map(x => x.toFixed(1)).join(',')).join(' '); g += `<polygon points="${p}" fill="none" stroke="#e2e7ef" stroke-width="1"/>`; });
+  axes.forEach((a, i) => { const [x, y] = pt(i, R); g += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#e8edf3"/>`; const [lx, ly] = pt(i, R + 15); g += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" font-size="8.5" fill="#55617a" text-anchor="middle" dominant-baseline="middle">${esc(a.label)}</text>`; });
+  const dp = axes.map((a, i) => pt(i, R * Math.max(0.04, Math.min(1, a.val))).map(x => x.toFixed(1)).join(',')).join(' ');
+  g += `<polygon points="${dp}" fill="rgba(11,92,171,.18)" stroke="#0b5cab" stroke-width="1.8"/>`;
+  axes.forEach((a, i) => { const [x, y] = pt(i, R * Math.max(0.04, Math.min(1, a.val))); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.2" fill="#0b5cab"/>`; });
+  return `<svg class="dos-radar" viewBox="0 0 ${size} ${size}">${g}</svg>`;
+}
 async function buildReportSection(a, allRows, year) {
   const scored = r => !r.is_dnf && r.qual_total != null;
   const fmt = n => n == null ? '–' : (Number.isInteger(n) ? String(n) : n.toFixed(1));
@@ -755,7 +767,9 @@ async function buildReportSection(a, allRows, year) {
     const srt = arr.slice().sort((x, y) => dsort(x).localeCompare(dsort(y)));
     const vs = srt.map(r => r.qual_total), n = vs.length, avg = vs.reduce((s, v) => s + v, 0) / n;
     const pbRow = srt.find(r => r.qual_total === Math.max(...vs));
-    return { k, n, avg, best: Math.max(...vs), worst: Math.min(...vs), sd: sd(vs), spark: REPORT_SPARK(vs.slice(-16)), pbDate: pbRow ? dsort(pbRow).slice(0, 10) : '', arr: srt };
+    const its = srt.filter(r => r.inner_tens != null).map(r => r.inner_tens);
+    const itAvg = its.length ? its.reduce((s, v) => s + v, 0) / its.length : null;
+    return { k, n, avg, best: Math.max(...vs), worst: Math.min(...vs), sd: sd(vs), itAvg, itBest: its.length ? Math.max(...its) : null, spark: REPORT_SPARK(vs.slice(-16)), pbDate: pbRow ? dsort(pbRow).slice(0, 10) : '', pbComp: pbRow ? pbRow.competition.name : '', arr: srt };
   }).sort((x, y) => y.n - x.n);
   const mainK = discRows[0] ? discRows[0].k : null;
 
@@ -787,10 +801,29 @@ async function buildReportSection(a, allRows, year) {
 
   // 종목별 성적
   h += `<div class="dos-sec">🎯 ${t('종목별 성적')} <span>${periodLab}</span></div>
-    <table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('경기')}</th><th>${t('평균')}</th><th>PB</th><th>${t('최저')}</th><th>σ</th><th>${t('추이')}</th><th>${t('전국')}</th></tr></thead><tbody>`;
+    <table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('경기')}</th><th>${t('평균')}</th><th>PB</th><th>${t('최저')}</th><th>σ</th><th>10x</th><th>${t('추이')}</th><th>${t('전국')}</th></tr></thead><tbody>`;
   discRows.forEach(d => { const dz = R && R.disciplines ? R.disciplines.find(x => x.disc === d.k) : null;
-    h += `<tr><td class="dos-nm">${esc(DISC[d.k] || d.k)}</td><td>${d.n}</td><td class="dos-b">${fmt(d.avg)}</td><td class="dos-pb">${fmt(d.best)}<s>${d.pbDate ? d.pbDate.replace(/-/g, '.').slice(2) : ''}</s></td><td>${fmt(d.worst)}</td><td>${d.sd != null ? '±' + d.sd.toFixed(1) : '–'}</td><td class="dos-sp">${d.spark}</td><td>${dz ? `<b>${dz.natRank}</b>/${dz.natN} <s>${dz.pct}%</s>` : '–'}</td></tr>`; });
+    h += `<tr><td class="dos-nm">${esc(DISC[d.k] || d.k)}</td><td>${d.n}</td><td class="dos-b">${fmt(d.avg)}</td><td class="dos-pb">${fmt(d.best)}<s>${d.pbDate ? d.pbDate.replace(/-/g, '.').slice(2) : ''}</s></td><td>${fmt(d.worst)}</td><td>${d.sd != null ? '±' + d.sd.toFixed(1) : '–'}</td><td class="dos-x">${d.itAvg != null ? d.itAvg.toFixed(1) : '–'}</td><td class="dos-sp">${d.spark}</td><td>${dz ? `<b>${dz.natRank}</b>/${dz.natN} <s>${dz.pct}%</s>` : '–'}</td></tr>`; });
   h += `</tbody></table>`;
+
+  // 강·약점 레이더 (종목별 전국 백분위; 부족하면 주력 종목 시리즈 레이더)
+  let radarHtml = '', radarSub = '', radarLeg = '';
+  const pctAxes = discRows.map(d => { const dz = R && R.disciplines ? R.disciplines.find(x => x.disc === d.k) : null; return dz ? { label: discShort(d.k), val: dz.pct / 100, pct: dz.pct } : null; }).filter(Boolean);
+  if (pctAxes.length >= 3) {
+    radarHtml = REPORT_RADAR(pctAxes); radarSub = t('종목별 전국 백분위');
+    radarLeg = pctAxes.map(x => `<span class="dos-tchip">${esc(x.label)} <b>${x.pct}%</b></span>`).join('');
+  } else if (mainK && discRows[0]) {
+    const m = {}; discRows[0].arr.forEach(r => (r.series || []).forEach(s => { (m[s.series_no] = m[s.series_no] || []).push(s.score); }));
+    const pos = Object.keys(m).map(Number).sort((x, y) => x - y);
+    if (pos.length >= 3) {
+      const avgs = pos.map(p => m[p].reduce((s, v) => s + v, 0) / m[p].length);
+      const mn = Math.min(...avgs), mx = Math.max(...avgs);
+      radarHtml = REPORT_RADAR(pos.map((p, i) => ({ label: 'S' + p, val: (avgs[i] - mn) / (mx - mn || 1) })));
+      radarSub = `${esc(DISC[mainK] || mainK)} · ${t('시리즈 평균')}`;
+      radarLeg = pos.map((p, i) => `<span class="dos-tchip">S${p} <b>${avgs[i].toFixed(1)}</b></span>`).join('');
+    }
+  }
+  if (radarHtml) h += `<div class="dos-sec">🕸️ ${t('강·약점 레이더')} <span>${radarSub}</span></div><div class="dos-radarwrap">${radarHtml}<div class="dos-radarleg">${radarLeg}</div></div>`;
 
   // 시리즈별 분석 (개인, series 보유)
   const serByDisc = new Map();
@@ -828,6 +861,21 @@ async function buildReportSection(a, allRows, year) {
     }
   }
 
+  // PB 경신 타임라인 (경신 횟수가 가장 많은 종목)
+  {
+    let bestPbs = [], bestK = null;
+    discRows.forEach(d => { let run = -Infinity; const pbs = []; d.arr.forEach(r => { if (r.qual_total > run) { pbs.push({ date: (dsort(r) || '').slice(0, 10), val: r.qual_total, delta: run === -Infinity ? null : r.qual_total - run, comp: r.competition.name }); run = r.qual_total; } }); if (pbs.length > bestPbs.length) { bestPbs = pbs; bestK = d.k; } });
+    if (bestPbs.length >= 2) {
+      h += `<div class="dos-sec">🏆 ${t('PB 경신 타임라인')} <span>${esc(DISC[bestK] || bestK)} · ${bestPbs.length}${t('회')}</span></div>
+        <table class="dos-tab"><thead><tr><th>${t('날짜')}</th><th>${t('대회')}</th><th>PB</th><th>${t('경신폭')}</th></tr></thead><tbody>` +
+        bestPbs.map((p, i) => `<tr><td>${(p.date || '').replace(/-/g, '.').slice(2)}</td><td class="dos-nm">${esc(p.comp)}</td><td class="dos-pb">${fmt(p.val)}${i === bestPbs.length - 1 ? ` <span class="pb-cur">${t('현재')}</span>` : ''}</td><td class="up">${p.delta != null ? '+' + fmt(p.delta) : '—'}</td></tr>`).join('') + `</tbody></table>`;
+    } else if (discRows.length) {
+      h += `<div class="dos-sec">🏆 ${t('개인 최고기록')} <span>PB</span></div>
+        <table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>PB</th><th>${t('날짜')}</th><th>${t('대회')}</th></tr></thead><tbody>` +
+        discRows.map(d => `<tr><td class="dos-nm">${esc(DISC[d.k] || d.k)}</td><td class="dos-pb">${fmt(d.best)}</td><td>${d.pbDate ? d.pbDate.replace(/-/g, '.').slice(2) : '–'}</td><td class="dos-nm">${esc(d.pbComp || '')}</td></tr>`).join('') + `</tbody></table>`;
+    }
+  }
+
   // 단계 분석
   const stg = (stages || []).filter(s => s.stages && s.stages.length >= 2);
   if (stg.length) {
@@ -862,6 +910,12 @@ async function buildReportSection(a, allRows, year) {
       const catAgg = new Map(); mainDk[1].forEach(s => { const v = per10t(s); if (v == null) return; const c = typeCat(s); const o = catAgg.get(c) || { n: 0, s: 0 }; o.n++; o.s += v; catAgg.set(c, o); });
       const cats = ['official', 'practice', 'predict', 'research', 'train', 'match'].filter(c => catAgg.has(c));
       if (cats.length) h += `<div class="dos-types">${t('유형별')}(${esc(DISC[mainDk[0]] || mainDk[0])}): ` + cats.map(c => { const o = catAgg.get(c); return `<span class="dos-tchip">${esc(CATL[c])} <b>${(o.s / o.n).toFixed(1)}</b><s>${o.n}</s></span>`; }).join('') + `</div>`;
+      // 요일별 훈련 패턴
+      const wd = window.I18N.lang === 'vi' ? ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'] : ['일', '월', '화', '수', '목', '금', '토'];
+      const wdAgg = Array.from({ length: 7 }, () => ({ n: 0, s: 0 }));
+      S.forEach(s => { const d = new Date(s.date + 'T00:00:00'); if (isNaN(d)) return; const v = per10t(s); const o = wdAgg[d.getDay()]; o.n++; if (v != null) o.s += v; });
+      const maxN = Math.max(...wdAgg.map(o => o.n), 1);
+      h += `<div class="dos-wd">${wdAgg.map((o, i) => `<div class="dos-wdc${i === 0 ? ' sun' : i === 6 ? ' sat' : ''}"><b>${wd[i]}</b><span class="dos-wdbar"><s style="height:${(o.n / maxN * 34 + 3).toFixed(0)}px"></s></span><i>${o.n}</i><em>${o.n ? (o.s / o.n).toFixed(1) : '–'}</em></div>`).join('')}</div>`;
     }
   }
 

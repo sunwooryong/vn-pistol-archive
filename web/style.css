@@ -1081,3 +1081,19 @@ table.dos-tab tbody tr:nth-child(even) { background: #fafbfd; }
 .dos-types { font-size: 11px; color: #55617a; margin: 6px 0 2px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .dos-tchip { border: 1px solid #e2e7ef; border-radius: 999px; padding: 2px 9px; background: #f8fafd; }
 .dos-tchip b { color: #0b3a6b; font-weight: 800; margin-left: 3px; } .dos-tchip s { text-decoration: none; color: #a9b2c0; font-size: 9px; margin-left: 3px; }
+
+/* 통합 리포트: 레이더 · 요일별 · 이너텐 · PB */
+.dos-tab .dos-x { color: #0b3a6b; font-weight: 700; }
+.dos-radarwrap { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 4px 0 6px; }
+.dos-radar { width: 200px; height: 200px; flex: none; }
+.dos-radarleg { display: flex; flex-wrap: wrap; gap: 6px; }
+.pb-cur { font-size: 8.5px; font-weight: 800; color: #fff; background: #0b5cab; border-radius: 999px; padding: 1px 6px; }
+.dos-wd { display: flex; gap: 5px; margin: 8px 0 2px; }
+.dos-wdc { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; border: 1px solid #eef1f6; border-radius: 7px; padding: 6px 2px 5px; background: #fafbfd; }
+.dos-wdc b { font-size: 10px; color: #55617a; font-weight: 800; }
+.dos-wdc.sun b { color: #d6336c; } .dos-wdc.sat b { color: #1971c2; }
+.dos-wdbar { display: flex; align-items: flex-end; height: 38px; }
+.dos-wdbar s { display: block; width: 15px; background: #9db4d6; border-radius: 2px 2px 0 0; }
+.dos-wdc i { font-style: normal; font-size: 11px; font-weight: 800; color: #0c1a30; }
+.dos-wdc em { font-style: normal; font-size: 9px; color: #8a94a6; }
+@media print { .dos-radar { width: 160px; height: 160px; } }
