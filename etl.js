@@ -471,6 +471,19 @@ function tDate(s) {
 }
 function tDisc(s) {
   const x = String(s || '').toLowerCase();
+  // 이동표적(running target): di động / dđ / running / 이동
+  if (/\bdi\b|di dong|di động|dđ|running|이동/.test(x)) {
+    if (/hỗn|hon hop|mix|혼/.test(x)) return 'rt_mix';
+    if (/tiêu chuẩn|tieu chuan|std|표준/.test(x)) return 'rt_std';
+    return 'rt';
+  }
+  // 소총(rifle): súng trường / rifle / st / 소총
+  if (/trường|truong|rifle|소총|\bst\b|\bar\b/.test(x)) {
+    if (/3|tư thế|tu the|자세/.test(x)) return 'rifle_3p';
+    if (/nằm|nam prone|prone|복사/.test(x)) return 'rifle_prone';
+    return 'air_rifle';
+  }
+  // 권총(pistol)
   if (x.includes('10m') && x.includes('ap')) return 'air';
   if (x.startsWith('50m') || x.includes('50m')) return 'pistol_50';
   if (x.includes('25m') && x.includes('sp')) return 'sport';

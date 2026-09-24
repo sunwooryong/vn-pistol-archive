@@ -868,7 +868,8 @@ async function buildReportSection(a, allRows, year) {
       const dr = discRows.find(d => d.k === k); const qn = dr ? dr.n : o.vals.length;
       const conv = qn ? Math.round(o.vals.length / qn * 100) : null;
       const avg = o.vals.reduce((s, v) => s + v, 0) / o.vals.length;
-      h += `<tr><td class="dos-nm">${esc(DISC[k] || k)}</td><td>${o.vals.length}${t('회')}</td><td>${conv != null ? conv + '%' : '–'}</td><td class="dos-b">${avg.toFixed(1)}</td><td class="dos-pb">${Math.max(...o.vals).toFixed(1)}</td><td>${o.med ? o.med + t('개') : '–'}</td></tr>`;
+      const convCls = conv == null ? '' : conv >= 50 ? 'up' : conv < 25 ? 'dn' : '';
+      h += `<tr><td class="dos-nm">${esc(DISC[k] || k)}</td><td>${o.vals.length}${t('회')}</td><td class="${convCls}">${conv != null ? conv + '%' : '–'}</td><td class="dos-b">${avg.toFixed(1)}</td><td class="dos-pb">${Math.max(...o.vals).toFixed(1)}</td><td>${o.med ? o.med + t('개') : '–'}</td></tr>`;
     });
     h += `</tbody></table><div class="dos-cap">${t('전환율=본선 경기 대비 결선 진출 비율')} · ${t('총')} ${totFin}${t('회')} · ${t('메달')} ${totMed}${t('개')}</div>`;
   }
@@ -912,7 +913,7 @@ async function buildReportSection(a, allRows, year) {
       const tSeries = mos.map(mo => { const a2 = monthly.get(mo).t; return a2.length ? a2.reduce((s, v) => s + v, 0) / a2.length : null; });
       const mrow = (ico, label, arr) => { const v = arr.filter(x => x != null); if (v.length < 2) return ''; const d = v[v.length - 1] - v[0], cls = d > 0.05 ? 'up' : d < -0.05 ? 'dn' : 'flat', ar = d > 0.05 ? '▲' : d < -0.05 ? '▼' : '▬'; return `<div class="dos-mrow"><span class="dos-mlab">${ico} ${label}</span>${REPORT_SPARK(v, 240, 30)}<span class="dos-mval ${cls}">${v[0].toFixed(1)}→<b>${v[v.length - 1].toFixed(1)}</b> ${ar}</span></div>`; };
       h += `<div class="dos-sec">📈 ${t('월별 추이')} <span class="dos-help">${t('월별 평균 점수 흐름')}</span> <span>${esc(DISC[mainK] || mainK)}</span></div>
-        <div class="dos-cap">${t('월별 10발당 평균 점수 (높을수록 좋음) · 대회 vs 훈련')}</div>
+        <div class="dos-cap">${t('월별 시리즈 평균 점수 (높을수록 좋음) · 대회 vs 훈련')}</div>
         <table class="dos-tab month"><thead><tr><th>${t('월')}</th>${mos.map(m => `<th>${m.slice(2).replace('-', '.')}</th>`).join('')}</tr></thead><tbody>
         <tr><td class="dos-nm">🎯 ${t('대회')}</td>${cSeries.map(v => `<td class="dos-b">${v != null ? v.toFixed(1) : '–'}</td>`).join('')}</tr>
         <tr><td class="dos-nm">🏋️ ${t('훈련')}</td>${tSeries.map(v => `<td>${v != null ? v.toFixed(1) : '–'}</td>`).join('')}</tr>
