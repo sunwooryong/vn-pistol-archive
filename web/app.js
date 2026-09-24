@@ -238,7 +238,7 @@ async function renderMyAthletesComps(box, year) {
     };
   });
   const rb = $('#coach-report-btn'); if (rb) rb.onclick = () => openCoachReport(year);
-  const eb = $('#team-eval-btn'); if (eb) eb.onclick = () => openEvalReport(cards.map(c => c.a), year);
+  const eb = $('#team-eval-btn'); if (eb) eb.onclick = () => openReport(cards.map(c => c.a), 'all');
   const tb = $('#team-ov-btn'); const tov = $('#team-overview');
   if (tb && tov) tb.onclick = async () => {
     if (!tov.hidden) { tov.hidden = true; tb.classList.remove('on'); return; }
@@ -718,6 +718,223 @@ async function openDossier(a, rows) {
   doc.innerHTML = h;
 }
 window.openDossier = openDossier;
+
+// ── 통합 평가 리포트 (종합 프로파일 + 평가 + 시리즈/월별/연도별 심층분석) ──
+const REPORT_SPARK = (vals, w = 120, h = 26) => {
+  const v = vals.filter(x => x != null); if (v.length < 2) return '';
+  const mn = Math.min(...v), mx = Math.max(...v), rng = mx - mn || 1;
+  const pts = v.map((x, i) => `${(i / (v.length - 1) * w).toFixed(1)},${(h - (x - mn) / rng * (h - 4) - 2).toFixed(1)}`).join(' ');
+  const n = v.length, xm = (n - 1) / 2, ym = v.reduce((s, x) => s + x, 0) / n; let nu = 0, de = 0; v.forEach((y, x) => { nu += (x - xm) * (y - ym); de += (x - xm) ** 2; });
+  const sl = de ? nu / de : 0, c = sl > 0.02 ? '#2f9e44' : sl < -0.02 ? '#e03131' : '#868e96';
+  return `<svg class="dos-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="${c}" stroke-width="1.6"/></svg>`;
+};
+async function buildReportSection(a, allRows, year) {
+  const scored = r => !r.is_dnf && r.qual_total != null;
+  const fmt = n => n == null ? '–' : (Number.isInteger(n) ? String(n) : n.toFixed(1));
+  const dsort = r => (r.match_date || r.competition.date_start || '');
+  const sd = vs => vs.length > 1 ? Math.sqrt(vs.reduce((s, v) => s + (v - vs.reduce((p, q) => p + q, 0) / vs.length) ** 2, 0) / vs.length) : null;
+  const allYears = [...new Set(allRows.map(r => r.competition.year))].sort();
+  const rows = year === 'all' ? allRows : allRows.filter(r => r.competition.year === year);
+  const anYear = year === 'all' ? RANK_YEAR : year;
+  const g = a.gender, by = a.birth_year;
+  const dstr = (() => { const d = new Date(); return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}`; })();
+  const periodLab = year === 'all' ? `${t('전체 기간')}${allYears.length ? ` · ${allYears[0]}–${allYears[allYears.length - 1]}` : ''}` : `${year}`;
+  const tile = (lab, val, sub) => `<div class="dos-tile"><i>${lab}</i><b>${val}</b>${sub ? `<s>${sub}</s>` : ''}</div>`;
+  const medStr = m => [m.gold && `<span class="medal gold">${MEDAL.gold}</span>${m.gold}`, m.silver && `<span class="medal silver">${MEDAL.silver}</span>${m.silver}`, m.bronze && `<span class="medal bronze">${MEDAL.bronze}</span>${m.bronze}`].filter(Boolean).join(' ') || '–';
+
+  // 커리어 집계
+  const im = { gold: 0, silver: 0, bronze: 0 }, tm = { gold: 0, silver: 0, bronze: 0 };
+  let fin = 0, dom = 0, intl = 0; const comps = new Set();
+  rows.forEach(r => { if (r.medal) im[r.medal]++; if (r.team_medal) tm[r.team_medal]++; if (r.final_score != null) fin++; comps.add(r.competition.name + r.competition.year); if (r.competition.scope === 'international') intl++; else dom++; });
+  const gamesInd = rows.filter(r => r.event.team_type === 'individual' && scored(r)).length;
+
+  // 종목별
+  const byD = new Map();
+  rows.forEach(r => { if (r.event.team_type !== 'individual' || !scored(r)) return; (byD.get(r.event.discipline) || byD.set(r.event.discipline, []).get(r.event.discipline)).push(r); });
+  const discRows = [...byD.entries()].map(([k, arr]) => {
+    const srt = arr.slice().sort((x, y) => dsort(x).localeCompare(dsort(y)));
+    const vs = srt.map(r => r.qual_total), n = vs.length, avg = vs.reduce((s, v) => s + v, 0) / n;
+    const pbRow = srt.find(r => r.qual_total === Math.max(...vs));
+    return { k, n, avg, best: Math.max(...vs), worst: Math.min(...vs), sd: sd(vs), spark: REPORT_SPARK(vs.slice(-16)), pbDate: pbRow ? dsort(pbRow).slice(0, 10) : '', arr: srt };
+  }).sort((x, y) => y.n - x.n);
+  const mainK = discRows[0] ? discRows[0].k : null;
+
+  // 비동기
+  let R = null, stages = [], TR = null;
+  try { R = await DB.regionalAnalysis(a.id, anYear); } catch (e) { }
+  try { stages = await DB.stageAnalysis(a.id, anYear); } catch (e) { }
+  try { TR = await DB.trainingOf(a.full_name); } catch (e) { }
+  const per10t = s => s.avg != null ? s.avg : (s.series && s.series.length ? s.total / s.series.length : null);
+
+  let h = `<div class="eval-doc"><div class="dos-head">
+    <div class="dos-rings">${window.ringsSVG || ''}</div>
+    <div class="dos-htxt"><div class="dos-kick">${t('사격 · 베트남 사격연맹')} · ${t('평가 보고서')}</div>
+      <h1 class="dos-name">${esc(a.full_name)}${g ? ` <span class="g g-${g}">${GENDER[g]}</span>` : ''}</h1>
+      <div class="dos-meta">${by ? `${by}${t('년생')} · ${t('만')} ${NOW_YEAR - by}${t('세')}` : ''}${a.unit ? ` · ${esc(a.unit)}` : ''} · ${a.is_foreign ? esc(a.nationality || '') : t('베트남')}</div></div>
+    <div class="dos-asof"><i>${t('기간')}</i><b>${periodLab}</b><s>${t('발급일')} ${dstr}</s></div></div>`;
+
+  if (!rows.length) return h + `<div class="muted" style="padding:20px;text-align:center">${year} ${t('기록이 없습니다.')}</div></div>`;
+
+  // KPI
+  h += `<div class="dos-kpis">
+    ${tile(t('총 경기'), gamesInd, `${comps.size} ${t('개 대회')}`)}
+    ${tile(t('개인 메달'), im.gold + im.silver + im.bronze, medStr(im))}
+    ${tile(t('단체 메달'), tm.gold + tm.silver + tm.bronze, medStr(tm))}
+    ${tile(t('결선 진출'), fin + t('회'), '')}
+    ${tile(t('종목'), byD.size, '')}
+    ${tile(t('국내') + '/' + t('국제'), dom + '/' + intl, '')}
+    ${TR ? tile(t('훈련 세션'), TR.sessions.length, '') : ''}</div>`;
+
+  // 종목별 성적
+  h += `<div class="dos-sec">🎯 ${t('종목별 성적')} <span>${periodLab}</span></div>
+    <table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('경기')}</th><th>${t('평균')}</th><th>PB</th><th>${t('최저')}</th><th>σ</th><th>${t('추이')}</th><th>${t('전국')}</th></tr></thead><tbody>`;
+  discRows.forEach(d => { const dz = R && R.disciplines ? R.disciplines.find(x => x.disc === d.k) : null;
+    h += `<tr><td class="dos-nm">${esc(DISC[d.k] || d.k)}</td><td>${d.n}</td><td class="dos-b">${fmt(d.avg)}</td><td class="dos-pb">${fmt(d.best)}<s>${d.pbDate ? d.pbDate.replace(/-/g, '.').slice(2) : ''}</s></td><td>${fmt(d.worst)}</td><td>${d.sd != null ? '±' + d.sd.toFixed(1) : '–'}</td><td class="dos-sp">${d.spark}</td><td>${dz ? `<b>${dz.natRank}</b>/${dz.natN} <s>${dz.pct}%</s>` : '–'}</td></tr>`; });
+  h += `</tbody></table>`;
+
+  // 시리즈별 분석 (개인, series 보유)
+  const serByDisc = new Map();
+  rows.forEach(r => { if (r.event.team_type !== 'individual' || !scored(r) || !r.series || !r.series.length) return; const m = serByDisc.get(r.event.discipline) || {}; r.series.forEach(s => { (m[s.series_no] = m[s.series_no] || []).push(s.score); }); serByDisc.set(r.event.discipline, m); });
+  if (serByDisc.size) {
+    h += `<div class="dos-sec">🔬 ${t('시리즈별 분석')} <span>${t('발사 구간 경향')}</span></div><table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('시리즈 평균')} (S1→)</th><th>${t('초반')}</th><th>${t('후반')}</th><th>${t('경향')}</th></tr></thead><tbody>`;
+    [...serByDisc.entries()].sort((x, y) => CAL_ORDER.indexOf(x[0]) - CAL_ORDER.indexOf(y[0])).forEach(([k, m]) => {
+      const pos = Object.keys(m).map(Number).sort((x, y) => x - y);
+      const avgs = pos.map(p => m[p].reduce((s, v) => s + v, 0) / m[p].length);
+      const mx = Math.max(...avgs), mn = Math.min(...avgs);
+      const bars = avgs.map((v, i) => `<span class="ser-bar ${avgs[i] === mx ? 'hi' : avgs[i] === mn ? 'lo' : ''}" title="S${pos[i]}: ${v.toFixed(1)}"><s style="height:${Math.max(8, (v - mn) / (mx - mn || 1) * 22 + 6).toFixed(0)}px"></s><em>${v.toFixed(1)}</em></span>`).join('');
+      const half = Math.ceil(avgs.length / 2);
+      const fa = avgs.slice(0, half).reduce((s, v) => s + v, 0) / half, sa = avgs.slice(half).reduce((s, v) => s + v, 0) / (avgs.length - half);
+      const diff = sa - fa; const tr = diff > 0.3 ? `<span class="up">▲ ${t('후반 강세')}</span>` : diff < -0.3 ? `<span class="dn">▼ ${t('후반 약세')}</span>` : `<span class="flat">▬ ${t('안정')}</span>`;
+      h += `<tr><td class="dos-nm">${esc(DISC[k] || k)}</td><td class="ser-cell">${bars}</td><td class="dos-b">${fa.toFixed(1)}</td><td class="dos-b">${sa.toFixed(1)}</td><td>${tr}</td></tr>`;
+    });
+    h += `</tbody></table>`;
+  }
+
+  // 월별 추이 (주력 종목: 대회 per10 + 훈련 per10)
+  if (mainK) {
+    const monthly = new Map();
+    rows.forEach(r => { if (r.event.discipline !== mainK || r.event.team_type !== 'individual' || !scored(r)) return; const mo = dsort(r).slice(0, 7); const ns = r.event.n_series || 6; (monthly.get(mo) || monthly.set(mo, { c: [], t: [] }).get(mo)).c.push(r.qual_total / ns); });
+    if (TR) TR.sessions.forEach(s => { if ((s.dk || s.disc) !== mainK) return; const mo = s.date.slice(0, 7); if (year !== 'all' && +mo.slice(0, 4) !== year) return; const v = per10t(s); if (v != null) (monthly.get(mo) || monthly.set(mo, { c: [], t: [] }).get(mo)).t.push(v); });
+    const mos = [...monthly.keys()].sort();
+    if (mos.length >= 2) {
+      const cSeries = mos.map(mo => { const a2 = monthly.get(mo).c; return a2.length ? a2.reduce((s, v) => s + v, 0) / a2.length : null; });
+      const tSeries = mos.map(mo => { const a2 = monthly.get(mo).t; return a2.length ? a2.reduce((s, v) => s + v, 0) / a2.length : null; });
+      h += `<div class="dos-sec">📈 ${t('월별 추이')} <span>${esc(DISC[mainK] || mainK)} · ${t('10발 평균')}</span></div>
+        <table class="dos-tab month"><thead><tr><th>${t('월')}</th>${mos.map(m => `<th>${m.slice(2).replace('-', '.')}</th>`).join('')}</tr></thead><tbody>
+        <tr><td class="dos-nm">🎯 ${t('대회')}</td>${cSeries.map(v => `<td class="dos-b">${v != null ? v.toFixed(1) : '–'}</td>`).join('')}</tr>
+        <tr><td class="dos-nm">🏋️ ${t('훈련')}</td>${tSeries.map(v => `<td>${v != null ? v.toFixed(1) : '–'}</td>`).join('')}</tr>
+        </tbody></table>
+        <div class="dos-mchart">${t('대회')} ${REPORT_SPARK(cSeries.filter(v => v != null), 260, 34)} &nbsp; ${t('훈련')} ${REPORT_SPARK(tSeries.filter(v => v != null), 260, 34)}</div>`;
+    }
+  }
+
+  // 단계 분석
+  const stg = (stages || []).filter(s => s.stages && s.stages.length >= 2);
+  if (stg.length) {
+    h += `<div class="dos-sec">📊 ${t('단계 분석')} <span>${anYear}</span></div><table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('단계')}</th><th>${t('평균')}</th><th>${t('최고')}</th><th>${t('전국')}</th></tr></thead><tbody>`;
+    stg.forEach(dz => { const weak = dz.stages.reduce((mn, x) => x.avg < mn.avg ? x : mn); dz.stages.forEach((s, i) => { h += `<tr><td class="dos-nm">${i === 0 ? esc(DISC[dz.disc] || dz.disc) : ''}</td><td class="${s === weak ? 'dos-weak' : ''}">${esc(t(s.key))}${s === weak ? ' ▼' : ''}</td><td class="dos-b">${fmt(s.avg)}</td><td>${fmt(s.best)}</td><td>${s.natN ? `${s.natRank}/${s.natN}` : '–'}</td></tr>`; }); });
+    h += `</tbody></table>`;
+  }
+
+  // 훈련 분석
+  if (TR && TR.sessions.length) {
+    const S = year === 'all' ? TR.sessions : TR.sessions.filter(s => +s.date.slice(0, 4) === year);
+    if (S.length) {
+      const byDk = new Map(); S.forEach(s => { (byDk.get(s.dk || s.disc) || byDk.set(s.dk || s.disc, []).get(s.dk || s.disc)).push(s); });
+      const compP10 = new Map(), cAg = new Map();
+      rows.forEach(r => { if (r.event.team_type !== 'individual' || !scored(r)) return; const ns = r.event.n_series || 6; const o = cAg.get(r.event.discipline) || { s: 0, n: 0 }; o.s += r.qual_total / ns; o.n++; cAg.set(r.event.discipline, o); });
+      cAg.forEach((o, d) => compP10.set(d, o.s / o.n));
+      const mt = S.filter(s => s.is_match).length;
+      // 유형별(주력 dk)
+      const mainDk = [...byDk.entries()].sort((x, y) => y[1].length - x[1].length)[0];
+      const typeCat = s => { if (s.is_match) return 'match'; const x = s.type || ''; if (/dự đoán|예언/i.test(x)) return 'predict'; if (/chính thức trong|공식기록/i.test(x)) return 'official'; if (/luyện tập|연습/i.test(x)) return 'practice'; if (/nghiên cứu|연구/i.test(x)) return 'research'; return 'train'; };
+      const CATL = { predict: t('예언사격'), official: t('공식기록'), practice: t('연습사격'), research: t('연구사격'), match: t('실전'), train: t('훈련') };
+      h += `<div class="dos-sec">🏋️ ${t('훈련 분석')} <span>${S.length}${t('세션')} · ${t('훈련')} ${S.length - mt}·${t('실전')} ${mt}</span></div>
+        <table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('세션')}</th><th>${t('세션 평균')}</th><th>${t('최고')}</th><th>σ</th><th>${t('대회 평균')}</th><th>${t('대회 대비')}</th><th>${t('추이')}</th></tr></thead><tbody>`;
+      [...byDk.entries()].sort((x, y) => y[1].length - x[1].length).forEach(([k, arr]) => {
+        const vs = arr.map(per10t).filter(v => v != null); if (!vs.length) return;
+        const avg = vs.reduce((s, v) => s + v, 0) / vs.length, cA = compP10.get(k), delta = cA != null ? avg - cA : null;
+        const lbl = DISC[k] || (k === 'std25' ? t('25m 정밀') : k);
+        h += `<tr><td class="dos-nm">${esc(lbl)}</td><td>${arr.length}</td><td class="dos-b">${fmt(avg)}</td><td>${fmt(Math.max(...vs))}</td><td>${sd(vs) != null ? '±' + sd(vs).toFixed(1) : '–'}</td><td>${cA != null ? fmt(cA) : '–'}</td><td class="${delta >= 0 ? 'up' : 'dn'}">${delta != null ? (delta >= 0 ? '+' : '') + delta.toFixed(1) : '–'}</td><td class="dos-sp">${REPORT_SPARK(vs.slice(-16))}</td></tr>`;
+      });
+      h += `</tbody></table>`;
+      // 유형별
+      const catAgg = new Map(); mainDk[1].forEach(s => { const v = per10t(s); if (v == null) return; const c = typeCat(s); const o = catAgg.get(c) || { n: 0, s: 0 }; o.n++; o.s += v; catAgg.set(c, o); });
+      const cats = ['official', 'practice', 'predict', 'research', 'train', 'match'].filter(c => catAgg.has(c));
+      if (cats.length) h += `<div class="dos-types">${t('유형별')}(${esc(DISC[mainDk[0]] || mainDk[0])}): ` + cats.map(c => { const o = catAgg.get(c); return `<span class="dos-tchip">${esc(CATL[c])} <b>${(o.s / o.n).toFixed(1)}</b><s>${o.n}</s></span>`; }).join('') + `</div>`;
+    }
+  }
+
+  // 연도별 (전체 기간일 때만)
+  if (year === 'all' && allYears.length > 1) {
+    h += `<div class="dos-sec">📅 ${t('연도별 성적')}</div><table class="dos-tab"><thead><tr><th>${t('연도')}</th><th>${t('경기')}</th><th>${t('평균')}</th><th>${t('개인 메달')}</th><th>${t('단체 메달')}</th><th>${t('결선 진출')}</th></tr></thead><tbody>`;
+    allYears.slice().reverse().forEach(y => {
+      const yr = allRows.filter(r => r.competition.year === y);
+      const yi = { gold: 0, silver: 0, bronze: 0 }, yt = { gold: 0, silver: 0, bronze: 0 }; let yf = 0;
+      const yv = []; yr.forEach(r => { if (r.medal) yi[r.medal]++; if (r.team_medal) yt[r.team_medal]++; if (r.final_score != null) yf++; if (r.event.team_type === 'individual' && scored(r) && r.event.discipline === mainK) yv.push(r.qual_total); });
+      h += `<tr><td class="dos-b">${y}</td><td>${yr.filter(r => r.event.team_type === 'individual' && scored(r)).length}</td><td>${yv.length ? fmt(yv.reduce((s, v) => s + v, 0) / yv.length) : '–'}</td><td>${medStr(yi)}</td><td>${medStr(yt)}</td><td>${yf}${t('회')}</td></tr>`;
+    });
+    h += `</tbody></table>`;
+  }
+
+  // 대회 기록
+  h += `<div class="dos-sec">🗂️ ${t('대회 기록')} <span>${rows.length}${t('건')}</span></div><table class="dos-tab log"><thead><tr><th>${t('날짜')}</th><th>${t('대회')}</th><th>${t('종목')}</th><th>${t('본선')}</th><th>${t('결선')}</th><th>${t('메달')}</th><th>${t('순위')}</th></tr></thead><tbody>`;
+  rows.slice().sort((x, y) => dsort(y).localeCompare(dsort(x))).forEach(r => { h += `<tr><td>${(dsort(r) || '').slice(2, 10).replace(/-/g, '.')}</td><td class="dos-nm">${esc(r.competition.name)} <span class="scope ${r.competition.scope}">${SCOPE[r.competition.scope] || ''}</span></td><td>${esc(eventLabel(r.event))}</td><td class="dos-b">${r.qual_total != null ? fmt(r.qual_total) : (r.is_dnf ? 'DNF' : '–')}</td><td>${r.final_score != null ? r.final_score : ''}</td><td class="dos-md">${r.medal ? medalBadge(r.medal) : ''}${r.team_medal ? medalBadge(r.team_medal) + `<s>${t('단체')}</s>` : ''}</td><td>${r.placement ? r.placement + t('위') : ''}</td></tr>`; });
+  h += `</tbody></table>`;
+
+  // 총평 (자동)
+  const main = discRows.slice().sort((x, y) => { const rx = R && R.disciplines && R.disciplines.find(z => z.disc === x.k); const ry = R && R.disciplines && R.disciplines.find(z => z.disc === y.k); return (rx ? rx.natRank : 999) - (ry ? ry.natRank : 999); })[0];
+  const mz = main && R && R.disciplines ? R.disciplines.find(z => z.disc === main.k) : null;
+  let cm = `${periodLab} ${comps.size}${t('개 대회')} ${gamesInd} ${t('경기')} ${t('출전')}. `;
+  if (main) cm += `${t('주력')} ${esc(DISC[main.k] || main.k)} ${t('평균')} ${fmt(main.avg)}${mz ? ` · ${t('전국')} ${mz.natRank}${t('위')}(${t('상위')} ${mz.pct}%)` : ''}${main.sd != null ? ` · ${t('일관성')} ±${main.sd.toFixed(1)}` : ''}. `;
+  if (im.gold + im.silver + im.bronze) cm += `${t('개인 메달')} ${im.gold + im.silver + im.bronze}${t('개')}. `;
+  const weakStage = stg.length ? stg[0].stages.reduce((mn, x) => x.avg < mn.avg ? x : mn) : null;
+  if (weakStage) cm += `${t('보강')}: ${esc(DISC[stg[0].disc] || stg[0].disc)} ${t(weakStage.key)}(${fmt(weakStage.avg)}). `;
+  h += `<div class="dos-sec">📝 ${t('총평')}</div><div class="eval-comment">${cm.trim()}</div>`;
+
+  h += `<div class="dos-foot"><div class="dos-note">${t('본 보고서는 베트남 사격연맹 공개 기록을 기준으로 자동 작성되었습니다.')} · ${t('발급일')} ${dstr}</div><div class="rc-sign"><span class="rc-signname">RYONG</span><span class="rc-signlab">${t('작성')}</span></div></div></div>`;
+  return h;
+}
+
+async function openReport(athletes, year) {
+  athletes = (athletes || []).filter(Boolean); if (!athletes.length) return;
+  let view = document.getElementById('report-view'); if (view) view.remove();
+  view = el('div', 'report-view'); view.id = 'report-view';
+  view.innerHTML = `<div class="rv-bar no-print">
+      <span class="rv-ttl">📊 ${t('평가 보고서')}</span>
+      <label class="rv-yr">${t('기간')} <select id="ev-year"></select></label>
+      <div class="rv-athsel no-print" id="ev-athsel"></div>
+      <button class="rv-print" id="rv-print">🖨️ ${t('인쇄')}</button>
+      <button class="rv-close" id="rv-close">${t('닫기')}</button></div>
+    <div class="rv-doc dos-doc" id="rv-doc"><div class="muted" style="padding:40px;text-align:center">${t('불러오는 중…')}</div></div>`;
+  document.body.appendChild(view);
+  view.querySelector('#rv-close').onclick = () => view.remove();
+  view.querySelector('#rv-print').onclick = () => window.print();
+
+  const careers = new Map(); const yset = new Set();
+  for (const a of athletes) { const rows = await DB.athleteCareer(a.id); careers.set(a.id, rows); rows.forEach(r => yset.add(r.competition.year)); }
+  const years = [...yset].sort((x, y) => y - x);
+  let cur = (year && year !== 'all' && years.includes(year)) ? year : 'all';
+  const ysel = view.querySelector('#ev-year');
+  ysel.innerHTML = `<option value="all">${t('전체 기간')}</option>` + years.map(y => `<option value="${y}" ${y === cur ? 'selected' : ''}>${y}</option>`).join('');
+  ysel.value = String(cur);
+  ysel.onchange = () => { cur = ysel.value === 'all' ? 'all' : +ysel.value; render(); };
+
+  const selIds = new Set(athletes.map(a => a.id));
+  if (athletes.length > 1) {
+    const box = view.querySelector('#ev-athsel');
+    box.innerHTML = `<span class="rv-glab">${t('선수')}:</span>` + athletes.map(a => `<label class="ev-chk"><input type="checkbox" checked data-id="${a.id}"> ${esc(a.full_name)}</label>`).join('');
+    box.querySelectorAll('input').forEach(c => c.onchange = () => { if (c.checked) selIds.add(+c.dataset.id); else selIds.delete(+c.dataset.id); render(); });
+  }
+  async function render() {
+    const doc = view.querySelector('#rv-doc'); doc.innerHTML = `<div class="muted" style="padding:30px;text-align:center">${t('계산 중…')}</div>`;
+    const parts = [];
+    for (const a of athletes) { if (!selIds.has(a.id)) continue; parts.push(await buildReportSection(a, careers.get(a.id) || [], cur)); }
+    doc.innerHTML = parts.join('') || `<div class="muted" style="padding:30px;text-align:center">${t('선수를 선택하세요.')}</div>`;
+  }
+  render();
+}
+window.openReport = openReport;
 
 async function renderAthleteEval(a, rows, year) {
   const scored = r => !r.is_dnf && r.qual_total != null;
@@ -1266,12 +1483,9 @@ async function buildCareer(a, rows, detail) {
   // 즐겨찾기 별 (식별키가 있을 때)
   const starSrc = a.identity_key ? a : (a0.identity_key ? { ...a0 } : null);
   if (starSrc && window.Fav) { const st = Fav.starButton(starSrc); st.classList.add('head-star'); head.appendChild(st); }
-  const dosBtn = el('button', 'eval-btn dos-btn', `📊 ${t('종합 프로파일')}`);
-  dosBtn.onclick = () => openDossier({ id: a.id, full_name: a.full_name, gender: g, birth_year: by, birth_date: a.birth_date || a0.birth_date, is_foreign: foreign, nationality: nat, identity_key: a.identity_key || a0.identity_key, unit: a.units || a.unit }, rows);
-  head.appendChild(dosBtn);
-  const evBtn = el('button', 'eval-btn', `📄 ${t('평가 보고서')}`);
-  evBtn.onclick = () => openEvalReport([{ id: a.id, full_name: a.full_name, gender: g, birth_year: by, is_foreign: foreign, nationality: nat }], RANK_YEAR);
-  head.appendChild(evBtn);
+  const repBtn = el('button', 'eval-btn dos-btn', `📊 ${t('평가 보고서')}`);
+  repBtn.onclick = () => openReport([{ id: a.id, full_name: a.full_name, gender: g, birth_year: by, birth_date: a.birth_date || a0.birth_date, is_foreign: foreign, nationality: nat, identity_key: a.identity_key || a0.identity_key, unit: a.units || a.unit }], 'all');
+  head.appendChild(repBtn);
   detail.appendChild(head);
 
   // 선수 요약 대시보드: PB · 다음 대회 · 오늘의 훈련 포인트

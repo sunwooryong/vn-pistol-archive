@@ -1067,3 +1067,17 @@ table.dos-tab tbody tr:nth-child(even) { background: #fafbfd; }
   table.dos-tab { font-size: 10px; }
   .dos-tab .dos-sp, .dos-spark { width: 90px; }
 }
+
+/* 통합 리포트: 시리즈 막대 · 월별 · 유형 칩 */
+.ser-cell { padding: 3px 7px !important; }
+.ser-bar { display: inline-flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 30px; vertical-align: bottom; }
+.ser-bar s { display: block; width: 14px; background: #9db4d6; border-radius: 2px 2px 0 0; }
+.ser-bar.hi s { background: #2f9e44; } .ser-bar.lo s { background: #e03131; }
+.ser-bar em { font-style: normal; font-size: 8.5px; color: #55617a; margin-top: 2px; }
+.dos-tab.month { font-size: 10.5px; } .dos-tab.month th, .dos-tab.month td { padding: 3px 6px; text-align: center; }
+.dos-tab.month td.dos-nm, .dos-tab.month th:first-child { text-align: left; }
+.dos-mchart { display: flex; align-items: center; gap: 10px; font-size: 10px; color: #55617a; margin: 6px 0 2px; flex-wrap: wrap; }
+.dos-mchart .dos-spark { width: 260px; height: 34px; display: inline-block; }
+.dos-types { font-size: 11px; color: #55617a; margin: 6px 0 2px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.dos-tchip { border: 1px solid #e2e7ef; border-radius: 999px; padding: 2px 9px; background: #f8fafd; }
+.dos-tchip b { color: #0b3a6b; font-weight: 800; margin-left: 3px; } .dos-tchip s { text-decoration: none; color: #a9b2c0; font-size: 9px; margin-left: 3px; }
