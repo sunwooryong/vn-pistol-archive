@@ -76,6 +76,7 @@
     '종합 프로파일': 'Hồ sơ tổng hợp', '훈련 분석': 'Phân tích tập luyện',
     '강·약점 레이더': 'Radar mạnh/yếu', '강·약점': 'Mạnh/Yếu', '격차': 'Chênh lệch',
     '본선 점수 추이': 'Xu hướng điểm vòng loại',
+    '단위': 'Đơn vị', '히트': 'Hit', '점': 'điểm',
     '단체·혼성': 'Đồng đội·Hỗn hợp', '개인전과 분리 집계': 'Tính riêng với cá nhân', '구분': 'Loại', '결선 분석': 'Phân tích chung kết', '결선 진출 성적·전환율': 'Thành tích CK·tỷ lệ vào', '결선=본선 통과 후 최종 순위 결정전 (별도 점수 체계)': 'CK = trận quyết định thứ hạng sau vòng loại (hệ điểm riêng)', '전환율': 'Tỷ lệ vào CK', '결선 평균': 'TB chung kết', '전환율=본선 경기 대비 결선 진출 비율': 'Tỷ lệ vào CK = số lần vào CK / số trận vòng loại',
     '평균·PB·일관성·전국순위': 'TB·PB·ổn định·hạng QG', '전국 백분위 · 길수록 강점': 'Bách phân vị · dài = mạnh', '구간(S1~)별 평균·초반/후반·격차': 'TB theo loạt · đầu/cuối · chênh lệch', '월별 평균 점수 흐름': 'Xu hướng điểm TB theo tháng', '개인 최고기록 이력': 'Lịch sử kỷ lục cá nhân', '자세·시간 단계별(최약 ▼)': 'Theo tư thế·thời gian (yếu nhất ▼)', '훈련 vs 실전 · 유형·요일': 'Tập vs thi đấu · loại·thứ', '연도별 경기·평균·메달': 'Theo năm: trận·TB·HC', '전 대회 성적 상세': 'Chi tiết mọi giải', '자동 분석 요약': 'Tóm tắt phân tích tự động', '월별 10발당 평균 점수 (높을수록 좋음) · 대회 vs 훈련': 'Điểm TB/10 phát theo tháng (cao hơn = tốt hơn) · Giải vs Tập',
     '월별 시리즈 평균 점수 (높을수록 좋음) · 대회 vs 훈련': 'Điểm TB mỗi loạt theo tháng (cao hơn = tốt hơn) · Giải vs Tập',

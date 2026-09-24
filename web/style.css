@@ -1070,10 +1070,13 @@ table.dos-tab tbody tr:nth-child(even) { background: #fafbfd; }
 
 /* 통합 리포트: 시리즈 막대 · 월별 · 유형 칩 */
 .ser-cell { padding: 3px 7px !important; }
-.ser-bar { display: inline-flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 30px; vertical-align: bottom; }
-.ser-bar s { display: block; width: 14px; background: #9db4d6; border-radius: 2px 2px 0 0; }
+.ser-cell { padding: 4px 7px !important; }
+.ser-bar { display: inline-flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 34px; vertical-align: bottom; }
+.ser-bar s { display: block; width: 16px; background: #9db4d6; border-radius: 2px 2px 0 0; }
 .ser-bar.hi s { background: #2f9e44; } .ser-bar.lo s { background: #e03131; }
-.ser-bar em { font-style: normal; font-size: 8.5px; color: #55617a; margin-top: 2px; }
+.ser-bar .ser-v { font-style: normal; font-size: 8.5px; font-weight: 700; color: #0c1a30; margin-bottom: 2px; }
+.ser-bar.hi .ser-v { color: #2f9e44; } .ser-bar.lo .ser-v { color: #e03131; }
+.ser-bar .ser-p { font-style: normal; font-size: 8px; color: #a9b2c0; margin-top: 2px; }
 .dos-tab.month { font-size: 10.5px; } .dos-tab.month th, .dos-tab.month td { padding: 3px 6px; text-align: center; }
 .dos-tab.month td.dos-nm, .dos-tab.month th:first-child { text-align: left; }
 .dos-mchart { display: flex; align-items: center; gap: 10px; font-size: 10px; color: #55617a; margin: 6px 0 2px; flex-wrap: wrap; }
@@ -1131,3 +1134,8 @@ table.dos-tab tbody tr:nth-child(even) { background: #fafbfd; }
 
 /* 무기군 그룹 헤더 (종목별 성적) */
 .dos-tab tr.dos-grp td { background: #eaf1fb; color: #0b3a6b; font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; padding: 3px 8px; text-align: left; border-bottom: 1.5px solid #cddcf0; }
+
+/* 결선 단위 · 강약점 무기군 소계 */
+.dos-tab .dos-unit { font-size: 9.5px; color: #8a94a6; font-weight: 600; }
+.dos-bargrp { font-size: 10px; font-weight: 800; color: #0b3a6b; text-transform: uppercase; letter-spacing: .04em; margin: 8px 0 4px; padding-bottom: 3px; border-bottom: 1px dashed #d6dde7; display: flex; justify-content: space-between; }
+.dos-bargrp b { color: #55617a; font-weight: 700; }
