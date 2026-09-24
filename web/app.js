@@ -1063,7 +1063,27 @@ async function openReport(athletes, year) {
     <div class="rv-doc dos-doc" id="rv-doc"><div class="muted" style="padding:40px;text-align:center">${t('불러오는 중…')}</div></div>`;
   document.body.appendChild(view);
   view.querySelector('#rv-close').onclick = () => view.remove();
-  view.querySelector('#rv-print').onclick = () => window.print();
+  view.querySelector('#rv-print').onclick = () => {
+    const fsafe = s => String(s || '').replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+    const d = new Date(), pp = n => String(n).padStart(2, '0');
+    const ds = `${d.getFullYear()}${pp(d.getMonth() + 1)}${pp(d.getDate())}`;
+    const sel = athletes.filter(a => selIds.has(a.id));
+    let name = '';
+    if (sel.length === 1) {
+      const a = sel[0], crows = (careers.get(a.id) || []).filter(r => cur === 'all' || r.competition.year === cur);
+      const cnt = new Map();
+      crows.forEach(r => { if (r.event.team_type === 'individual' && !r.is_dnf && r.qual_total != null) cnt.set(r.event.discipline, (cnt.get(r.event.discipline) || 0) + 1); });
+      const mainD = [...cnt.entries()].sort((x, y) => y[1] - x[1])[0];
+      const disc = mainD ? fsafe(DISC[mainD[0]] || mainD[0]) : '';
+      name = [fsafe(a.full_name), ds, disc].filter(Boolean).join('_');
+    } else {
+      name = [t('평가 보고서'), (cur === 'all' ? t('전체 기간') : cur), ds, sel.length + t('명')].map(fsafe).filter(Boolean).join('_');
+    }
+    const prev = document.title;
+    document.title = name || prev;
+    window.print();
+    setTimeout(() => { document.title = prev; }, 800);
+  };
 
   const careers = new Map(); const yset = new Set();
   for (const a of athletes) { const rows = await DB.athleteCareer(a.id); careers.set(a.id, rows); rows.forEach(r => yset.add(r.competition.year)); }
