@@ -16,6 +16,9 @@ const WEAPON_GROUP = [
   ['소총', ['air_rifle', 'air_rifle_std', 'rifle_3p', 'rifle_prone']],
   ['이동표적', ['rt', 'rt_mix', 'rt_std']],
 ];
+const DISC_WEAPON = {}; WEAPON_GROUP.forEach(([w, ds]) => ds.forEach(d => DISC_WEAPON[d] = w));
+const WEAPON_ORDER = ['권총', '소총', '이동표적', '기타'];
+const weaponOf = d => DISC_WEAPON[d] || '기타';
 function discOptions(allLabel) {
   return (allLabel != null ? `<option value="">${allLabel}</option>` : '') +
     WEAPON_GROUP.map(([w, ds]) => `<optgroup label="${esc(t(w))}">` + ds.filter(x => DISC[x]).map(x => `<option value="${x}">${esc(DISC[x])}</option>`).join('') + `</optgroup>`).join('');
@@ -830,9 +833,45 @@ async function buildReportSection(a, allRows, year) {
   // 종목별 성적
   h += `<div class="dos-sec">🎯 ${t('종목별 성적')} <span class="dos-help">${t('평균·PB·일관성·전국순위')}</span> <span>${periodLab}</span></div>
     <table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('경기')}</th><th>${t('평균')}</th><th>PB</th><th>${t('최저')}</th><th>σ</th><th>10x</th><th>${t('추이')}</th><th>${t('전국')}</th></tr></thead><tbody>`;
-  discRows.forEach(d => { const dz = R && R.disciplines ? R.disciplines.find(x => x.disc === d.k) : null;
-    h += `<tr><td class="dos-nm">${esc(DISC[d.k] || d.k)}</td><td>${d.n}</td><td class="dos-b">${fmt(d.avg)}</td><td class="dos-pb">${fmt(d.best)}<s>${d.pbDate ? d.pbDate.replace(/-/g, '.').slice(2) : ''}</s></td><td>${fmt(d.worst)}</td><td>${d.sd != null ? '±' + d.sd.toFixed(1) : '–'}</td><td class="dos-x">${d.itAvg != null ? d.itAvg.toFixed(1) : '–'}</td><td class="dos-sp">${REPORT_SPARKCELL(d.sparkVals)}</td><td>${dz ? `<b>${dz.natRank}</b>/${dz.natN} <s>${dz.pct}%</s>` : '–'}</td></tr>`; });
+  const discSorted = discRows.slice().sort((x, y) => (WEAPON_ORDER.indexOf(weaponOf(x.k)) - WEAPON_ORDER.indexOf(weaponOf(y.k))) || (y.n - x.n));
+  let curW = null;
+  discSorted.forEach(d => {
+    const w = weaponOf(d.k);
+    if (w !== curW) { curW = w; h += `<tr class="dos-grp"><td colspan="9">${t(w)}</td></tr>`; }
+    const dz = R && R.disciplines ? R.disciplines.find(x => x.disc === d.k) : null;
+    h += `<tr><td class="dos-nm">${esc(DISC[d.k] || d.k)}</td><td>${d.n}</td><td class="dos-b">${fmt(d.avg)}</td><td class="dos-pb">${fmt(d.best)}<s>${d.pbDate ? d.pbDate.replace(/-/g, '.').slice(2) : ''}</s></td><td>${fmt(d.worst)}</td><td>${d.sd != null ? '±' + d.sd.toFixed(1) : '–'}</td><td class="dos-x">${d.itAvg != null ? d.itAvg.toFixed(1) : '–'}</td><td class="dos-sp">${REPORT_SPARKCELL(d.sparkVals)}</td><td>${dz ? `<b>${dz.natRank}</b>/${dz.natN} <s>${dz.pct}%</s>` : '–'}</td></tr>`;
+  });
   h += `</tbody></table><div class="dos-cap">${t('σ=일관성(작을수록 안정) · 10x=이너텐 평균 · 추이=최근 16경기 본선 흐름(끝 숫자=최근값) · 전국=현재 순위/인원')}</div>`;
+
+  // 단체·혼성 (개인전과 분리)
+  const teamRows = new Map();
+  rows.forEach(r => { if (r.event.team_type === 'individual' || r.is_dnf || r.qual_total == null) return; const key = r.event.discipline + '|' + r.event.team_type; const o = teamRows.get(key) || { disc: r.event.discipline, tt: r.event.team_type, vals: [], med: 0 }; o.vals.push(r.qual_total); if (r.medal || r.team_medal) o.med++; teamRows.set(key, o); });
+  if (teamRows.size) {
+    h += `<div class="dos-sec">👥 ${t('단체·혼성')} <span class="dos-help">${t('개인전과 분리 집계')}</span></div>
+      <table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('구분')}</th><th>${t('경기')}</th><th>${t('평균')}</th><th>${t('최고')}</th><th>${t('메달')}</th></tr></thead><tbody>` +
+      [...teamRows.values()].sort((x, y) => (WEAPON_ORDER.indexOf(weaponOf(x.disc)) - WEAPON_ORDER.indexOf(weaponOf(y.disc)))).map(o => {
+        const avg = o.vals.reduce((s, v) => s + v, 0) / o.vals.length;
+        return `<tr><td class="dos-nm">${esc(DISC[o.disc] || o.disc)}</td><td>${o.tt === 'mixed_team' ? t('혼성단체') : t('단체')}</td><td>${o.vals.length}</td><td class="dos-b">${fmt(avg)}</td><td>${fmt(Math.max(...o.vals))}</td><td>${o.med ? o.med + t('개') : '–'}</td></tr>`;
+      }).join('') + `</tbody></table>`;
+  }
+
+  // 결선 분석 (결선 점수 보유 종목)
+  const finByD = new Map();
+  rows.forEach(r => { if (r.event.team_type !== 'individual' || r.final_score == null) return; const o = finByD.get(r.event.discipline) || { vals: [], med: 0, dates: [] }; o.vals.push(r.final_score); if (r.medal) o.med++; o.dates.push({ date: (dsort(r) || '').slice(0, 10), val: r.final_score, medal: r.medal }); finByD.set(r.event.discipline, o); });
+  if (finByD.size) {
+    const totFin = [...finByD.values()].reduce((s, o) => s + o.vals.length, 0);
+    const totMed = [...finByD.values()].reduce((s, o) => s + o.med, 0);
+    h += `<div class="dos-sec">🎖️ ${t('결선 분석')} <span class="dos-help">${t('결선 진출 성적·전환율')}</span></div>
+      <div class="dos-cap">${t('결선=본선 통과 후 최종 순위 결정전 (별도 점수 체계)')}</div>
+      <table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('결선 진출')}</th><th>${t('전환율')}</th><th>${t('결선 평균')}</th><th>${t('최고')}</th><th>${t('메달')}</th></tr></thead><tbody>`;
+    [...finByD.entries()].sort((x, y) => (WEAPON_ORDER.indexOf(weaponOf(x[0])) - WEAPON_ORDER.indexOf(weaponOf(y[0])))).forEach(([k, o]) => {
+      const dr = discRows.find(d => d.k === k); const qn = dr ? dr.n : o.vals.length;
+      const conv = qn ? Math.round(o.vals.length / qn * 100) : null;
+      const avg = o.vals.reduce((s, v) => s + v, 0) / o.vals.length;
+      h += `<tr><td class="dos-nm">${esc(DISC[k] || k)}</td><td>${o.vals.length}${t('회')}</td><td>${conv != null ? conv + '%' : '–'}</td><td class="dos-b">${avg.toFixed(1)}</td><td class="dos-pb">${Math.max(...o.vals).toFixed(1)}</td><td>${o.med ? o.med + t('개') : '–'}</td></tr>`;
+    });
+    h += `</tbody></table><div class="dos-cap">${t('전환율=본선 경기 대비 결선 진출 비율')} · ${t('총')} ${totFin}${t('회')} · ${t('메달')} ${totMed}${t('개')}</div>`;
+  }
 
   // 강·약점 막대 그래프 (종목별 전국 백분위)
   const barCol = p => p >= 66 ? '#2f9e44' : p >= 33 ? '#f59f00' : '#e03131';

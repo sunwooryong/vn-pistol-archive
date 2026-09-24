@@ -1128,3 +1128,6 @@ table.dos-tab tbody tr:nth-child(even) { background: #fafbfd; }
 
 .dos-sec .dos-help { font-size: 10px; font-weight: 600; color: #8a94a6; font-style: italic; margin-left: 2px; }
 .dos-line { width: 100%; height: auto; display: block; }
+
+/* 무기군 그룹 헤더 (종목별 성적) */
+.dos-tab tr.dos-grp td { background: #eaf1fb; color: #0b3a6b; font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; padding: 3px 8px; text-align: left; border-bottom: 1.5px solid #cddcf0; }
