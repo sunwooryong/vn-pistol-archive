@@ -1,11 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 152">
-<circle cx="86" cy="42" r="30" fill="none" stroke="#0081C8" stroke-width="9"/>
-<circle cx="150" cy="42" r="30" fill="none" stroke="#000000" stroke-width="9"/>
-<circle cx="214" cy="42" r="30" fill="none" stroke="#EE334E" stroke-width="9"/>
-<circle cx="118.0" cy="74" r="30" fill="none" stroke="#FCB131" stroke-width="9"/>
-<circle cx="182.0" cy="74" r="30" fill="none" stroke="#00A651" stroke-width="9"/>
-<path d="M 114.53 32.71 A 30 30 0 0 1 112.97 55.13" fill="none" stroke="#0081C8" stroke-width="9"/>
-<path d="M 159.29 70.53 A 30 30 0 0 1 136.87 68.97" fill="none" stroke="#000000" stroke-width="9"/>
-<path d="M 163.13 68.97 A 30 30 0 0 1 140.71 70.53" fill="none" stroke="#000000" stroke-width="9"/>
-<path d="M 187.03 55.13 A 30 30 0 0 1 185.47 32.71" fill="none" stroke="#EE334E" stroke-width="9"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 112" class="rings" role="img" aria-label="Olympic rings"><circle cx="46" cy="40" r="30" fill="none" stroke="#0081C8" stroke-width="9"/><circle cx="110" cy="40" r="30" fill="none" stroke="#000000" stroke-width="9"/><circle cx="174" cy="40" r="30" fill="none" stroke="#EE334E" stroke-width="9"/><circle cx="78" cy="72" r="30" fill="none" stroke="#FCB131" stroke-width="9"/><circle cx="142" cy="72" r="30" fill="none" stroke="#00A651" stroke-width="9"/><path d="M 60.07 66.50 A 30 30 0 0 1 35.72 68.18" fill="none" stroke="#0081C8" stroke-width="9" stroke-linecap="round"/><path d="M 120.28 68.18 A 30 30 0 0 1 95.93 66.50" fill="none" stroke="#000000" stroke-width="9" stroke-linecap="round"/><path d="M 124.07 66.50 A 30 30 0 0 1 99.72 68.18" fill="none" stroke="#000000" stroke-width="9" stroke-linecap="round"/><path d="M 184.28 68.18 A 30 30 0 0 1 159.93 66.50" fill="none" stroke="#EE334E" stroke-width="9" stroke-linecap="round"/></svg>
