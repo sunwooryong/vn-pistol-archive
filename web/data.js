@@ -26,6 +26,25 @@
     return (t.athletes && t.athletes[norm(fullName)]) || null;
   }
 
+  // 게임 사격 기록(정적 game.json, web/ 위치) — 모드 무관
+  let gameCache = null;
+  async function loadGame() {
+    if (gameCache) return gameCache;
+    gameCache = await fetch('game.json', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : { matches: [] }).catch(() => ({ matches: [] }));
+    return gameCache;
+  }
+  async function gameMatches() { const g = await loadGame(); return (g.matches || []).slice().sort((a, b) => (b.date || '').localeCompare(a.date || '')); }
+  async function gameOf(athlete) {
+    const g = await loadGame(); const key = athlete && athlete.identity_key, nm = norm((athlete && athlete.full_name) || '');
+    const out = [];
+    (g.matches || []).forEach(mt => (mt.athletes || []).forEach(a => {
+      if ((key && a.key === key) || (a.name && norm(a.name) === nm)) out.push({ date: mt.date, match: mt.name, total: a.total, rank: a.rank, status: a.status, shootoff: a.shootoff, n: mt.athletes.length });
+    }));
+    out.sort((x, y) => (x.date || '').localeCompare(y.date || ''));
+    return out;
+  }
+
   // ---------- LOCAL ----------
   const Local = (() => {
     let db = null, metaCache = null;
@@ -75,6 +94,8 @@
       async meta() { await ensure(); return metaCache; },
       async news() { return fetch(DATA_BASE + 'news.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : []).catch(() => []); },
       async trainingOf(name) { return trainingOf(name); },
+      async gameMatches() { return gameMatches(); },
+      async gameOf(a) { return gameOf(a); },
       // 지역(소속) 분석: 소속 내/전국 등위 · 라이벌 · 지역 강도 · 백분위
       async regionalAnalysis(athleteId, year) {
         const d = await ensure();
@@ -315,6 +336,8 @@
       },
       async news() { return fetch(DATA_BASE + 'news.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : []).catch(() => []); },
       async trainingOf(name) { return trainingOf(name); },
+      async gameMatches() { return gameMatches(); },
+      async gameOf(a) { return gameOf(a); },
       async regionalAnalysis() { return null; },
       async stageAnalysis() { return []; },
       async eventScores({ discipline, gender } = {}) {

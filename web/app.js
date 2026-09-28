@@ -1012,6 +1012,21 @@ async function buildReportSection(a, allRows, year) {
     }
   }
 
+  // 게임 사격 기록 (챔피언 결정전 등 · 게임 연습)
+  let GM = []; try { GM = await DB.gameOf({ identity_key: a.identity_key, full_name: a.full_name }); } catch (e) { }
+  if (year !== 'all') GM = GM.filter(x => (x.date || '').slice(0, 4) === String(year));
+  if (GM.length) {
+    const wins = GM.filter(x => x.status === '우승').length;
+    const totals = GM.map(x => x.total);
+    const avg = totals.reduce((s, v) => s + v, 0) / totals.length, best = Math.max(...totals);
+    const pts = GM.map(x => ({ date: x.date, val: x.total, medal: x.status === '우승' ? 'gold' : null, place: x.rank }));
+    h += `<div class="dos-sec">🎮 ${t('게임 연습 기록')} <span class="dos-help">${t('챔피언 결정전 등 · 게임')}</span></div>
+      <div class="dos-kpis sm">${tile(t('경기'), GM.length, '')}${tile(t('우승'), wins + t('회'), '')}${tile(t('평균'), fmt(Math.round(avg * 10) / 10), '')}${tile(t('최고'), fmt(best), '')}</div>`;
+    if (pts.length >= 2) h += `<div class="dos-cap">📈 ${t('게임 점수 추이')} · <span class="dos-medaldot g"></span>${t('우승')}</div><div class="dos-linewrap">${REPORT_LINE(pts)}</div>`;
+    h += `<table class="dos-tab"><thead><tr><th>${t('날짜')}</th><th>${t('경기')}</th><th>${t('합계')}</th><th>${t('순위')}</th><th>${t('결과')}</th></tr></thead><tbody>` +
+      GM.slice().reverse().map(x => `<tr><td>${(x.date || '').replace(/-/g, '.').slice(2)}</td><td class="dos-nm">${esc(x.match)}</td><td class="dos-b">${fmt(x.total)}${x.shootoff ? ` <s class="dos-unit">SO ${x.shootoff}</s>` : ''}</td><td>${x.rank}/${x.n}</td><td>${x.status === '우승' ? `<b class="up">🏆 ${t('우승')}</b>` : t('탈락')}</td></tr>`).join('') + `</tbody></table>`;
+  }
+
   // 연도별 (전체 기간일 때만)
   if (year === 'all' && allYears.length > 1) {
     h += `<div class="dos-sec">📅 ${t('연도별 성적')} <span class="dos-help">${t('연도별 경기·평균·메달')}</span></div><table class="dos-tab"><thead><tr><th>${t('연도')}</th><th>${t('경기')}</th><th>${t('평균')}</th><th>${t('개인 메달')}</th><th>${t('단체 메달')}</th><th>${t('결선 진출')}</th></tr></thead><tbody>`;
@@ -1443,6 +1458,34 @@ async function renderCalendar() {
 }
 init.cal = () => renderCalendar();
 window.renderCalendar = renderCalendar;
+
+// 게임 사격 기록 탭 (챔피언 결정전 등)
+async function renderGameTab() {
+  const box = $('#view-game');
+  box.innerHTML = `<div class="muted">${t('불러오는 중…')}</div>`;
+  let matches = []; try { matches = await DB.gameMatches(); } catch (e) { }
+  if (!matches.length) { box.innerHTML = `<h3>🎮 ${t('게임 기록')}</h3><div class="muted">${t('게임 기록이 없습니다.')}</div>`; return; }
+  const clickable = !!window.APP_ROLE;
+  const mc = { gold: 'gold' };
+  let h = `<h3>🎮 ${t('게임 기록')} <span class="sub2">${matches.length}${t('경기')}</span></h3><div class="muted gm-help">${t('게임(챔피언 결정전 등) 연습 경기 결과 · 총점 순위')}</div>`;
+  matches.forEach(mt => {
+    h += `<div class="gm-card"><div class="gm-h"><b>${(mt.date || '').replace(/-/g, '.')}</b> <span>${esc(mt.name)}</span></div>
+      <table class="gm-tab"><tbody>` +
+      (mt.athletes || []).slice().sort((a, b) => a.rank - b.rank).map(a => `<tr class="${a.status === '우승' ? 'win' : ''}">
+        <td class="gm-rk">${a.status === '우승' ? '🏆' : a.rank}</td>
+        <td class="gm-nm">${a.key && clickable ? `<button class="lnk" data-akey="${esc(a.key)}">${esc(a.name)}</button>` : esc(a.name)}</td>
+        <td class="gm-tt">${a.total}${a.shootoff ? ` <span class="gm-so">SO ${a.shootoff}</span>` : ''}</td>
+        <td class="gm-st">${a.status === '우승' ? t('우승') : (a.status === '탈락' ? t('탈락') : '')}</td></tr>`).join('') +
+      `</tbody></table></div>`;
+  });
+  box.innerHTML = h;
+  box.querySelectorAll('.lnk[data-akey]').forEach(b => b.onclick = async () => {
+    const a = await DB.athleteByKey(b.dataset.akey); if (!a) return;
+    show('athlete'); renderCareer({ id: a.id, ...a }, $('#ath-detail'), $('#ath-list'));
+  });
+}
+init.game = () => renderGameTab();
+window.renderGameTab = renderGameTab;
 
 // 훈련 기록 분석 (일일 훈련시트) — 대회기록과 함께 조회·분석
 async function renderTraining(a, rows, box) {
@@ -2272,7 +2315,7 @@ window.startApp = function (opts) {
   window.APP_ROLE = opts || { role: 'coach' };
   const role = window.APP_ROLE.role;
   // 다국어: 헤더·탭 라벨
-  const TABS = { home: '홈', me: '내 정보', athlete: '선수', comp: '대회별', cal: '달력', medals: '입상실적', rank: '랭킹', admin: '관리' };
+  const TABS = { home: '홈', me: '내 정보', athlete: '선수', comp: '대회별', cal: '달력', game: '게임', medals: '입상실적', rank: '랭킹', admin: '관리' };
   document.querySelectorAll('.tab').forEach(tab => {
     const k = TABS[tab.dataset.tab]; if (k) tab.textContent = t(k);
     tab.onclick = () => show(tab.dataset.tab);
