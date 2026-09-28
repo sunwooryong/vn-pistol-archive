@@ -1,43 +1,43 @@
 @echo off
-chcp 65001 >nul
-title ê²Œìž„ì‚¬ê²©ê¸°ë¡ ì—…ë°ì´íŠ¸
+chcp 949 >nul
+title °ÔÀÓ»ç°Ý±â·Ï ¾÷µ¥ÀÌÆ®
 cd /d "C:\Users\sunwo\vn-pistol-archive"
 
 echo ============================================
-echo   ê²Œìž„ì‚¬ê²©ê¸°ë¡ -^> ì•„ì¹´ì´ë¸Œ ì—…ë°ì´íŠ¸
+echo   °ÔÀÓ»ç°Ý±â·Ï - ¾ÆÄ«ÀÌºê ¾÷µ¥ÀÌÆ®
 echo ============================================
 echo.
-echo [1/4] í´ë”ì˜ PDFë¥¼ ì½ì–´ ë°ì´í„° ìƒì„±...
+echo [1/4] Æú´õÀÇ PDF¸¦ ÀÐ¾î µ¥ÀÌÅÍ »ý¼º...
 python game-etl.py
 if errorlevel 1 (
   echo.
-  echo [ì˜¤ë¥˜] python ì‹¤í–‰ ì‹¤íŒ¨. Pythonì´ ì„¤ì¹˜ë˜ì–´ ìžˆëŠ”ì§€ í™•ì¸í•˜ì„¸ìš”.
+  echo [¿À·ù] python ½ÇÇà ½ÇÆÐ. PythonÀÌ ¼³Ä¡µÇ¾î ÀÖ´ÂÁö È®ÀÎÇÏ¼¼¿ä.
   pause
   exit /b 1
 )
 echo.
-echo [2/4] ë³€ê²½ì‚¬í•­ ì €ìž¥...
+echo [2/4] º¯°æ»çÇ× ÀúÀå...
 git add web/game.json
-git -c user.name=RYONG -c user.email=sunwooryong@gmail.com commit -m "ê²Œìž„ê¸°ë¡ ì—…ë°ì´íŠ¸" 2>nul
-if errorlevel 1 echo   (ìƒˆë¡œ ì¶”ê°€ëœ ë³€ê²½ì´ ì—†ìŠµë‹ˆë‹¤ - ì´ë¯¸ ìµœì‹ )
+git -c user.name=RYONG -c user.email=sunwooryong@gmail.com commit -m "°ÔÀÓ±â·Ï ¾÷µ¥ÀÌÆ®" 2>nul
+if errorlevel 1 echo   (»õ·Î Ãß°¡µÈ º¯°æÀÌ ¾ø½À´Ï´Ù - ÀÌ¹Ì ÃÖ½Å)
 
 echo.
-echo [3/4] ìµœì‹  ë™ê¸°í™”...
+echo [3/4] ÃÖ½Å µ¿±âÈ­...
 git pull --rebase origin main
 
 echo.
-echo [4/4] ì‚¬ì´íŠ¸ì— ì—…ë¡œë“œ...
+echo [4/4] »çÀÌÆ®¿¡ ¾÷·Îµå...
 git push origin main
 if errorlevel 1 (
   echo.
-  echo [ì˜¤ë¥˜] ì—…ë¡œë“œ ì‹¤íŒ¨. ì¸í„°ë„· ì—°ê²°/ê¹ƒ ë¡œê·¸ì¸ì„ í™•ì¸í•˜ì„¸ìš”.
+  echo [¿À·ù] ¾÷·Îµå ½ÇÆÐ. ÀÎÅÍ³Ý ¿¬°á/±ê ·Î±×ÀÎÀ» È®ÀÎÇÏ¼¼¿ä.
   pause
   exit /b 1
 )
 
 echo.
 echo ============================================
-echo   ì™„ë£Œ! 1~2ë¶„ í›„ ì‚¬ì´íŠ¸ 'ê²Œìž„' íƒ­ì— ë°˜ì˜ë©ë‹ˆë‹¤.
+echo   ¿Ï·á! 1~2ºÐ ÈÄ »çÀÌÆ® '°ÔÀÓ' ÅÇ¿¡ ¹Ý¿µµË´Ï´Ù.
 echo   https://sunwooryong.github.io/vn-pistol-archive/
 echo ============================================
 echo.
