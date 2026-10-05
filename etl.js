@@ -433,7 +433,7 @@ async function main() {
     const named = !!(r[C.ho] || r[C.ten]);
     const scored = P.num(r[C.cong]);
     if (!named || !scored) continue;
-    const k = year + '|' + r[C.comp].trim() + '|' + pe.code;
+    const k = year + '|' + (r[C.comp] || '').trim() + '|' + pe.code;
     if (!baseSeen.has(k)) partialOnly.set(k, (partialOnly.get(k) || 0) + 1);
   }
   if (partialOnly.size === 0) log('  없음 (실데이터 부분행은 모두 대응 base 존재) OK');
