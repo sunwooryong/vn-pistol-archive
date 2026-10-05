@@ -89,6 +89,7 @@ async function main() {
   };
 
   for (const r of dataRows) {
+   try {
     const year = +r[C.year];
     if (year < MIN_YEAR) { stats.beforeYear++; continue; }
     const pe = P.parseEvent(r[C.event]);
@@ -140,6 +141,10 @@ async function main() {
       isDnf: total === null || total === 0,
     });
     stats.kept++;
+   } catch (e) {
+    stats.rowError = (stats.rowError || 0) + 1;
+    log('  ★행처리오류(건너뜀):', e.message, '|', r[C.event], '|', r[C.id]);
+   }
   }
 
   log('\n--- 1차 필터 ---');
