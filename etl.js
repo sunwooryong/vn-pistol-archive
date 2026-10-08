@@ -505,6 +505,10 @@ async function buildTraining() {
     const rows = P.parseCSV(raw).slice(4);   // 상단 4행(설명/헤더) 제외
     const byName = new Map();
     let n = 0;
+    // 환경/분포 열은 폼싱크 백업이라 첫 데이터셀에 '라벨 / Nhãn'이 섞임 → 라벨 문자열은 무효화
+    const LBL = /Thời tiết|Nhiệt độ|Độ ẩm|Vĩ độ|Kinh độ|Buổi tập|Loại bia|Địa điểm|Ngày tập luyện|Trạng thái phân tích|Mã buổi tập|Số điểm|Chuỗi 10|Tổng số viên/;
+    const clean = v => { v = String(v || '').trim(); return (!v || LBL.test(v)) ? '' : v; };
+    const cnum = v => { const c = clean(v); return c ? P.num(c) : null; };
     for (const r of rows) {
       if (r.length < 8) continue;
       const date = tDate(r[0]); const name = (r[1] || '').trim();
@@ -514,14 +518,32 @@ async function buildTraining() {
       const disc = (r[4] || '').trim(); const type = (r[5] || '').trim();
       const series = r.slice(8, 14).map(P.num).filter(v => v != null);
       const shots = P.num(r[6]);
+      // 채점단위: 소수점 있거나 발당 10 초과면 정밀(소수) 채점
+      const dec = (total % 1 !== 0) || (shots ? total / shots > 10.01 : false);
+      // 환경(날씨·온도·습도·좌표·시간대)
+      const wx = {
+        target: clean(r[22]) || null, loc: clean(r[23]) || null, weather: clean(r[24]) || null,
+        temp: cnum(r[25]), hum: cnum(r[26]), lat: cnum(r[27]), lon: cnum(r[28]),
+        daypart: /오전|sáng/i.test(clean(r[30])) ? 'AM' : (/오후|chiều/i.test(clean(r[30])) ? 'PM' : null),
+      };
+      const hasWx = wx.weather || wx.temp != null || wx.lat != null;
+      // 점수대별 분포(10점~0점) + 10점 최장연속
+      const dist = [37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47].map(i => cnum(r[i]));
+      const hasDist = dist.some(v => v != null);
+      const long10 = cnum(r[48]);
       const key = P.norm(name);
       let o = byName.get(key);
       if (!o) { o = { name, birth_year: by ? +by : null, sessions: [] }; byName.set(key, o); }
       if (!o.birth_year && by) o.birth_year = +by;
-      o.sessions.push({
+      const s = {
         date, disc, dk: tDisc(disc), type, is_match: tIsMatch(type),
-        shots: shots, total, series, avg: series.length ? Math.round(total / series.length * 10) / 10 : null,
-      });
+        shots: shots, total, series, dec,
+        avg: series.length ? Math.round(total / series.length * 10) / 10 : null,
+        psa: shots ? Math.round(total / shots * 100) / 100 : null,   // 발당 평균(단위 무관 비교용)
+      };
+      if (hasWx) s.wx = wx;
+      if (hasDist) { s.dist = dist.map(v => v || 0); if (long10 != null) s.long10 = long10; }
+      o.sessions.push(s);
       n++;
     }
     const athletes = {};
