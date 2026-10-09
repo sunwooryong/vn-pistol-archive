@@ -7,7 +7,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#0f1216">
   <link rel="apple-touch-icon" href="icon.svg">
-  <link rel="stylesheet" href="style.css?v=79">
+  <link rel="stylesheet" href="style.css?v=81">
 </head>
 <body>
   <!-- 로그인 게이트 (로그인 전까지 표시) -->
@@ -38,6 +38,7 @@
       <button class="tab" data-tab="game">게임</button>
       <button class="tab" data-tab="medals">입상실적</button>
       <button class="tab" data-tab="rank">랭킹</button>
+      <button class="tab" data-tab="predict" hidden>🔮 예측</button>
       <button class="tab" data-tab="fav" hidden>★</button>
       <button class="tab" data-tab="admin" hidden>관리</button>
     </nav>
@@ -66,6 +67,7 @@
 
       <section id="view-cal" class="view" hidden></section>
       <section id="view-game" class="view" hidden></section>
+      <section id="view-predict" class="view" hidden></section>
 
       <section id="view-medals" class="view" hidden>
         <div class="filters">
@@ -112,12 +114,13 @@
     <span style="font-size:12px;line-height:1;opacity:.9">→</span>
   </a>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-  <script src="i18n.js?v=79"></script>
-  <script src="config.js?v=79"></script>
-  <script src="data.js?v=79"></script>
-  <script src="analytics.js?v=79"></script>
-  <script src="favorites.js?v=79"></script>
-  <script src="app.js?v=79"></script>
-  <script src="auth.js?v=79"></script>
+  <script src="i18n.js?v=81"></script>
+  <script src="config.js?v=81"></script>
+  <script src="data.js?v=81"></script>
+  <script src="analytics.js?v=81"></script>
+  <script src="favorites.js?v=81"></script>
+  <script src="predict.js?v=81"></script>
+  <script src="app.js?v=81"></script>
+  <script src="auth.js?v=81"></script>
 </body>
 </html>

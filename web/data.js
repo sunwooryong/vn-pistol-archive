@@ -39,7 +39,7 @@
     const g = await loadGame(); const key = athlete && athlete.identity_key, nm = norm((athlete && athlete.full_name) || '');
     const out = [];
     (g.matches || []).forEach(mt => (mt.athletes || []).forEach(a => {
-      if ((key && a.key === key) || (a.name && norm(a.name) === nm)) out.push({ date: mt.date, match: mt.name, total: a.total, rank: a.rank, status: a.status, shootoff: a.shootoff, n: mt.athletes.length });
+      if ((key && a.key === key) || (a.name && norm(a.name) === nm)) out.push({ date: mt.date, match: mt.name, total: a.total, result: a.result, region: a.region, rank: a.rank, status: a.status, shootoff: a.shootoff, n: mt.athletes.length });
     }));
     out.sort((x, y) => (x.date || '').localeCompare(y.date || ''));
     return out;

@@ -6,12 +6,19 @@
 window.Fav = (function () {
   const LS = 'vpa_fav_v1';
   const t = k => (window.t ? window.t(k) : k);
-  const DEFAULT_GROUPS = ['국가대표', '청소년 국가대표', '후보 선수', '관심 선수', '기타'];
+  const COACH_GROUP = '내 지도';
+  const DEFAULT_GROUPS = [COACH_GROUP, '국가대표', '청소년 국가대표', '후보 선수', '관심 선수', '기타'];
   let state = load();
   const listeners = [];
 
   function load() {
-    try { const s = JSON.parse(localStorage.getItem(LS)); if (s && s.groups && s.items) return s; } catch (e) { }
+    try {
+      const s = JSON.parse(localStorage.getItem(LS));
+      if (s && s.groups && s.items) {
+        if (!s.groups.includes(COACH_GROUP)) s.groups.unshift(COACH_GROUP); // 마이그레이션: '내 지도' 보강
+        return s;
+      }
+    } catch (e) { }
     return { groups: DEFAULT_GROUPS.slice(), items: {} };
   }
   let cloudSave = null;
@@ -195,5 +202,5 @@ window.Fav = (function () {
   }
 
   function list() { return Object.values(state.items); }
-  return { starButton, renderTab, has, count, onChange, setCloud, list };
+  return { starButton, renderTab, has, count, onChange, setCloud, list, groups, byGroup, setGroup, addGroup, add, remove, COACH_GROUP };
 })();
