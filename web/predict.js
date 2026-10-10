@@ -45,13 +45,26 @@
     R.recent = recent.map(v => Math.round(v * 100) / 100);         // 차트용 최근 psa 시퀀스
     R.recentDates = rows.slice(-20).map(s => s.date);
 
+    // ---- 보수적(냉정한) 예측: 감쇠 추세(damped trend) + 현실적 연간 상한 ----
+    // 선형 외삽은 과대추정 → 실력 향상은 체감(플래토)한다고 보고 월별 감쇠·연간 이득 상한을 둔다.
+    const slopeMonth = slopeDay * 30;
+    const DAMP = 0.80, SHRINK = 0.65, ANNUAL_CAP = 0.13; // ANNUAL_CAP: 연 최대 +0.13psa(≈+8점/60발)까지만 상승 인정
+    const projGain = months => {
+      months = Math.max(0, months);
+      let f = 0, p = 1; for (let k = 1; k <= Math.ceil(months); k++) { p *= DAMP; f += p; } // Σ φ^k (감쇠 누적)
+      let g = slopeMonth * SHRINK * f;
+      if (g >= 0) g = Math.min(g, ANNUAL_CAP * Math.min(1.2, months / 12)); // 상승은 현실 상한
+      else g = Math.max(g, -0.9 * (months / 12) - 0.05);                     // 하락은 냉정히 덜 제한
+      return g;
+    };
+    const projPsa = months => mRecent + projGain(months);
+
     // 다음 달 / 다음 대회(≈2주 뒤)
-    const pNextMonth = mRecent + slopeDay * 30;
-    const pNextComp = mRecent + slopeDay * 14;
+    const pNextComp = projPsa(0.5), pNextMonth = projPsa(1);
     R.nextMonth = { psa: Math.round(pNextMonth * 100) / 100, qual: toQual(pNextMonth), delta: Math.round((pNextMonth - mRecent) * 100) / 100 };
     R.nextComp = { qual: toQual(pNextComp), lo: toQual(pNextComp - sRecent), hi: toQual(pNextComp + sRecent) };
 
-    // 내년 12개월 (추세 + 계절효과, 표본<3이면 추세만)
+    // 내년 12개월 (감쇠 추세 + 계절효과, 표본<3이면 추세만)
     const monthRes = {};  // month(1-12) -> residuals
     rows.forEach(s => { const d = day(s.date), mo = +s.date.slice(5, 7); if (reg) (monthRes[mo] = monthRes[mo] || []).push(s.psa - at(d)); });
     const yr = (opts.year || (new Date().getFullYear() + 1));
@@ -59,9 +72,9 @@
     R.monthly = [];
     for (let mo = 1; mo <= 12; mo++) {
       const mid = Date.UTC(yr, mo - 1, 15) / 86400000;
-      let p = at(mid);
+      let p = projPsa((mid - last) / 30.44);
       const res = monthRes[mo] || []; let seas = 0, sLow = res.length < 3;
-      if (res.length >= 3) { seas = Math.max(-0.5, Math.min(0.5, mean(res))); p += seas; }
+      if (res.length >= 3) { seas = Math.max(-0.4, Math.min(0.4, mean(res))); p += seas; }
       R.monthly.push({ mo, qual: toQual(p), low: sLow });
     }
     const yq = R.monthly.map(m => m.qual);
@@ -73,13 +86,14 @@
     const z = sRecent ? (pb - pNextComp) / sRecent : 9;
     R.pbProb = Math.round((1 - ncdf(z)) * 100);  // 다음대회 psa>pb 확률
 
-    // 목표 ETA (opts.goalQual, 기본 현재+2% 또는 상위 라운드)
+    // 목표 ETA (현실적 연 상승률 기준)
     const goalQ = opts.goalQual || (Math.ceil((toQual(mRecent) + 5) / 5) * 5);
     const goalPsa = goalQ / stdShots;
-    if (slopeDay > 1e-5 && goalPsa > mRecent) {
-      const days = (goalPsa - mRecent) / slopeDay;
-      R.eta = { goalQual: goalQ, days: Math.round(days), months: Math.round(days / 30 * 10) / 10 };
-    } else R.eta = { goalQual: goalQ, days: null, months: null, note: slopeDay <= 1e-5 ? '상승추세 아님' : '이미 도달' };
+    const annualGain = projPsa(12) - mRecent; // 현실적 연 상승폭(감쇠·상한 적용)
+    if (annualGain > 0.01 && goalPsa > mRecent) {
+      const months = (goalPsa - mRecent) / (annualGain / 12);
+      R.eta = { goalQual: goalQ, days: Math.round(months * 30.44), months: Math.round(months * 10) / 10 };
+    } else R.eta = { goalQual: goalQ, days: null, months: null, note: annualGain <= 0.01 ? '추세 정체(현 기록 유지 전망)' : '이미 도달' };
 
     // 슬럼프 조기경보: 최근5 평균이 직전10 대비 하락 또는 변동성 급증
     if (rows.length >= 15) {
