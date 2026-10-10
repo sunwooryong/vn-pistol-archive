@@ -1052,12 +1052,41 @@ async function buildReportSection(a, allRows, year) {
   rows.slice().sort((x, y) => dsort(y).localeCompare(dsort(x))).forEach(r => { h += `<tr><td>${(dsort(r) || '').slice(2, 10).replace(/-/g, '.')}</td><td class="dos-nm">${esc(r.competition.name)} <span class="scope ${r.competition.scope}">${SCOPE[r.competition.scope] || ''}</span></td><td>${esc(eventLabel(r.event))}</td><td class="dos-b">${r.qual_total != null ? fmt(r.qual_total) : (r.is_dnf ? 'DNF' : '–')}</td><td>${r.final_score != null ? r.final_score : ''}</td><td class="dos-md">${r.medal ? medalBadge(r.medal) : ''}${r.team_medal ? medalBadge(r.team_medal) + `<s>${t('단체')}</s>` : ''}</td><td>${r.placement ? r.placement + t('위') : ''}</td></tr>`; });
   h += `</tbody></table>`;
 
+  // 🔮 미래 예측 (훈련 추세 + 대회 기반 · 통계 추정)
+  if (window.Predict && TR && TR.sessions && TR.sessions.length) {
+    const trDk = TR.sessions.some(s => (s.dk || s.disc) === mainK) ? mainK : window.Predict.mainDisc(TR.sessions);
+    const P = trDk ? window.Predict.forecast(trDk, TR.sessions, allRows, {}) : null;
+    if (P && P.enough) {
+      h += `<div class="dos-sec">🔮 ${t('미래 예측')} <span class="dos-help">${t('훈련 추세+대회 기반 · 통계 추정')}</span> <span>${esc(DISC[trDk] || trDk)}</span></div>
+        <div class="dos-cap">${t('발당 평균(÷발수)으로 단위 통일 · 선형추세+변동성 구간 · 표본 5회 미만 정보부족 · 실제와 다를 수 있음')}</div>`;
+      h += `<div class="dos-kpis sm">`
+        + tile(t('다음 대회 예상'), P.nextComp.qual, `${P.nextComp.lo}~${P.nextComp.hi} ${t('점')}`)
+        + tile(t('다음 달 발당'), P.nextMonth.psa, `${t('현재')} ${P.cur.psa} (${P.nextMonth.delta >= 0 ? '+' : ''}${P.nextMonth.delta})`)
+        + (P.placement && !P.placement.low ? tile(t('예상 등위'), `${P.placement.expLo}–${P.placement.expHi}${t('위')}`, P.placement.improving ? t('상승세') + ' · ' + t('최근') + ' ' + P.placement.recentAvg : t('최근') + ' ' + P.placement.recentAvg) : tile(t('예상 등위'), '–', t('대회 기록 부족')))
+        + (P.finals && P.finals.n >= 2 ? tile(t('결선 진출 확률'), `~${P.finals.prob}%`, (P.finals.expScore ? t('예상') + ' ' + P.finals.expScore : '') + (P.finals.low ? ' ·' + t('정보부족') : '')) : tile(t('결선 진출 확률'), '–', t('결선 기록 부족')))
+        + `</div>`;
+      if (P.monthly && P.monthly.length >= 12) {
+        h += `<div class="dos-cap">📈 ${P.year}${t('년')} ${t('월별 예상 본선점수')} · ${t('연초')} <b>${P.monthly[0].qual}</b> → ${t('연말')} <b>${P.monthly[11].qual}</b> · ${t('다음 시즌 대회 목표')} <b>${P.nextSeason.qualMid}</b> (${P.nextSeason.lo}~${P.nextSeason.hi})</div>
+          <div class="dos-linewrap">${REPORT_MLINE(P.monthly.map(m => m.mo + t('월')), [{ name: t('예상'), color: '#0b5cab', vals: P.monthly.map(m => m.qual) }])}</div>`;
+      }
+      const bits = [`${t('PB 경신 확률')} <b>${P.pbProb}%</b> <s class="dos-unit">(PB ${P.pb.qual})</s>`];
+      if (P.eta && P.eta.months) bits.push(`${t('목표')} ${P.eta.goalQual}${t('점')} ${t('도달 예상')} <b>~${P.eta.months}${t('개월')}</b>`);
+      if (P.weakSeries) bits.push(`${t('약점 시리즈')} <b>S${P.weakSeries.s}</b>(${P.weakSeries.avg.toFixed(1)})`);
+      if (P.slump) bits.push(`${t('슬럼프')} ${P.slump.warn ? '<b class="dn">⚠ ' + t('주의') + '</b>' : '<b class="up">' + t('안정') + '</b>'}`);
+      if (P.env && P.env.temp && P.env.temp.length && !P.env.temp[0].low) bits.push(`${t('최적 온도')} <b>${P.env.temp[0].k}</b>(${P.env.temp[0].psa})`);
+      if (P.env && P.env.daypart && P.env.daypart.length && !P.env.daypart[0].low) bits.push(`${t('강한 시간대')} <b>${P.env.daypart[0].k}</b>(${P.env.daypart[0].psa})`);
+      h += `<div class="eval-comment">${bits.join(' · ')}</div>`;
+    }
+  }
+
   // 총평 (자동)
   const main = discRows.slice().sort((x, y) => { const rx = R && R.disciplines && R.disciplines.find(z => z.disc === x.k); const ry = R && R.disciplines && R.disciplines.find(z => z.disc === y.k); return (rx ? rx.natRank : 999) - (ry ? ry.natRank : 999); })[0];
   const mz = main && R && R.disciplines ? R.disciplines.find(z => z.disc === main.k) : null;
   let cm = `${periodLab} ${comps.size}${t('개 대회')} ${gamesInd} ${t('경기')} ${t('출전')}. `;
   if (main) cm += `${t('주력')} ${esc(DISC[main.k] || main.k)} ${t('평균')} ${fmt(main.avg)}${mz ? ` · ${t('전국')} ${mz.natRank}${t('위')}(${t('상위')} ${mz.pct}%)` : ''}${main.sd != null ? ` · ${t('일관성')} ±${main.sd.toFixed(1)}` : ''}. `;
   if (im.gold + im.silver + im.bronze) cm += `${t('개인 메달')} ${im.gold + im.silver + im.bronze}${t('개')}. `;
+  if (fin) cm += `${t('결선')} ${fin}${t('회 진출')}. `;
+  if (main && main.arr && main.arr.length >= 4) { const v = main.arr.map(r => r.qual_total); const hf = Math.floor(v.length / 2); const d = v.slice(hf).reduce((s, x) => s + x, 0) / (v.length - hf) - v.slice(0, hf).reduce((s, x) => s + x, 0) / hf; cm += d > 1 ? `${t('본선 상승 추세')}(+${d.toFixed(1)}). ` : d < -1 ? `${t('본선 하락 추세')}(${d.toFixed(1)}). ` : `${t('기복 적고 안정적')}. `; }
   const weakStage = stg.length ? stg[0].stages.reduce((mn, x) => x.avg < mn.avg ? x : mn) : null;
   if (weakStage) cm += `${t('보강')}: ${esc(DISC[stg[0].disc] || stg[0].disc)} ${t(weakStage.key)}(${fmt(weakStage.avg)}). `;
   h += `<div class="dos-sec">📝 ${t('총평')} <span class="dos-help">${t('자동 분석 요약')}</span></div><div class="eval-comment">${cm.trim()}</div>`;
@@ -1493,41 +1522,41 @@ function prStyle() {
   if (document.getElementById('pr-style')) return;
   const s = document.createElement('style'); s.id = 'pr-style';
   s.textContent = `
-  #view-predict{--a:#5b9dff;--a2:#7cc6ff;--up:#37d39b;--dn:#ff6f6f;--gd:#f2c14e;--wn:#f2b24a;--mu:#90a0b7;--fa:#5e6e85;--ln:#2a3647;--pnl:#161d29;--pnl2:#1d2634}
+  #view-predict{--a:#0b5cab;--a2:#1f6fc2;--up:#0a805a;--dn:#c62828;--gd:#8a6d16;--wn:#b4690e;--mu:#51607a;--fa:#6b7687;--ln:#d2dae6;--pnl:#ffffff;--pnl2:#eef2f8;color:var(--tx)}
   .pr-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .pr-head h3{margin:0}
   .pr-lock{font-size:11px;font-weight:800;color:var(--wn);border:1px solid rgba(242,178,74,.4);border-radius:5px;padding:1px 8px}
   .pr-roster{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
   .pr-rlab{font-size:12px;color:var(--mu);font-weight:700;margin-right:4px}
-  .pr-chip{border:1px solid var(--ln);background:var(--pnl2);color:#e9eef6;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer}
-  .pr-chip.on{background:var(--a);border-color:var(--a);color:#07101f}
+  .pr-chip{border:1px solid var(--ln);background:var(--pnl2);color:var(--tx);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer}
+  .pr-chip.on{background:var(--a);border-color:var(--a);color:#fff}
   .pr-chip.add{border-style:dashed;color:var(--mu)}
   .pr-empty{color:var(--mu);padding:18px;border:1px dashed var(--ln);border-radius:12px;text-align:center}
   .pr-addrow{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap}
-  .pr-addrow input{flex:1;min-width:180px;background:var(--pnl2);border:1px solid var(--ln);color:#e9eef6;border-radius:8px;padding:8px 11px;font-size:13px}
+  .pr-addrow input{flex:1;min-width:180px;background:var(--pnl2);border:1px solid var(--ln);color:var(--tx);border-radius:8px;padding:8px 11px;font-size:13px}
   .pr-res{display:flex;flex-direction:column;gap:6px;max-height:230px;overflow:auto;margin-bottom:10px}
-  .pr-res button{text-align:left;background:var(--pnl);border:1px solid var(--ln);color:#e9eef6;border-radius:8px;padding:8px 11px;cursor:pointer;font-size:13px}
+  .pr-res button{text-align:left;background:var(--pnl);border:1px solid var(--ln);color:var(--tx);border-radius:8px;padding:8px 11px;cursor:pointer;font-size:13px}
   .pr-res button:hover{border-color:var(--a)}
   .pr-sub{color:var(--mu);font-size:13px;margin:4px 0 14px}
   .pr-low{display:inline-block;background:rgba(242,178,74,.16);color:var(--wn);border:1px solid rgba(242,178,74,.45);border-radius:5px;padding:1px 7px;font-size:11px;font-weight:800;margin-left:6px}
   .pr-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
   @media(max-width:820px){.pr-tiles{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:440px){.pr-tiles{grid-template-columns:1fr}}
-  .pr-tile{background:var(--pnl);border:1px solid var(--ln);border-radius:13px;padding:13px;position:relative;overflow:hidden}
+  .pr-tile{background:var(--pnl);border:1px solid var(--ln);border-radius:13px;padding:13px;position:relative;overflow:hidden;box-shadow:0 1px 2px rgba(16,25,42,.06)}
   .pr-tile .rail{position:absolute;left:0;top:0;bottom:0;width:4px}
   .pr-k{font-size:11.5px;color:var(--mu);font-weight:700}
   .pr-v{font-weight:800;font-size:27px;letter-spacing:-.5px;margin:5px 0 2px;line-height:1;font-variant-numeric:tabular-nums}
   .pr-u{font-size:11.5px;color:var(--mu)}
   .pr-rng{font-size:12.5px;color:var(--a2);font-variant-numeric:tabular-nums;margin-top:3px}
   .pr-d{font-size:12px;font-weight:700;margin-top:6px}.pr-d.up{color:var(--up)}.pr-d.dn{color:var(--dn)}
-  .pr-card{background:var(--pnl);border:1px solid var(--ln);border-radius:13px;padding:14px;margin-top:13px}
+  .pr-card{background:var(--pnl);border:1px solid var(--ln);border-radius:13px;padding:14px;margin-top:13px;box-shadow:0 1px 2px rgba(16,25,42,.06)}
   .pr-card h4{margin:0 0 4px;font-size:14.5px}
   .pr-card .cap{font-size:12px;color:var(--mu);margin-top:9px;line-height:1.55}
   .pr-g2{display:grid;grid-template-columns:1fr 1fr;gap:13px}@media(max-width:760px){.pr-g2{grid-template-columns:1fr}}
   #view-predict svg{display:block;width:100%;height:auto;overflow:visible}
   .pr-rows{display:flex;flex-direction:column;gap:7px;margin-top:6px}
   .pr-row{display:grid;grid-template-columns:96px 1fr auto;align-items:center;gap:9px;font-size:12.5px}
-  .pr-row .n{color:#e9eef6;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pr-row .n{color:var(--tx);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .pr-bar{height:14px;border-radius:5px;background:var(--pnl2);position:relative;overflow:hidden}
   .pr-bar>i{position:absolute;left:0;top:0;bottom:0;border-radius:5px}
   .pr-row .vv{font-variant-numeric:tabular-nums;color:var(--mu);white-space:nowrap}
@@ -1535,7 +1564,7 @@ function prStyle() {
   .pr-note{font-size:11.5px;color:var(--fa);line-height:1.7;margin-top:14px;border-top:1px solid var(--ln);padding-top:12px}`;
   document.head.appendChild(s);
 }
-const PRC = { a: '#5b9dff', a2: '#7cc6ff', up: '#37d39b', dn: '#ff6f6f', gd: '#f2c14e', mu: '#90a0b7', fa: '#5e6e85', ln: '#2a3647', bg: '#0f141c', fg: '#e9eef6' };
+const PRC = { a: '#0b5cab', a2: '#1f6fc2', up: '#0a805a', dn: '#c62828', gd: '#8a6d16', mu: '#51607a', fa: '#6b7687', ln: '#d2dae6', bg: '#ffffff', fg: '#101a2b' };
 function prBars(items, maxv, fmt) {
   return `<div class="pr-rows">` + items.map(d => {
     const pct = Math.max(2, Math.min(100, (d.v / maxv) * 100));
@@ -1564,6 +1593,11 @@ function prLineFC(R) { // 최근 psa 실측 + 다음달 추정 + 구간
   g += `<circle cx="${X(all.length - 1)}" cy="${Y(proj[projN - 1])}" r="3.8" fill="${PRC.up}" stroke="${PRC.bg}" stroke-width="1.5"/>`;
   g += `<text x="${X(all.length - 1)}" y="${Y(proj[projN - 1]) - 9}" fill="${PRC.up}" font-size="11" font-weight="700" text-anchor="end">${R.nextMonth.psa.toFixed(2)}</text>`;
   g += `<text x="${X(0)}" y="${H - 10}" fill="${PRC.fa}" font-size="10">${t('최근')}</text><text x="${X(all.length - 1)}" y="${H - 10}" fill="${PRC.up}" font-size="10" text-anchor="end" font-weight="700">+1${t('달')}</text>`;
+  // 시작값 + 구간 상·하한 숫자
+  g += `<text x="${X(0) + 3}" y="${Y(real[0]) - 8}" fill="${PRC.a}" font-size="10" font-weight="700">${real[0].toFixed(2)}</text>`;
+  const pe = proj[projN - 1];
+  g += `<text x="${X(all.length - 1) - 3}" y="${Y(pe + sd) - 3}" fill="${PRC.fa}" font-size="9" text-anchor="end">${(pe + sd).toFixed(2)}</text>`;
+  g += `<text x="${X(all.length - 1) - 3}" y="${Y(pe - sd) + 10}" fill="${PRC.fa}" font-size="9" text-anchor="end">${(pe - sd).toFixed(2)}</text>`;
   return `<svg viewBox="0 0 ${W} ${H}">${g}</svg>`;
 }
 function prYearSvg(R) {
@@ -1577,10 +1611,13 @@ function prYearSvg(R) {
   let up = '', dn = ''; m.forEach((x, i) => { const b = 4 + i * 0.7; up += `${i ? 'L' : 'M'}${X(i)} ${Y(x.qual + b)} `; }); for (let i = m.length - 1; i >= 0; i--) { const b = 4 + i * 0.7; dn += `L${X(i)} ${Y(m[i].qual - b)} `; }
   g += `<path d="${up}${dn}Z" fill="${PRC.a}22"/>`;
   let d = ''; m.forEach((x, i) => d += `${i ? 'L' : 'M'}${X(i)} ${Y(x.qual)} `); g += `<path d="${d}" fill="none" stroke="${PRC.a}" stroke-width="2.4" stroke-linejoin="round"/>`;
-  m.forEach((x, i) => { g += `<circle cx="${X(i)}" cy="${Y(x.qual)}" r="${x.low ? 1.8 : 2.6}" fill="${x.low ? PRC.fa : PRC.a2}"/>`; g += `<text x="${X(i)}" y="${H - 18}" fill="${PRC.fa}" font-size="9.5" text-anchor="middle">${x.mo}</text>`; });
-  g += `<text x="${X(0)}" y="${Y(m[0].qual) - 9}" fill="${PRC.a2}" font-size="11" font-weight="700">${m[0].qual}</text>`;
-  g += `<text x="${X(m.length - 1)}" y="${Y(m[m.length - 1].qual) - 9}" fill="${PRC.up}" font-size="11" font-weight="700" text-anchor="end">${m[m.length - 1].qual}</text>`;
-  g += `<text x="${L}" y="${T - 3}" fill="${PRC.mu}" font-size="10">${R.year}${t('년')} · ${t('월')}</text>`;
+  m.forEach((x, i) => {
+    const em = (i === 0 || i === m.length - 1);
+    g += `<circle cx="${X(i)}" cy="${Y(x.qual)}" r="${x.low ? 1.8 : (em ? 3.2 : 2.6)}" fill="${x.low ? PRC.fa : (i === m.length - 1 ? PRC.up : PRC.a2)}"/>`;
+    g += `<text x="${X(i)}" y="${Y(x.qual) - 7}" fill="${x.low ? PRC.fa : (em ? (i ? PRC.up : PRC.a) : PRC.mu)}" font-size="${em ? 11 : 9}" font-weight="${em ? 700 : 600}" text-anchor="middle">${x.qual}</text>`;
+    g += `<text x="${X(i)}" y="${H - 16}" fill="${PRC.fa}" font-size="9.5" text-anchor="middle">${x.mo}</text>`;
+  });
+  g += `<text x="${L}" y="${T - 3}" fill="${PRC.mu}" font-size="10" font-weight="700">${R.year}${t('년')} ${t('월별 예상 본선점수')}</text>`;
   return `<svg viewBox="0 0 ${W} ${H}">${g}</svg>`;
 }
 function prPlcSvg(R) {
@@ -1591,7 +1628,7 @@ function prPlcSvg(R) {
   const Y = v => T + (H - T - B) * ((v - 1) / (mx - 1));
   let g = ''; [1, Math.round(mx / 2), mx].forEach(gv => { g += `<line x1="${L}" y1="${Y(gv)}" x2="${W - Rr}" y2="${Y(gv)}" stroke="${PRC.ln}"/><text x="${L - 5}" y="${Y(gv) + 4}" fill="${PRC.fa}" font-size="10" text-anchor="end">${gv}</text>`; });
   let d = ''; seq.forEach((v, i) => d += `${i ? 'L' : 'M'}${X(i)} ${Y(v)} `); g += `<path d="${d}" fill="none" stroke="${PRC.a}" stroke-width="2.1" stroke-linejoin="round"/>`;
-  seq.forEach((v, i) => { const f = fin.includes(i); g += `<circle cx="${X(i)}" cy="${Y(v)}" r="${f ? 3.8 : 2.3}" fill="${f ? PRC.gd : PRC.a2}"/>`; });
+  seq.forEach((v, i) => { const f = fin.includes(i); g += `<circle cx="${X(i)}" cy="${Y(v)}" r="${f ? 3.8 : 2.4}" fill="${f ? PRC.gd : PRC.a2}"/>`; g += `<text x="${X(i)}" y="${Y(v) - 6}" fill="${f ? PRC.gd : PRC.mu}" font-size="9" font-weight="${f ? 700 : 500}" text-anchor="middle">${v}</text>`; });
   if (R.placement.recentAvg) g += `<text x="${W - Rr}" y="${T + 2}" fill="${PRC.up}" font-size="10" text-anchor="end" font-weight="700">${t('최근평균')} ${R.placement.recentAvg}${t('위')}</text>`;
   g += `<text x="${L}" y="${H - 8}" fill="${PRC.mu}" font-size="10">↑ ${t('등위 상승(1위 근접)')} · <tspan fill="${PRC.gd}">●</tspan> ${t('결선')}</text>`;
   return `<svg viewBox="0 0 ${W} ${H}">${g}</svg>`;
