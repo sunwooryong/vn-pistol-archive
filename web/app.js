@@ -2582,7 +2582,7 @@ window.startApp = function (opts) {
     const k = TABS[tab.dataset.tab]; if (k) tab.textContent = t(k);
     tab.onclick = () => show(tab.dataset.tab);
   });
-  const h1 = document.querySelector('header h1'); if (h1) h1.innerHTML = `<span class="brand-rings">${window.ringsSVG || ''}</span><span class="brand-title">${t('사격기록 아카이브')}</span>`;
+  const h1 = document.querySelector('header h1'); if (h1) h1.innerHTML = `<span class="brand-rings">${window.ringsSVG || ''}</span><span class="brand-tt"><span class="brand-title">${t('베트남 사격 기록·분석 시스템')}</span><span class="brand-en">Vietnam Shooting Records &amp; Analytics</span></span>`;
   const tag = document.querySelector('.tag'); if (tag) tag.textContent = t('사격 · 베트남 사격연맹');
   document.querySelector('#ath-q')?.setAttribute('placeholder', t('선수명 검색 (예: Phạm Quang Huy)'));
   // 역할별 탭 노출

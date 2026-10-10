@@ -7,6 +7,7 @@
   const VI = {
     // 공통 / 헤더
     '사격기록 아카이브': 'Kho dữ liệu bắn súng',
+    '베트남 사격 기록·분석 시스템': 'Hệ thống Hồ sơ & Phân tích Bắn súng Việt Nam',
     '사격 · 베트남 사격연맹': 'Bắn súng · LĐ Bắn súng Việt Nam',
     // 소총·러닝타겟 종목
     '10m 공기소총': '10m súng trường hơi', '10m 공기소총 보급': '10m STH phổ thông',

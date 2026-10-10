@@ -41,7 +41,8 @@
       <div class="landing">
         <div class="landing-hero">
           <div class="brand-rings hero-rings">${window.ringsSVG || ''}</div>
-          <h1 class="brand-title">${T('사격기록 아카이브')}</h1>
+          <h1 class="brand-title">${T('베트남 사격 기록·분석 시스템')}</h1>
+          <p class="brand-en">Vietnam Shooting Records &amp; Analytics</p>
           <p class="auth-sub">${T('사격 · 베트남 사격연맹')}</p>
         </div>
         <div class="landing-main">

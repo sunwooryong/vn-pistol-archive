@@ -451,6 +451,9 @@ svg.rings { height: 19px; width: auto; display: block; }
 .brand-title { font-weight: 800; letter-spacing: -.015em; color: var(--navy);
   background: none; -webkit-background-clip: initial; background-clip: initial; -webkit-text-fill-color: currentColor; }
 @media (prefers-reduced-motion: reduce) { svg.rings, .brand-title { animation: none; } }
+.brand-tt { display: flex; flex-direction: column; line-height: 1.1; min-width: 0; }
+.brand-en { font-size: 10.5px; font-weight: 600; letter-spacing: .02em; color: var(--mut); margin-top: 1px; }
+.landing-hero .brand-en { font-size: 13px; text-align: center; }
 
 /* 랜딩 히어로 */
 .landing-hero { flex-direction: column; gap: 8px; padding: 8px 0 4px; }
@@ -696,6 +699,9 @@ svg.rings { height: 19px; width: auto; display: block; }
 .report-btn:active { transform: scale(.97); }
 .report-btn.ghost { background: var(--card2); color: var(--acc2); border: 1px solid var(--line); }
 .report-btn.ghost.on { background: var(--acc); color: #fff; border-color: transparent; }
+/* 보고서 버튼이 든 제목줄은 좁은 화면에서 줄바꿈(가로 넘침 방지) */
+h3:has(.report-btn) { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+@media (max-width: 560px) { .report-btn { margin-left: 0; } h3:has(.report-btn) .sub2 { margin-right: auto; } }
 /* 팀 종합 대시보드 */
 .team-ov { margin: 4px 0 12px; }
 .team-ov[hidden] { display: none; }
