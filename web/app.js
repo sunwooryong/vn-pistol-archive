@@ -794,6 +794,20 @@ function REPORT_RADAR(axes, size = 200) {
   axes.forEach((a, i) => { const [x, y] = pt(i, R * Math.max(0.04, Math.min(1, a.val))); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.2" fill="#0b5cab"/>`; });
   return `<svg class="dos-radar" viewBox="0 0 ${size} ${size}">${g}</svg>`;
 }
+// 평가보고서 섹션 재배치: 현황→강약점→세부→추세→전망→부록 서사 순서 (섹션 머리 이모지로 식별, 언어 무관)
+function reorderReportSections(html) {
+  const footIdx = html.indexOf('<div class="dos-foot">');
+  const foot = footIdx >= 0 ? html.slice(footIdx) : '';
+  const body = footIdx >= 0 ? html.slice(0, footIdx) : html;
+  const first = body.indexOf('<div class="dos-sec">');
+  if (first < 0) return html;
+  const pre = body.slice(0, first);
+  const chunks = body.slice(first).split('<div class="dos-sec">').filter(c => c.trim()).map(c => '<div class="dos-sec">' + c);
+  const ORDER = ['📝', '📊', '🎯', '🎖️', '🔬', '🧩', '📈', '🏆', '📅', '🏋️', '🎮', '👥', '🔮', '🗂️'];
+  const re = /📝|📊|🎯|🎖️|🔬|🧩|📈|🏆|📅|🏋️|🎮|👥|🔮|🗂️/;
+  const keyOf = c => { const m = c.slice(0, 180).match(re); const i = m ? ORDER.indexOf(m[0]) : -1; return i < 0 ? 99 : i; };
+  return pre + chunks.map((c, i) => [keyOf(c), i, c]).sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(x => x[2]).join('') + foot;
+}
 async function buildReportSection(a, allRows, year) {
   const scored = r => !r.is_dnf && r.qual_total != null;
   const fmt = n => n == null ? '–' : (Number.isInteger(n) ? String(n) : n.toFixed(1));
@@ -832,6 +846,8 @@ async function buildReportSection(a, allRows, year) {
   try { R = await DB.regionalAnalysis(a.id, anYear); } catch (e) { }
   try { stages = await DB.stageAnalysis(a.id, anYear); } catch (e) { }
   try { TR = await DB.trainingOf(a.full_name); } catch (e) { }
+  let P = null; // 예측 (총평+예측섹션 공용)
+  try { if (window.Predict && TR && TR.sessions && TR.sessions.length && mainK) { const _dk = TR.sessions.some(s => (s.dk || s.disc) === mainK) ? mainK : window.Predict.mainDisc(TR.sessions); if (_dk) P = window.Predict.forecast(_dk, TR.sessions, allRows, {}); } } catch (e) { }
   const per10t = s => s.avg != null ? s.avg : (s.series && s.series.length ? s.total / s.series.length : null);
 
   let h = `<div class="eval-doc"><div class="dos-head">
@@ -972,7 +988,7 @@ async function buildReportSection(a, allRows, year) {
   // 단계 분석
   const stg = (stages || []).filter(s => s.stages && s.stages.length >= 2);
   if (stg.length) {
-    h += `<div class="dos-sec">📊 ${t('단계 분석')} <span class="dos-help">${t('자세·시간 단계별(최약 ▼)')}</span> <span>${anYear}</span></div><table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('단계')}</th><th>${t('평균')}</th><th>${t('최고')}</th><th>${t('전국')}</th></tr></thead><tbody>`;
+    h += `<div class="dos-sec">🧩 ${t('단계 분석')} <span class="dos-help">${t('자세·시간 단계별(최약 ▼)')}</span> <span>${anYear}</span></div><table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('단계')}</th><th>${t('평균')}</th><th>${t('최고')}</th><th>${t('전국')}</th></tr></thead><tbody>`;
     stg.forEach(dz => { const weak = dz.stages.reduce((mn, x) => x.avg < mn.avg ? x : mn); dz.stages.forEach((s, i) => { h += `<tr><td class="dos-nm">${i === 0 ? esc(DISC[dz.disc] || dz.disc) : ''}</td><td class="${s === weak ? 'dos-weak' : ''}">${esc(t(s.key))}${s === weak ? ' ▼' : ''}</td><td class="dos-b">${fmt(s.avg)}</td><td>${fmt(s.best)}</td><td>${s.natN ? `${s.natRank}/${s.natN}` : '–'}</td></tr>`; }); });
     h += `</tbody></table>`;
   }
@@ -1053,10 +1069,9 @@ async function buildReportSection(a, allRows, year) {
   h += `</tbody></table>`;
 
   // 🔮 미래 예측 (훈련 추세 + 대회 기반 · 통계 추정)
-  if (window.Predict && TR && TR.sessions && TR.sessions.length) {
-    const trDk = TR.sessions.some(s => (s.dk || s.disc) === mainK) ? mainK : window.Predict.mainDisc(TR.sessions);
-    const P = trDk ? window.Predict.forecast(trDk, TR.sessions, allRows, {}) : null;
-    if (P && P.enough) {
+  if (window.Predict && P && P.enough) {
+    const trDk = P.dk;
+    {
       h += `<div class="dos-sec">🔮 ${t('미래 예측')} <span class="dos-help">${t('훈련 추세+대회 기반 · 통계 추정')}</span> <span>${esc(DISC[trDk] || trDk)}</span></div>
         <div class="dos-cap">${t('발당 평균(÷발수)으로 단위 통일 · 선형추세+변동성 구간 · 표본 5회 미만 정보부족 · 실제와 다를 수 있음')}</div>`;
       h += `<div class="dos-kpis sm">`
@@ -1088,11 +1103,23 @@ async function buildReportSection(a, allRows, year) {
   if (fin) cm += `${t('결선')} ${fin}${t('회 진출')}. `;
   if (main && main.arr && main.arr.length >= 4) { const v = main.arr.map(r => r.qual_total); const hf = Math.floor(v.length / 2); const d = v.slice(hf).reduce((s, x) => s + x, 0) / (v.length - hf) - v.slice(0, hf).reduce((s, x) => s + x, 0) / hf; cm += d > 1 ? `${t('본선 상승 추세')}(+${d.toFixed(1)}). ` : d < -1 ? `${t('본선 하락 추세')}(${d.toFixed(1)}). ` : `${t('기복 적고 안정적')}. `; }
   const weakStage = stg.length ? stg[0].stages.reduce((mn, x) => x.avg < mn.avg ? x : mn) : null;
-  if (weakStage) cm += `${t('보강')}: ${esc(DISC[stg[0].disc] || stg[0].disc)} ${t(weakStage.key)}(${fmt(weakStage.avg)}). `;
-  h += `<div class="dos-sec">📝 ${t('총평')} <span class="dos-help">${t('자동 분석 요약')}</span></div><div class="eval-comment">${cm.trim()}</div>`;
+  // 전망 (예측 요약)
+  if (P && P.enough) {
+    cm += `${t('전망')}(${esc(DISC[P.dk] || P.dk)}): ${t('다음 대회')} ${P.nextComp.qual}${t('점')}(${P.nextComp.lo}~${P.nextComp.hi})`;
+    if (P.placement && !P.placement.low) cm += ` · ${t('예상 등위')} ${P.placement.expLo}–${P.placement.expHi}${t('위')}`;
+    cm += '. ';
+  }
+  // 보완점 (한눈에)
+  const fixes = [];
+  if (weakStage) fixes.push(`${esc(DISC[stg[0].disc] || stg[0].disc)} ${t(weakStage.key)}(${fmt(weakStage.avg)})`);
+  if (P && P.weakSeries) fixes.push(`${t('시리즈')} S${P.weakSeries.s}(${P.weakSeries.avg.toFixed(1)})`);
+  if (P && P.slump && P.slump.warn) fixes.push(t('최근 하락세 관리'));
+  if (P && P.env && P.env.temp && P.env.temp.length && !P.env.temp[P.env.temp.length - 1].low) { const w = P.env.temp[P.env.temp.length - 1]; fixes.push(`${t('약한 환경')} ${w.k}(${w.psa})`); }
+  if (fixes.length) cm += `<b>${t('보완 필요')}</b>: ${fixes.join(', ')}.`;
+  h += `<div class="dos-sec">📝 ${t('종합 평가')} <span class="dos-help">${t('현황·강약점·전망·보완 요약')}</span></div><div class="eval-comment">${cm.trim()}</div>`;
 
   h += `<div class="dos-foot"><div class="dos-note">${t('본 보고서는 베트남 사격연맹 공개 기록을 기준으로 자동 작성되었습니다.')} · ${t('발급일')} ${dstr}</div><div class="rc-sign"><span class="rc-signname">RYONG</span><span class="rc-signlab">${t('작성')}</span></div></div></div>`;
-  return h;
+  return reorderReportSections(h);
 }
 
 async function openReport(athletes, year) {
