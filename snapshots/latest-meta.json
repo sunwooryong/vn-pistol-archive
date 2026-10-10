@@ -4,13 +4,13 @@
   "loaded_results": 12285,
   "dropped_vie": 208,
   "min_year": 2000,
-  "generated_at": "2026-10-09",
-  "generated_at_full": "2026-10-09T23:17:19.022Z",
+  "generated_at": "2026-10-10",
+  "generated_at_full": "2026-10-10T22:34:56.223Z",
   "counts": {
     "competitions": 60,
     "events": 579,
     "athletes": 2970,
     "results": 12285,
-    "series": 63764
+    "series": 64296
   }
 }
