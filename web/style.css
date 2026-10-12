@@ -768,9 +768,11 @@ table.rc-tab tbody tr:nth-child(even) { background: #fafbfd; }
 @media print {
   body > *:not(#report-view) { display: none !important; }
   #report-view { position: static !important; overflow: visible !important; background: #fff !important; }
+  /* 인쇄 시 배경·막대·그래프 색이 빠지지 않도록 전 요소 색상 강제 유지 */
+  #report-view, #report-view * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   .no-print { display: none !important; }
   .rv-doc { margin: 0 !important; max-width: none !important; border: 0 !important; box-shadow: none !important; padding: 6px 4px !important; }
-  .rc-disc, table.rc-tab tr { break-inside: avoid; }
+  .rc-disc, table.rc-tab tr, .dos-foot, .dos-sign, .dos-linewrap, .dos-wd, .dos-bars { break-inside: avoid; }
   .eval-doc + .eval-doc { break-before: page; }
 }
 
@@ -1064,24 +1066,30 @@ table.dos-tab tbody tr:nth-child(even) { background: #fafbfd; }
 .dos-tab .dos-md s { text-decoration: none; font-size: 8px; color: #8a94a6; margin-left: 1px; }
 .dos-tab.compact td, .dos-tab.compact th { padding: 3px 7px; }
 .dos-tab.log { font-size: 11px; }
-.dos-foot { margin-top: 16px; padding-top: 12px; border-top: 1px solid #e2e7ef; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
-.dos-note { font-size: 10px; color: #8a94a6; max-width: 66%; line-height: 1.5; }
+.dos-foot { margin-top: 18px; padding-top: 12px; border-top: 2px solid #c9a13a; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.dos-note { font-size: 10px; color: #8a94a6; max-width: 48%; line-height: 1.5; min-width: 160px; }
+/* 서명 블록(명함 기반) */
+.dos-sign { text-align: right; line-height: 1.4; margin-left: auto; }
+.dos-sign-name { font-size: 16px; font-weight: 800; letter-spacing: .1em; color: #0c1a30; }
+.dos-sign-role { font-size: 10px; font-weight: 700; color: #b08a2c; letter-spacing: .02em; margin-top: 2px; }
+.dos-sign-contact { font-size: 10px; color: #44515f; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.dos-sign-org { font-size: 9px; color: #8a94a6; margin-top: 2px; }
 .rv-ttl { font-size: 14px; font-weight: 800; color: var(--tx); }
 .dos-btn { }
 @media print {
   .dos-doc { max-width: none !important; }
   .dos-sec, table.dos-tab tr, .dos-kpis { break-inside: avoid; }
   table.dos-tab { font-size: 10px; }
-  .dos-tab .dos-sp, .dos-spark { width: 90px; }
+  .dos-tab .dos-sp, .dos-spark { width: 108px; }
 }
 
 /* 통합 리포트: 시리즈 막대 · 월별 · 유형 칩 */
 .ser-cell { padding: 3px 7px !important; }
 .ser-cell { padding: 4px 7px !important; }
-.ser-bar { display: inline-flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 34px; vertical-align: bottom; }
-.ser-bar s { display: block; width: 16px; background: #9db4d6; border-radius: 2px 2px 0 0; }
+.ser-bar { display: inline-flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 40px; vertical-align: bottom; }
+.ser-bar s { display: block; width: 22px; background: #6f93c4; border-radius: 3px 3px 0 0; }
 .ser-bar.hi s { background: #2f9e44; } .ser-bar.lo s { background: #e03131; }
-.ser-bar .ser-v { font-style: normal; font-size: 8.5px; font-weight: 700; color: #0c1a30; margin-bottom: 2px; }
+.ser-bar .ser-v { font-style: normal; font-size: 9.5px; font-weight: 800; color: #0c1a30; margin-bottom: 2px; }
 .ser-bar.hi .ser-v { color: #2f9e44; } .ser-bar.lo .ser-v { color: #e03131; }
 .ser-bar .ser-p { font-style: normal; font-size: 8px; color: #a9b2c0; margin-top: 2px; }
 .dos-tab.month { font-size: 10.5px; } .dos-tab.month th, .dos-tab.month td { padding: 3px 6px; text-align: center; }
@@ -1102,8 +1110,8 @@ table.dos-tab tbody tr:nth-child(even) { background: #fafbfd; }
 .dos-wdc { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; border: 1px solid #eef1f6; border-radius: 7px; padding: 6px 2px 5px; background: #fafbfd; }
 .dos-wdc b { font-size: 10px; color: #55617a; font-weight: 800; }
 .dos-wdc.sun b { color: #d6336c; } .dos-wdc.sat b { color: #1971c2; }
-.dos-wdbar { display: flex; align-items: flex-end; height: 38px; }
-.dos-wdbar s { display: block; width: 15px; background: #9db4d6; border-radius: 2px 2px 0 0; }
+.dos-wdbar { display: flex; align-items: flex-end; height: 42px; }
+.dos-wdbar s { display: block; width: 18px; background: #6f93c4; border-radius: 3px 3px 0 0; }
 .dos-wdc i { font-style: normal; font-size: 11px; font-weight: 800; color: #0c1a30; }
 .dos-wdc em { font-style: normal; font-size: 9px; color: #8a94a6; }
 @media print { .dos-radar { width: 160px; height: 160px; } }

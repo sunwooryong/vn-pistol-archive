@@ -498,7 +498,7 @@ async function openCoachReport(year) {
         : `<div class="rc-sech">📋 ${t('관리 선수 명단')}</div>${roster}${compMed}${indSecs ? `<div class="rc-sech">🎯 ${t('개인전')}</div>${indSecs}` : ''}${teamSecs}`}
       <div class="rc-foot">
         <div class="rc-note">${t('본 증명서는 베트남 사격연맹 공개 기록을 기준으로 자동 집계되었습니다.')} · ${t('발급일')} ${dstr}</div>
-        <div class="rc-sign"><span class="rc-signname">RYONG</span><span class="rc-signlab">${t('작성')}</span></div>
+        ${reportSignature()}
       </div>`;
   }
   view.querySelectorAll('.rv-m').forEach(btn => btn.onclick = () => {
@@ -721,7 +721,7 @@ async function openDossier(a, rows) {
   });
   h += `</tbody></table>`;
 
-  h += `<div class="dos-foot"><div class="dos-note">${t('본 보고서는 베트남 사격연맹 공개 기록을 기준으로 자동 작성되었습니다.')} · ${t('발급일')} ${dstr}</div><div class="rc-sign"><span class="rc-signname">RYONG</span><span class="rc-signlab">${t('작성')}</span></div></div>`;
+  h += `<div class="dos-foot"><div class="dos-note">${t('본 보고서는 베트남 사격연맹 공개 기록을 기준으로 자동 작성되었습니다.')} · ${t('발급일')} ${dstr}</div>${reportSignature()}</div>`;
   doc.innerHTML = h;
 }
 window.openDossier = openDossier;
@@ -754,13 +754,13 @@ function REPORT_LINE(pts, w = 700, h = 188) {
   const step = pts.length > 13 ? 2 : 1;
   let g = '';
   [mx, (mn + mx) / 2, mn].forEach(gv => { const y = Y(gv); g += `<line x1="${L}" y1="${y.toFixed(1)}" x2="${w - Rp}" y2="${y.toFixed(1)}" stroke="#eef1f6"/><text x="${L - 4}" y="${(y + 3).toFixed(1)}" text-anchor="end" font-size="9" fill="#c2c9d4">${gv.toFixed(0)}</text>`; });
-  g += `<polyline points="${pts.map((p, i) => `${X(i).toFixed(1)},${Y(p.val).toFixed(1)}`).join(' ')}" fill="none" stroke="#0b5cab" stroke-width="1.8"/>`;
+  g += `<polyline points="${pts.map((p, i) => `${X(i).toFixed(1)},${Y(p.val).toFixed(1)}`).join(' ')}" fill="none" stroke="#0b5cab" stroke-width="2.6" stroke-linejoin="round"/>`;
   pts.forEach((p, i) => {
     const x = X(i), y = Y(p.val), c = p.medal ? mc[p.medal] : '#0b5cab';
-    g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${p.medal ? 3.8 : 2.4}" fill="${c}"${p.medal ? ' stroke="#fff" stroke-width="0.9"' : ''}/>`;
-    g += `<text x="${x.toFixed(1)}" y="${(y - 7).toFixed(1)}" text-anchor="middle" font-size="9" font-weight="700" fill="${p.medal ? c : '#0c1a30'}">${p.val}</text>`;
-    if (p.place) g += `<text x="${x.toFixed(1)}" y="${(y + 12).toFixed(1)}" text-anchor="middle" font-size="7.5" font-weight="700" fill="${p.medal ? c : '#8a94a6'}">${p.place}${t('위')}</text>`;
-    if (i % step === 0 || i === pts.length - 1) g += `<text x="${x.toFixed(1)}" y="${h - 16}" text-anchor="middle" font-size="7.5" fill="#8a94a6">${dd(p.date)}</text>`;
+    g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${p.medal ? 4.4 : 3}" fill="${c}"${p.medal ? ' stroke="#fff" stroke-width="1.1"' : ''}/>`;
+    g += `<text x="${x.toFixed(1)}" y="${(y - 8).toFixed(1)}" text-anchor="middle" font-size="10.5" font-weight="700" fill="${p.medal ? c : '#0c1a30'}">${p.val}</text>`;
+    if (p.place) g += `<text x="${x.toFixed(1)}" y="${(y + 13).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="700" fill="${p.medal ? c : '#8a94a6'}">${p.place}${t('위')}</text>`;
+    if (i % step === 0 || i === pts.length - 1) g += `<text x="${x.toFixed(1)}" y="${h - 15}" text-anchor="middle" font-size="8.5" fill="#8a94a6">${dd(p.date)}</text>`;
   });
   return `<svg class="dos-line" viewBox="0 0 ${w} ${h}">${g}</svg>`;
 }
@@ -777,8 +777,8 @@ function REPORT_MLINE(labels, series, w = 700, h = 150) {
   series.forEach((s, si) => {
     const pts = s.vals.map((v, i) => v == null ? null : [X(i), Y(v), v, i]).filter(Boolean);
     if (pts.length < 1) return;
-    if (pts.length >= 2) g += `<polyline points="${pts.map(p => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')}" fill="none" stroke="${s.color}" stroke-width="1.8"/>`;
-    pts.forEach(p => { g += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.4" fill="${s.color}"/>`; g += `<text x="${p[0].toFixed(1)}" y="${(p[1] + (si === 0 ? -6 : 13)).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="700" fill="${s.color}">${p[2].toFixed(1)}</text>`; });
+    if (pts.length >= 2) g += `<polyline points="${pts.map(p => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')}" fill="none" stroke="${s.color}" stroke-width="2.6" stroke-linejoin="round"/>`;
+    pts.forEach(p => { g += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3" fill="${s.color}"/>`; g += `<text x="${p[0].toFixed(1)}" y="${(p[1] + (si === 0 ? -7 : 14)).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="${s.color}">${p[2].toFixed(1)}</text>`; });
   });
   return `<svg class="dos-line" viewBox="0 0 ${w} ${h}">${g}</svg>`;
 }
@@ -793,6 +793,16 @@ function REPORT_RADAR(axes, size = 200) {
   g += `<polygon points="${dp}" fill="rgba(11,92,171,.18)" stroke="#0b5cab" stroke-width="1.8"/>`;
   axes.forEach((a, i) => { const [x, y] = pt(i, R * Math.max(0.04, Math.min(1, a.val))); g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.2" fill="#0b5cab"/>`; });
   return `<svg class="dos-radar" viewBox="0 0 ${size} ${size}">${g}</svg>`;
+}
+// 보고서/증명서 공통 서명 블록 (명함 기반) — 인쇄 시 함께 출력
+function reportSignature() {
+  return `<div class="dos-sign">
+    <div class="dos-sign-name">RYONG&nbsp;SUNWOO</div>
+    <div class="dos-sign-role">${t('권총 사격 전문가')} · ISSF ${t('국제심판')}</div>
+    <div class="dos-sign-contact">✉ sunwooryong@gmail.com</div>
+    <div class="dos-sign-contact">☎ +82 10-7155-7575 · +84 36 970 0253</div>
+    <div class="dos-sign-org">National Youth Athletes Training Center · Da Nang, Vietnam</div>
+  </div>`;
 }
 // 평가보고서 섹션 재배치: 현황→강약점→세부→추세→전망→부록 서사 순서 (섹션 머리 이모지로 식별, 언어 무관)
 function reorderReportSections(html) {
@@ -1180,7 +1190,7 @@ async function buildReportSection(a, allRows, year) {
   if (fixes.length) cm += `<b>${t('보완 필요')}</b>: ${fixes.join(', ')}.`;
   h += `<div class="dos-sec">📝 ${t('종합 평가')} <span class="dos-help">${t('현황·강약점·전망·보완 요약')}</span></div><div class="eval-comment">${cm.trim()}</div>`;
 
-  h += `<div class="dos-foot"><div class="dos-note">${t('본 보고서는 베트남 사격연맹 공개 기록을 기준으로 자동 작성되었습니다.')} · ${t('발급일')} ${dstr}</div><div class="rc-sign"><span class="rc-signname">RYONG</span><span class="rc-signlab">${t('작성')}</span></div></div></div>`;
+  h += `<div class="dos-foot"><div class="dos-note">${t('본 보고서는 베트남 사격연맹 공개 기록을 기준으로 자동 작성되었습니다.')} · ${t('발급일')} ${dstr}</div>${reportSignature()}</div></div>`;
   return reorderReportSections(h);
 }
 
@@ -1292,7 +1302,7 @@ async function renderAthleteEval(a, rows, year) {
       <table class="rc-tab"><tbody>` + items.map(r => `<tr><td class="rc-nm">${esc(eventLabel(r.event))}</td><td>${r.qual_total != null ? t('본선') + ' ' + num(r.qual_total) : ''}${r.final_score != null ? ' · ' + t('결선') + ' ' + r.final_score : ''}</td><td class="rc-md">${r.medal ? medalBadge(r.medal) : ''}${r.team_medal ? medalBadge(r.team_medal) + `<span class="tmlbl">${t('단체')}</span>` : ''}${r.placement ? ` ${r.placement}${t('위')}` : ''}</td></tr>`).join('') + `</tbody></table></div>`).join('') +
     `<div class="rc-sech">📝 ${t('총평')}</div><div class="eval-comment">${comment}</div>
     <div class="rc-foot"><div class="rc-note">${t('본 보고서는 베트남 사격연맹 공개 기록을 기준으로 자동 작성되었습니다.')} · ${t('발급일')} ${dstr}</div>
-      <div class="rc-sign"><span class="rc-signname">RYONG</span><span class="rc-signlab">${t('작성')}</span></div></div>
+      ${reportSignature()}</div>
   </div>`;
 }
 const MON = { ko: m => `${m}월`, vi: m => `Th.${m}` };
