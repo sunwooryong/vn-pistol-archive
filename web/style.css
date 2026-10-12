@@ -1118,6 +1118,22 @@ table.dos-tab tbody tr:nth-child(even) { background: #fafbfd; }
 .ser-gap { display: block; text-decoration: none; font-size: 8px; color: #a9b2c0; }
 @media print { .dos-bar { grid-template-columns: 100px 1fr 60px 44px; } }
 
+/* 환경별 성적 — 평균 대비 발산형 막대 */
+.env-ins { margin: 4px 0 6px; }
+.env-wrap { margin-top: 2px; }
+.env-cat-h { font-size: 10px; font-weight: 800; color: #8a94a6; text-transform: uppercase; letter-spacing: .04em; margin: 9px 0 2px; }
+.env-row { display: grid; grid-template-columns: 96px 1fr 116px; align-items: center; gap: 8px; padding: 2px 0; }
+.env-nm { font-size: 12px; font-weight: 600; color: #1a2233; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.env-track { position: relative; height: 15px; background: #eef2f8; border-radius: 4px; }
+.env-mid { position: absolute; left: 50%; top: -1px; bottom: -1px; width: 1px; background: #aeb8c6; }
+.env-fill { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; min-width: 2px; }
+.env-val { font-size: 11.5px; font-variant-numeric: tabular-nums; color: #55617a; white-space: nowrap; text-align: right; }
+.env-val b { color: #0c1a30; font-weight: 800; }
+.env-d { text-decoration: none; } .env-d.up { color: #2f9e44; } .env-d.dn { color: #e8803a; }
+.env-n { color: #9aa4b2; text-decoration: none; margin-left: 2px; }
+@media (max-width: 560px) { .env-row { grid-template-columns: 64px 1fr 100px; gap: 6px; } .env-nm { font-size: 11px; } }
+@media print { .env-track, .env-fill { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+
 /* 값 라벨 스파크라인 · 라인차트 · 캡션 */
 .sp2 { display: inline-flex; align-items: center; gap: 5px; }
 .sp2 .dos-spark { width: 84px; height: 22px; }

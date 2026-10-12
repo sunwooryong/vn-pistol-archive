@@ -988,8 +988,8 @@ async function buildReportSection(a, allRows, year) {
   // 🔢 점수대 분포 & 집중력 (훈련 시트 dist/long10)
   if (TR && TR.sessions) {
     const mn1 = arr => arr.reduce((s, v) => s + v, 0) / arr.length;
-    const dS = TR.sessions.filter(s => (year === 'all' || +s.date.slice(0, 4) === year) && Array.isArray(s.dist) && s.dist.length >= 11);
-    if (dS.length >= 3) {
+    const dS = TR.sessions.filter(s => (year === 'all' || +s.date.slice(0, 4) === year) && Array.isArray(s.dist) && s.dist.length >= 11 && s.dist.some(v => v));
+    if (dS.length >= 1) {
       const sum = new Array(11).fill(0); dS.forEach(s => s.dist.forEach((v, i) => sum[i] += (v || 0)));
       const shots = sum.reduce((a, b) => a + b, 0);
       const pct = i => shots ? Math.round(sum[i] / shots * 1000) / 10 : 0;
@@ -1017,12 +1017,26 @@ async function buildReportSection(a, allRows, year) {
       const humG = grp(s => s.wx.hum == null ? null : (s.wx.hum < 60 ? '<60%' : s.wx.hum < 70 ? '60–69%' : '≥70%'));
       const dayG = grp(s => s.wx.daypart === 'AM' ? t('오전') : s.wx.daypart === 'PM' ? t('오후') : null);
       const weaG = grp(s => s.wx.weather ? s.wx.weather.split('/')[0].trim() : null).slice(0, 5);
-      const block = (lab, arr) => arr.map((x, i) => `<tr><td class="dos-nm">${i === 0 ? lab : ''}</td><td>${esc(x.k)}</td><td class="dos-b">${x.avg}</td><td>${x.n}${x.n < 5 ? ' <s class="dos-unit">' + t('부족') + '</s>' : ''}</td></tr>`).join('');
       const coord = ws.find(s => s.wx.lat != null);
-      h += `<div class="dos-sec">🌤️ ${t('환경별 성적')} <span class="dos-help">${t('날씨·온도·습도·시간대별 발당 평균')}</span> <span>${esc(DISC[mainK] || mainK)} · ${ws.length}${t('세션')}</span></div>
-        <table class="dos-tab"><thead><tr><th>${t('구분')}</th><th>${t('조건')}</th><th>${t('발당 평균')}</th><th>${t('세션')}</th></tr></thead><tbody>`
-        + block(t('온도'), tempG) + block(t('습도'), humG) + block(t('시간대'), dayG) + block(t('날씨'), weaG)
-        + `</tbody></table><div class="dos-cap">${t('발당 평균(÷발수) 기준 · 환경에 따른 컨디션 차이')}${coord ? ` · 📍 ${coord.wx.lat}, ${coord.wx.lon}` : ''}</div>`;
+      const overall = mn1(ws.map(s => s.psa));
+      const allG = [...tempG, ...humG, ...dayG, ...weaG];
+      const maxAbs = Math.max(0.03, ...allG.map(x => Math.abs(x.avg - overall)));
+      const barRow = x => {
+        const d = x.avg - overall, up = d >= 0, w = Math.min(47, Math.abs(d) / maxAbs * 46);
+        const c = x.n < 5 ? '#b9c2d0' : (up ? '#2f9e44' : '#e8803a');
+        return `<div class="env-row"><span class="env-nm">${esc(x.k)}</span><span class="env-track"><span class="env-mid"></span><span class="env-fill" style="${up ? 'left:50%' : 'right:50%'};width:${w}%;background:${c}"></span></span><span class="env-val"><b>${x.avg}</b> <s class="env-d ${up ? 'up' : 'dn'}">${up ? '+' : ''}${d.toFixed(2)}</s> <s class="env-n">n${x.n}${x.n < 5 ? '!' : ''}</s></span></div>`;
+      };
+      const cat = (lab, arr) => arr.length ? `<div class="env-cat-h">${lab}</div>` + arr.map(barRow).join('') : '';
+      // 핵심 인사이트(최고/최저, 편차 작으면 안정)
+      const strong = allG.filter(x => x.n >= 5);
+      const bestX = strong.length ? strong.reduce((a, b) => b.avg > a.avg ? b : a) : null;
+      const worstX = strong.length ? strong.reduce((a, b) => b.avg < a.avg ? b : a) : null;
+      const spread = bestX && worstX ? bestX.avg - worstX.avg : 0;
+      const insight = spread < 0.08 ? t('환경에 따른 편차가 작아 어디서든 안정적입니다.') : (bestX && worstX ? `${t('가장 좋은 환경')} <b>${esc(bestX.k)}</b>(${bestX.avg}) · ${t('주의 환경')} <b>${esc(worstX.k)}</b>(${worstX.avg})` : '');
+      h += `<div class="dos-sec">🌤️ ${t('환경별 성적')} <span class="dos-help">${t('이 선수 평균 대비 · 오른쪽 초록=잘 쏨')}</span> <span>${esc(DISC[mainK] || mainK)} · ${ws.length}${t('세션')} · ${t('평균')} ${Math.round(overall * 100) / 100}</span></div>
+        ${insight ? `<div class="eval-comment env-ins">${insight}</div>` : ''}
+        <div class="env-wrap">${cat(t('온도'), tempG)}${cat(t('습도'), humG)}${cat(t('시간대'), dayG)}${cat(t('날씨'), weaG)}</div>
+        <div class="dos-cap">${t('가운데 선=이 선수 평균 · 오른쪽(초록)=평소보다 잘 쏨, 왼쪽(주황)=저조 · n=세션수, !는 5미만(참고용)')}${coord ? ` · 📍 ${coord.wx.lat}, ${coord.wx.lon}` : ''}</div>`;
     }
   }
 
