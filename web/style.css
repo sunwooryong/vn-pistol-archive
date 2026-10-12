@@ -1093,14 +1093,19 @@ table.dos-tab tbody tr:nth-child(even) { background: #fafbfd; }
 }
 
 /* 통합 리포트: 시리즈 막대 · 월별 · 유형 칩 */
-.ser-cell { padding: 3px 7px !important; }
-.ser-cell { padding: 4px 7px !important; }
-.ser-bar { display: inline-flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 40px; vertical-align: bottom; }
-.ser-bar s { display: block; width: 22px; background: #6f93c4; border-radius: 3px 3px 0 0; }
+/* 시리즈 분석 — 종목명(좌)과 막대(좌)를 붙이고 막대를 키움 */
+.ser-tab .ser-nmcol { width: 128px; text-align: left; }
+.ser-th { text-align: left !important; }
+.ser-cell { padding: 6px 7px !important; text-align: left !important; white-space: nowrap; }
+.ser-bar { display: inline-flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 52px; vertical-align: bottom; }
+.ser-bar s { display: block; width: 30px; background: #6f93c4; border-radius: 3px 3px 0 0; }
 .ser-bar.hi s { background: #2f9e44; } .ser-bar.lo s { background: #e03131; }
-.ser-bar .ser-v { font-style: normal; font-size: 9.5px; font-weight: 800; color: #0c1a30; margin-bottom: 2px; }
+.ser-bar .ser-v { font-style: normal; font-size: 11px; font-weight: 800; color: #0c1a30; margin-bottom: 2px; }
 .ser-bar.hi .ser-v { color: #2f9e44; } .ser-bar.lo .ser-v { color: #e03131; }
-.ser-bar .ser-p { font-style: normal; font-size: 8px; color: #a9b2c0; margin-top: 2px; }
+.ser-bar .ser-p { font-style: normal; font-size: 9.5px; color: #8a94a6; font-weight: 700; margin-top: 3px; }
+/* 단계 분석 — 종목/단계 간격 좁힘 */
+.stg-tab .stg-nmcol { width: 150px; }
+.stg-tab .stg-col { text-align: left !important; }
 .dos-tab.month { font-size: 10.5px; } .dos-tab.month th, .dos-tab.month td { padding: 3px 6px; text-align: center; }
 .dos-tab.month td.dos-nm, .dos-tab.month th:first-child { text-align: left; }
 .dos-mchart { display: flex; align-items: center; gap: 10px; font-size: 10px; color: #55617a; margin: 6px 0 2px; flex-wrap: wrap; }

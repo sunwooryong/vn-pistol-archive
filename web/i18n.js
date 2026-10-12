@@ -10,6 +10,8 @@
     '베트남 사격 기록·분석 시스템': 'Hệ thống Hồ sơ & Phân tích Bắn súng Việt Nam',
     '권총 사격 전문가': 'Chuyên gia bắn súng ngắn',
     '국제심판': 'Trọng tài quốc tế',
+    '25m 스탠다드 권총': 'Súng ngắn tiêu chuẩn 25m',
+    '급사': 'Nhanh',
     '선수 실적 증명서': 'Giấy chứng nhận thành tích VĐV',
     '실적증명': 'Chứng nhận thành tích',
     '메달 획득 내역': 'Danh sách huy chương',
