@@ -1094,6 +1094,10 @@ table.dos-tab tbody tr:nth-child(even) { background: #fafbfd; }
 
 /* 통합 리포트: 시리즈 막대 · 월별 · 유형 칩 */
 /* 시리즈 분석 — 종목명(좌)과 막대(좌)를 붙이고 막대를 키움 */
+/* 테이블을 내용 폭으로: 막대와 초반/후반/격차 사이 빈 간격 제거 */
+table.dos-tab.ser-tab, table.dos-tab.stg-tab { width: auto; max-width: 100%; }
+table.dos-tab.ser-tab td, table.dos-tab.ser-tab th,
+table.dos-tab.stg-tab td, table.dos-tab.stg-tab th { padding-left: 14px; padding-right: 14px; }
 .ser-tab .ser-nmcol { width: 128px; text-align: left; }
 .ser-th { text-align: left !important; }
 .ser-cell { padding: 6px 7px !important; text-align: left !important; white-space: nowrap; }
