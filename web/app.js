@@ -803,8 +803,8 @@ function reorderReportSections(html) {
   if (first < 0) return html;
   const pre = body.slice(0, first);
   const chunks = body.slice(first).split('<div class="dos-sec">').filter(c => c.trim()).map(c => '<div class="dos-sec">' + c);
-  const ORDER = ['📝', '📊', '🎯', '🎖️', '🔬', '🧩', '📈', '🏆', '📅', '🏋️', '🎮', '👥', '🔮', '🗂️'];
-  const re = /📝|📊|🎯|🎖️|🔬|🧩|📈|🏆|📅|🏋️|🎮|👥|🔮|🗂️/;
+  const ORDER = ['📝', '📊', '🎯', '🎖️', '🔬', '🔢', '🧩', '📈', '🏆', '📅', '🌤️', '🏋️', '🎮', '👥', '🔮', '🗂️'];
+  const re = /📝|📊|🎯|🎖️|🔬|🔢|🧩|📈|🏆|📅|🌤️|🏋️|🎮|👥|🔮|🗂️/;
   const keyOf = c => { const m = c.slice(0, 180).match(re); const i = m ? ORDER.indexOf(m[0]) : -1; return i < 0 ? 99 : i; };
   return pre + chunks.map((c, i) => [keyOf(c), i, c]).sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(x => x[2]).join('') + foot;
 }
@@ -982,6 +982,47 @@ async function buildReportSection(a, allRows, year) {
       h += `<div class="dos-sec">🏆 ${t('개인 최고기록')} <span class="dos-help">${t('개인 최고기록 이력')}</span></div>
         <table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>PB</th><th>${t('날짜')}</th><th>${t('대회')}</th></tr></thead><tbody>` +
         discRows.map(d => `<tr><td class="dos-nm">${esc(DISC[d.k] || d.k)}</td><td class="dos-pb">${fmt(d.best)}</td><td>${d.pbDate ? d.pbDate.replace(/-/g, '.').slice(2) : '–'}</td><td class="dos-nm">${esc(d.pbComp || '')}</td></tr>`).join('') + `</tbody></table>`;
+    }
+  }
+
+  // 🔢 점수대 분포 & 집중력 (훈련 시트 dist/long10)
+  if (TR && TR.sessions) {
+    const mn1 = arr => arr.reduce((s, v) => s + v, 0) / arr.length;
+    const dS = TR.sessions.filter(s => (year === 'all' || +s.date.slice(0, 4) === year) && Array.isArray(s.dist) && s.dist.length >= 11);
+    if (dS.length >= 3) {
+      const sum = new Array(11).fill(0); dS.forEach(s => s.dist.forEach((v, i) => sum[i] += (v || 0)));
+      const shots = sum.reduce((a, b) => a + b, 0);
+      const pct = i => shots ? Math.round(sum[i] / shots * 1000) / 10 : 0;
+      const ge9 = shots ? Math.round((sum[0] + sum[1]) / shots * 1000) / 10 : 0;
+      const le7 = shots ? Math.round(sum.slice(3).reduce((a, b) => a + b, 0) / shots * 1000) / 10 : 0;
+      const longs = dS.filter(s => s.long10 != null).map(s => s.long10);
+      const lo = longs.length ? { max: Math.max(...longs), avg: Math.round(mn1(longs) * 10) / 10 } : null;
+      const labels = ['10', '9', '8', '7', '6', '5', '4', '3', '2', '1', '0'];
+      const maxc = Math.max(...sum, 1);
+      const col = i => i === 0 ? '#0a805a' : i === 1 ? '#2f9e44' : i <= 3 ? '#f59f00' : '#e03131';
+      h += `<div class="dos-sec">🔢 ${t('점수대 분포 & 집중력')} <span class="dos-help">${t('10점~0점 비율 · 10점 최고 연속')}</span> <span>${dS.length}${t('세션')} · ${shots}${t('발')}${dS.length < 5 ? ' · ' + t('정보부족') : ''}</span></div>
+        <div class="dos-kpis sm">${tile(t('10점 비율'), pct(0) + '%', '')}${tile(t('9점↑ 비율'), ge9 + '%', '')}${tile(t('8점'), pct(2) + '%', '')}${tile(t('7점↓'), le7 + '%', '')}${lo ? tile(t('10점 최고 연속'), lo.max + t('발'), t('평균') + ' ' + lo.avg + t('발')) : ''}</div>
+        <div class="dos-bars">` + sum.map((c, i) => c ? `<div class="dos-bar"><span class="dos-bl">${labels[i]}${t('점')}</span><span class="dos-btrack"><s style="width:${Math.max(2, c / maxc * 100)}%;background:${col(i)}"></s></span><b class="dos-bv">${c}</b><s class="dos-brk">${pct(i)}%</s></div>` : '').join('') + `</div>
+        <div class="dos-cap">${t('높은 점수대 비율·연속 10점이 길수록 집중력과 정밀도가 좋음')}</div>`;
+    }
+  }
+
+  // 🌤️ 환경별 성적 (훈련 시트 날씨·온도·습도·시간대)
+  if (TR && TR.sessions && mainK) {
+    const mn1 = arr => arr.reduce((s, v) => s + v, 0) / arr.length;
+    const ws = TR.sessions.filter(s => (year === 'all' || +s.date.slice(0, 4) === year) && s.wx && s.psa != null && (s.dk || s.disc) === mainK);
+    if (ws.length >= 5) {
+      const grp = fn => { const g = {}; ws.forEach(s => { const k = fn(s); if (k == null) return; (g[k] = g[k] || []).push(s.psa); }); return Object.entries(g).map(([k, vs]) => ({ k, avg: Math.round(mn1(vs) * 100) / 100, n: vs.length })).sort((a, b) => b.avg - a.avg); };
+      const tempG = grp(s => s.wx.temp == null ? null : (s.wx.temp <= 30 ? '≤30℃' : s.wx.temp <= 33 ? '31–33℃' : '≥34℃'));
+      const humG = grp(s => s.wx.hum == null ? null : (s.wx.hum < 60 ? '<60%' : s.wx.hum < 70 ? '60–69%' : '≥70%'));
+      const dayG = grp(s => s.wx.daypart === 'AM' ? t('오전') : s.wx.daypart === 'PM' ? t('오후') : null);
+      const weaG = grp(s => s.wx.weather ? s.wx.weather.split('/')[0].trim() : null).slice(0, 5);
+      const block = (lab, arr) => arr.map((x, i) => `<tr><td class="dos-nm">${i === 0 ? lab : ''}</td><td>${esc(x.k)}</td><td class="dos-b">${x.avg}</td><td>${x.n}${x.n < 5 ? ' <s class="dos-unit">' + t('부족') + '</s>' : ''}</td></tr>`).join('');
+      const coord = ws.find(s => s.wx.lat != null);
+      h += `<div class="dos-sec">🌤️ ${t('환경별 성적')} <span class="dos-help">${t('날씨·온도·습도·시간대별 발당 평균')}</span> <span>${esc(DISC[mainK] || mainK)} · ${ws.length}${t('세션')}</span></div>
+        <table class="dos-tab"><thead><tr><th>${t('구분')}</th><th>${t('조건')}</th><th>${t('발당 평균')}</th><th>${t('세션')}</th></tr></thead><tbody>`
+        + block(t('온도'), tempG) + block(t('습도'), humG) + block(t('시간대'), dayG) + block(t('날씨'), weaG)
+        + `</tbody></table><div class="dos-cap">${t('발당 평균(÷발수) 기준 · 환경에 따른 컨디션 차이')}${coord ? ` · 📍 ${coord.wx.lat}, ${coord.wx.lon}` : ''}</div>`;
     }
   }
 
