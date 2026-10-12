@@ -849,12 +849,19 @@ async function buildReportSection(a, allRows, year) {
   let P = null; // 예측 (총평+예측섹션 공용)
   try { if (window.Predict && TR && TR.sessions && TR.sessions.length && mainK) { const _dk = TR.sessions.some(s => (s.dk || s.disc) === mainK) ? mainK : window.Predict.mainDisc(TR.sessions); if (_dk) P = window.Predict.forecast(_dk, TR.sessions, allRows, {}); } } catch (e) { }
   const per10t = s => s.avg != null ? s.avg : (s.series && s.series.length ? s.total / s.series.length : null);
+  // 소속: 최근 국내대회 unit 우선(없으면 전체 최근, 그래도 없으면 전달값) → 항상 표시
+  const curUnit = (() => {
+    const withU = allRows.filter(r => r.unit_code);
+    const dom = withU.filter(r => r.competition.scope !== 'international');
+    const pick = (dom.length ? dom : withU).slice().sort((x, y) => dsort(y).localeCompare(dsort(x)))[0];
+    return (pick && pick.unit_code) || a.unit || a.units || '';
+  })();
 
   let h = `<div class="eval-doc"><div class="dos-head">
     <div class="dos-rings">${window.ringsSVG || ''}</div>
     <div class="dos-htxt"><div class="dos-kick">${t('사격 · 베트남 사격연맹')} · ${t('평가 보고서')}</div>
       <h1 class="dos-name">${esc(a.full_name)}${g ? ` <span class="g g-${g}">${GENDER[g]}</span>` : ''}</h1>
-      <div class="dos-meta">${by ? `${by}${t('년생')} · ${t('만')} ${NOW_YEAR - by}${t('세')}` : ''}${a.unit ? ` · ${esc(a.unit)}` : ''} · ${a.is_foreign ? esc(a.nationality || '') : t('베트남')}</div></div>
+      <div class="dos-meta">${by ? `${by}${t('년생')} · ${t('만')} ${NOW_YEAR - by}${t('세')}` : ''} · <b class="dos-unit-b">${t('소속')} ${esc(curUnit || t('미상'))}</b> · ${a.is_foreign ? esc(a.nationality || '') : t('베트남')}</div></div>
     <div class="dos-asof"><i>${t('기간')}</i><b>${periodLab}</b><s>${t('발급일')} ${dstr}</s></div></div>`;
 
   if (!rows.length) return h + `<div class="muted" style="padding:20px;text-align:center">${year} ${t('기록이 없습니다.')}</div></div>`;
