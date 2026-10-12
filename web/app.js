@@ -395,7 +395,7 @@ async function openCoachReport(year) {
     const im = { g: 0, s: 0, b: 0 }, tmv = { g: 0, s: 0, b: 0 };
     ind.forEach(o => { im.g += o.g; im.s += o.s; im.b += o.b; });
     teamMed.forEach(o => { tmv.g += o.tg; tmv.s += o.ts; tmv.b += o.tb; });
-    athletes.push({ name: a.full_name, gender: a.gender, group: it.group || t('기타'), ind, teamMed, rankMap, im, tmv, medals: medalRows, has: ind.size > 0 || teamMed.size > 0 });
+    athletes.push({ key: it.key, name: a.full_name, gender: a.gender, group: it.group || t('기타'), ind, teamMed, rankMap, im, tmv, medals: medalRows, has: ind.size > 0 || teamMed.size > 0 });
   }
   const now = new Date();
   const dstr = `${now.getFullYear()}. ${now.getMonth() + 1}. ${now.getDate()}`;
@@ -432,9 +432,9 @@ async function openCoachReport(year) {
     const byG = new Map(); list.forEach(x => { (byG.get(x.group) || byG.set(x.group, []).get(x.group)).push(x); });
     for (const g of allGroups) {
       const arr = byG.get(g); if (!arr) continue;
-      const rows = arr.map(x => `<tr><td class="rc-nm">${esc(x.name)}${gbadge(x)}</td><td class="rc-md">${medStr(x.im.g, x.im.s, x.im.b)}</td>${team ? `<td class="rc-md">${medStr(x.tmv.g, x.tmv.s, x.tmv.b)}</td>` : ''}<td>${x.has ? '✓' : `<span class="rc-nod">${t('기록 없음')}</span>`}</td></tr>`).join('');
+      const rows = arr.map(x => `<tr><td class="rc-nm">${esc(x.name)}${gbadge(x)}</td><td class="rc-md">${medStr(x.im.g, x.im.s, x.im.b)}</td>${team ? `<td class="rc-md">${medStr(x.tmv.g, x.tmv.s, x.tmv.b)}</td>` : ''}<td>${x.has ? '✓' : `<span class="rc-nod">${t('기록 없음')}</span>`}</td><td class="no-print rc-certcell">${x.key ? `<button class="rc-cert" data-k="${esc(x.key)}">📜 ${t('실적증명')}</button>` : ''}</td></tr>`).join('');
       roster += `<div class="rc-disc"><div class="rc-disc-h">${esc(t(g))} <span class="rc-gn">(${arr.length})</span></div>
-        <table class="rc-tab"><thead><tr><th>${t('선수')}</th><th>${t('개인 메달')}</th>${team ? `<th>${t('단체 메달')}</th>` : ''}<th>${t('2026 기록')}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+        <table class="rc-tab"><thead><tr><th>${t('선수')}</th><th>${t('개인 메달')}</th>${team ? `<th>${t('단체 메달')}</th>` : ''}<th>${year} ${t('기록')}</th><th class="no-print"></th></tr></thead><tbody>${rows}</tbody></table></div>`;
     }
     // 개인전 — 종목별 섹션
     let indSecs = '';
@@ -500,6 +500,7 @@ async function openCoachReport(year) {
         <div class="rc-note">${t('본 증명서는 베트남 사격연맹 공개 기록을 기준으로 자동 집계되었습니다.')} · ${t('발급일')} ${dstr}</div>
         ${reportSignature()}
       </div>`;
+    view.querySelectorAll('.rc-cert').forEach(b => b.onclick = () => openAthleteCertificate([{ key: b.dataset.k }], year));
   }
   view.querySelectorAll('.rv-m').forEach(btn => btn.onclick = () => {
     view.querySelectorAll('.rv-m').forEach(b => b.classList.toggle('on', b === btn));
@@ -508,6 +509,78 @@ async function openCoachReport(year) {
   renderDoc('ind');   // 기본: 개인전 위주
 }
 window.openCoachReport = openCoachReport;
+
+// 선수 실적 증명서 (개별 선수 · 공식 증명 톤) — 지도 실적에서 선수별 발급
+async function buildCertificate(a, allRows, year) {
+  const scored = r => !r.is_dnf && r.qual_total != null;
+  const fmt = n => n == null ? '–' : (Number.isInteger(n) ? String(n) : n.toFixed(1));
+  const dsort = r => (r.match_date || r.competition.date_start || '');
+  const rows = year === 'all' ? allRows : allRows.filter(r => r.competition.year === year);
+  const allYears = [...new Set(allRows.map(r => r.competition.year))].sort();
+  const by = a.birth_year, g = a.gender;
+  const dstr = (() => { const d = new Date(); return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}`; })();
+  const periodLab = year === 'all' ? `${t('전체 기간')}${allYears.length ? ` · ${allYears[0]}–${allYears[allYears.length - 1]}` : ''}` : `${year}`;
+  const curUnit = (() => { const wU = allRows.filter(r => r.unit_code); const dom = wU.filter(r => r.competition.scope !== 'international'); const p = (dom.length ? dom : wU).slice().sort((x, y) => dsort(y).localeCompare(dsort(x)))[0]; return (p && p.unit_code) || a.unit || ''; })();
+  const medStr = m => [m.gold && `<span class="medal gold">${MEDAL.gold}</span>${m.gold}`, m.silver && `<span class="medal silver">${MEDAL.silver}</span>${m.silver}`, m.bronze && `<span class="medal bronze">${MEDAL.bronze}</span>${m.bronze}`].filter(Boolean).join(' ') || '–';
+  const tile = (lab, val, sub) => `<div class="dos-tile"><i>${lab}</i><b>${val}</b>${sub ? `<s>${sub}</s>` : ''}</div>`;
+  const im = { gold: 0, silver: 0, bronze: 0 }, tm = { gold: 0, silver: 0, bronze: 0 }; let fin = 0; const comps = new Set();
+  rows.forEach(r => { if (r.medal) im[r.medal]++; if (r.team_medal) tm[r.team_medal]++; if (r.final_score != null) fin++; comps.add(r.competition.name + r.competition.year); });
+  const gamesInd = rows.filter(r => r.event.team_type === 'individual' && scored(r)).length;
+  const byD = new Map();
+  rows.forEach(r => { if (r.event.team_type !== 'individual' || !scored(r)) return; (byD.get(r.event.discipline) || byD.set(r.event.discipline, []).get(r.event.discipline)).push(r); });
+  let R = null; try { R = await DB.regionalAnalysis(a.id, year === 'all' ? RANK_YEAR : year); } catch (e) { }
+
+  let h = `<div class="eval-doc cert-doc"><div class="dos-head cert-head">
+    <div class="dos-rings">${window.ringsSVG || ''}</div>
+    <div class="dos-htxt"><div class="dos-kick">${t('사격 · 베트남 사격연맹')}</div>
+      <h1 class="cert-title">${t('선수 실적 증명서')}</h1><div class="cert-ten">Certificate of Athletic Achievement</div></div>
+    <div class="dos-asof"><i>${t('기간')}</i><b>${periodLab}</b><s>${t('발급일')} ${dstr}</s></div></div>
+    <div class="cert-sub"><b class="cert-name">${esc(a.full_name)}</b>${g ? ` <span class="g g-${g}">${GENDER[g]}</span>` : ''} · ${by ? `${by}${t('년생')}` : ''} · <b>${t('소속')} ${esc(curUnit || t('미상'))}</b> · ${a.is_foreign ? esc(a.nationality || '') : t('베트남')}</div>`;
+
+  if (!rows.length) return h + `<div class="muted" style="padding:20px;text-align:center">${t('해당 기간 기록이 없습니다.')}</div><div class="dos-foot"><div class="dos-note">${t('본 증명서는 베트남 사격연맹 공개 기록을 기준으로 자동 작성되었습니다.')} · ${t('발급일')} ${dstr}</div>${reportSignature()}</div></div>`;
+
+  h += `<div class="dos-kpis">${tile(t('출전 대회'), comps.size, `${gamesInd} ${t('경기')}`)}${tile(t('개인 메달'), im.gold + im.silver + im.bronze, medStr(im))}${tile(t('단체 메달'), tm.gold + tm.silver + tm.bronze, medStr(tm))}${tile(t('결선 진출'), fin + t('회'), '')}${tile(t('종목'), byD.size, '')}</div>`;
+
+  const medalRows = rows.filter(r => r.medal || r.team_medal).sort((x, y) => dsort(y).localeCompare(dsort(x)));
+  if (medalRows.length) {
+    h += `<div class="dos-sec">🏅 ${t('메달 획득 내역')} <span>${medalRows.length}${t('건')}</span></div>
+      <table class="dos-tab"><thead><tr><th>${t('날짜')}</th><th>${t('대회')}</th><th>${t('종목')}</th><th>${t('메달')}</th><th>${t('순위')}</th></tr></thead><tbody>` +
+      medalRows.map(r => `<tr><td>${(dsort(r) || '').slice(2, 10).replace(/-/g, '.')}</td><td class="dos-nm">${esc(r.competition.name)} <span class="scope ${r.competition.scope}">${SCOPE[r.competition.scope] || ''}</span></td><td>${esc(eventLabel(r.event))}</td><td class="dos-md">${r.medal ? medalBadge(r.medal) : ''}${r.team_medal ? medalBadge(r.team_medal) + `<s>${t('단체')}</s>` : ''}</td><td>${r.placement ? r.placement + t('위') : ''}</td></tr>`).join('') + `</tbody></table>`;
+  }
+
+  const discRows = [...byD.entries()].map(([k, arr]) => { const vs = arr.map(r => r.qual_total); const fins = arr.filter(r => r.final_score != null).map(r => r.final_score); const dz = R && R.disciplines ? R.disciplines.find(x => x.disc === k) : null; return { k, n: vs.length, best: Math.max(...vs), fin: fins.length ? Math.max(...fins) : null, dz }; }).sort((x, y) => (WEAPON_ORDER.indexOf(weaponOf(x.k)) - WEAPON_ORDER.indexOf(weaponOf(y.k))));
+  if (discRows.length) {
+    h += `<div class="dos-sec">🎯 ${t('종목별 최고 기록')}</div>
+      <table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('경기')}</th><th>${t('최고 본선')}</th><th>${t('결선 최고')}</th><th>${t('전국')}</th></tr></thead><tbody>` +
+      discRows.map(d => `<tr><td class="dos-nm">${esc(DISC[d.k] || d.k)}</td><td>${d.n}</td><td class="dos-b">${fmt(d.best)}</td><td class="dos-pb">${d.fin != null ? finalFmt(d.fin, d.k) : '–'}</td><td>${d.dz ? `${d.dz.natRank}/${d.dz.natN} <s class="dos-unit">${t('상위')} ${d.dz.pct}%</s>` : '–'}</td></tr>`).join('') + `</tbody></table>`;
+  }
+
+  h += `<div class="cert-stmt">${t('위 선수는 상기 기록을 달성하였음을 증명합니다.')}</div>`;
+  h += `<div class="dos-foot"><div class="dos-note">${t('본 증명서는 베트남 사격연맹 공개 기록을 기준으로 자동 작성되었습니다.')} · ${t('발급일')} ${dstr}</div>${reportSignature()}</div></div>`;
+  return h;
+}
+async function openAthleteCertificate(items, year) {
+  let view = document.getElementById('report-view'); if (view) view.remove();
+  view = el('div', 'report-view'); view.id = 'report-view';
+  view.innerHTML = `<div class="rv-bar no-print"><span class="rv-ttl">📜 ${t('선수 실적 증명서')}</span><button class="rv-print" id="rv-print">🖨️ ${t('인쇄')}</button><button class="rv-close" id="rv-close">${t('닫기')}</button></div>
+    <div class="rv-doc dos-doc" id="rv-doc"><div class="muted" style="padding:40px;text-align:center">${t('불러오는 중…')}</div></div>`;
+  document.body.appendChild(view);
+  $('#rv-close').onclick = () => view.remove();
+  const parts = [], names = [];
+  for (const it of (items || [])) {
+    const a = it.id ? it : await DB.athleteByKey(it.key || it.identity_key); if (!a) continue;
+    let rows = []; try { rows = await DB.athleteCareer(a.id); } catch (e) { }
+    parts.push(await buildCertificate({ id: a.id, ...a }, rows, year)); names.push(a.full_name);
+  }
+  $('#rv-doc').innerHTML = parts.join('') || `<div class="muted" style="padding:40px;text-align:center">${t('기록이 없습니다.')}</div>`;
+  $('#rv-print').onclick = () => {
+    const fsafe = s => String(s || '').replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+    const d = new Date(), pp = n => String(n).padStart(2, '0'); const ds = `${d.getFullYear()}${pp(d.getMonth() + 1)}${pp(d.getDate())}`;
+    const nm = names.length === 1 ? fsafe(names[0]) : names.length + t('명');
+    const prev = document.title; document.title = [nm, t('실적증명'), ds].filter(Boolean).join('_'); window.print(); setTimeout(() => { document.title = prev; }, 800);
+  };
+}
+window.openAthleteCertificate = openAthleteCertificate;
 
 // 선수 평가 보고서 (연말 총결산) — 연도 선택 · 단일/다중 선수 · 인쇄
 async function openEvalReport(athletes, year) {

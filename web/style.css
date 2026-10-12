@@ -1075,6 +1075,15 @@ table.dos-tab tbody tr:nth-child(even) { background: #fafbfd; }
 .dos-sign-contact { font-size: 10px; color: #44515f; margin-top: 2px; font-variant-numeric: tabular-nums; }
 .dos-sign-org { font-size: 9px; color: #8a94a6; margin-top: 2px; }
 .rv-ttl { font-size: 14px; font-weight: 800; color: var(--tx); }
+/* 선수 실적 증명서 */
+.rc-cert { background: #0b5cab; color: #fff; border: 0; border-radius: 7px; padding: 4px 10px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.rc-cert:hover { background: #084684; }
+.rc-certcell { text-align: right; }
+.cert-title { font-size: 25px; font-weight: 800; color: #0c1a30; letter-spacing: .06em; margin: 1px 0 0; }
+.cert-ten { font-size: 10px; font-weight: 700; color: #b08a2c; letter-spacing: .14em; text-transform: uppercase; }
+.cert-sub { font-size: 13px; color: #44515f; margin: 2px 0 14px; padding: 9px 13px; background: #f8fafd; border: 1px solid #e2e7ef; border-radius: 8px; }
+.cert-sub .cert-name { font-size: 16px; font-weight: 800; color: #0c1a30; }
+.cert-stmt { margin: 18px 0 4px; font-size: 13px; color: #24303f; text-align: center; font-weight: 700; letter-spacing: .01em; }
 .dos-btn { }
 @media print {
   .dos-doc { max-width: none !important; }
