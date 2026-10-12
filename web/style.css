@@ -1030,7 +1030,7 @@ table.tr-tab td { padding: 6px 8px; border-bottom: 1px solid var(--line2); font-
 .team-tab td.tt-nm .lnk { font-weight: 700; }
 
 /* =============== 선수 종합 프로파일(도시에) =============== */
-.dos-doc { max-width: 1040px; color: #14181f; font-variant-numeric: tabular-nums; }
+.dos-doc { max-width: 880px; color: #14181f; font-variant-numeric: tabular-nums; }
 .dos-doc .dos-b, .dos-doc .dos-pb, .dos-tile b, .dos-tab td { font-variant-numeric: tabular-nums; }
 .dos-head { display: grid; grid-template-columns: 46px 1fr auto; gap: 12px; align-items: center; border-bottom: 3px double #c9a13a; padding-bottom: 12px; margin-bottom: 12px; }
 .dos-rings { width: 46px; }
@@ -1093,22 +1093,26 @@ table.dos-tab tbody tr:nth-child(even) { background: #fafbfd; }
 }
 
 /* 통합 리포트: 시리즈 막대 · 월별 · 유형 칩 */
-/* 시리즈 분석 — 종목명(좌)과 막대(좌)를 붙이고 막대를 키움 */
-/* 테이블을 내용 폭으로: 막대와 초반/후반/격차 사이 빈 간격 제거 */
-table.dos-tab.ser-tab, table.dos-tab.stg-tab { width: auto; max-width: 100%; }
-table.dos-tab.ser-tab td, table.dos-tab.ser-tab th,
-table.dos-tab.stg-tab td, table.dos-tab.stg-tab th { padding-left: 14px; padding-right: 14px; }
-.ser-tab .ser-nmcol { width: 128px; text-align: left; }
+/* 시리즈 분석 — 다른 섹션과 같은 전체 폭(100%) + 고정 레이아웃으로 컬럼 고르게 분배(중간 빈 간격 제거) */
+table.dos-tab.ser-tab, table.dos-tab.stg-tab { width: 100%; table-layout: fixed; }
+.ser-tab th:nth-child(1), .ser-tab td:nth-child(1) { width: 12%; text-align: left; }
+.ser-tab th:nth-child(2), .ser-tab td:nth-child(2) { width: 34%; }
+.ser-tab th:nth-child(3), .ser-tab td:nth-child(3),
+.ser-tab th:nth-child(4), .ser-tab td:nth-child(4),
+.ser-tab th:nth-child(5), .ser-tab td:nth-child(5) { width: 12.5%; }
+.ser-tab th:nth-child(6), .ser-tab td:nth-child(6) { width: 17%; }
 .ser-th { text-align: left !important; }
-.ser-cell { padding: 6px 7px !important; text-align: left !important; white-space: nowrap; }
-.ser-bar { display: inline-flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 52px; vertical-align: bottom; }
-.ser-bar s { display: block; width: 30px; background: #6f93c4; border-radius: 3px 3px 0 0; }
+.ser-cell { padding: 6px 7px !important; text-align: left !important; white-space: nowrap; overflow: hidden; }
+.ser-bar { display: inline-flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 40px; vertical-align: bottom; }
+.ser-bar s { display: block; width: 24px; background: #6f93c4; border-radius: 3px 3px 0 0; }
 .ser-bar.hi s { background: #2f9e44; } .ser-bar.lo s { background: #e03131; }
 .ser-bar .ser-v { font-style: normal; font-size: 11px; font-weight: 800; color: #0c1a30; margin-bottom: 2px; }
 .ser-bar.hi .ser-v { color: #2f9e44; } .ser-bar.lo .ser-v { color: #e03131; }
 .ser-bar .ser-p { font-style: normal; font-size: 9.5px; color: #8a94a6; font-weight: 700; margin-top: 3px; }
-/* 단계 분석 — 종목/단계 간격 좁힘 */
-.stg-tab .stg-nmcol { width: 150px; }
+/* 단계 분석 — 전체 폭 + 컬럼 비율(종목/단계 왼쪽, 수치 고르게) */
+.stg-tab th:nth-child(1), .stg-tab td:nth-child(1) { width: 26%; }
+.stg-tab th:nth-child(2), .stg-tab td:nth-child(2) { width: 22%; }
+.stg-tab th:nth-child(n+3), .stg-tab td:nth-child(n+3) { width: 17.3%; }
 .stg-tab .stg-col { text-align: left !important; }
 .dos-tab.month { font-size: 10.5px; } .dos-tab.month th, .dos-tab.month td { padding: 3px 6px; text-align: center; }
 .dos-tab.month td.dos-nm, .dos-tab.month th:first-child { text-align: left; }
