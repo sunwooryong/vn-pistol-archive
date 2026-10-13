@@ -350,7 +350,7 @@ async function renderTeamOverview(box, year) {
 // 2026 지도 실적 증명서 (인쇄 가능) — 개인전 기본, 단체전 포함은 선택
 async function openCoachReport(year) {
   const favs = (window.Fav && Fav.list()) || [];
-  const coach = (window.CURRENT && (CURRENT.profile?.display_name || CURRENT.user?.email)) || '지도자';
+  const coach = (window.CURRENT && (CURRENT.profile?.display_name || CURRENT.user?.email)) || t('지도자');
   let view = document.getElementById('report-view');
   if (view) view.remove();
   view = el('div', 'report-view'); view.id = 'report-view';
@@ -1115,8 +1115,9 @@ async function buildReportSection(a, allRows, year) {
       const grp = fn => { const g = {}; ws.forEach(s => { const k = fn(s); if (k == null) return; (g[k] = g[k] || []).push(s.psa); }); return Object.entries(g).map(([k, vs]) => ({ k, avg: Math.round(mn1(vs) * 100) / 100, n: vs.length })).sort((a, b) => b.avg - a.avg); };
       const tempG = grp(s => s.wx.temp == null ? null : (s.wx.temp <= 30 ? '≤30℃' : s.wx.temp <= 33 ? '31–33℃' : '≥34℃'));
       const humG = grp(s => s.wx.hum == null ? null : (s.wx.hum < 60 ? '<60%' : s.wx.hum < 70 ? '60–69%' : '≥70%'));
+      const wxv = w => { const p = String(w || '').split('/').map(x => x.trim()); return (window.I18N && I18N.lang === 'vi' && p[1]) ? p[1] : p[0]; };
       const dayG = grp(s => s.wx.daypart === 'AM' ? t('오전') : s.wx.daypart === 'PM' ? t('오후') : null);
-      const weaG = grp(s => s.wx.weather ? s.wx.weather.split('/')[0].trim() : null).slice(0, 5);
+      const weaG = grp(s => s.wx.weather ? wxv(s.wx.weather) : null).slice(0, 5);
       const coord = ws.find(s => s.wx.lat != null);
       const overall = mn1(ws.map(s => s.psa));
       const allG = [...tempG, ...humG, ...dayG, ...weaG];
@@ -1196,7 +1197,7 @@ async function buildReportSection(a, allRows, year) {
       <div class="dos-kpis sm">${tile(t('경기'), GM.length, '')}${tile(t('우승'), wins + t('회'), '')}${tile(t('평균'), avg != null ? fmt(Math.round(avg * 10) / 10) : '–', '')}${tile(t('최고'), best != null ? fmt(best) : '–', '')}</div>`;
     if (pts.length >= 2) h += `<div class="dos-cap">📈 ${t('게임 점수 추이')} · <span class="dos-medaldot g"></span>${t('우승')}</div><div class="dos-linewrap">${REPORT_LINE(pts)}</div>`;
     h += `<table class="dos-tab"><thead><tr><th>${t('날짜')}</th><th>${t('경기')}</th><th>${t('합계')}</th><th>${t('순위')}</th><th>${t('결과')}</th></tr></thead><tbody>` +
-      GM.slice().reverse().map(x => `<tr><td>${(x.date || '').replace(/-/g, '.').slice(2)}</td><td class="dos-nm">${esc(x.match)}</td><td class="dos-b">${x.total != null ? fmt(x.total) : (x.result ? esc(x.result) : '–')}${x.shootoff ? ` <s class="dos-unit">SO ${x.shootoff}</s>` : ''}</td><td>${x.rank}${x.n ? '/' + x.n : ''}</td><td>${x.status === '우승' ? `<b class="up">🏆 ${t('우승')}</b>` : (x.status === '탈락' ? t('탈락') : esc(x.status || ''))}</td></tr>`).join('') + `</tbody></table>`;
+      GM.slice().reverse().map(x => `<tr><td>${(x.date || '').replace(/-/g, '.').slice(2)}</td><td class="dos-nm">${esc(t(x.match))}</td><td class="dos-b">${x.total != null ? fmt(x.total) : (x.result ? esc(x.result) : '–')}${x.shootoff ? ` <s class="dos-unit">SO ${x.shootoff}</s>` : ''}</td><td>${x.rank}${x.n ? '/' + x.n : ''}</td><td>${x.status === '우승' ? `<b class="up">🏆 ${t('우승')}</b>` : (x.status === '탈락' ? t('탈락') : esc(x.status || ''))}</td></tr>`).join('') + `</tbody></table>`;
   }
 
   // 연도별 (전체 기간일 때만)
@@ -1244,7 +1245,7 @@ async function buildReportSection(a, allRows, year) {
       if (P.weakSeries) bits.push(`${t('약점 시리즈')} <b>S${P.weakSeries.s}</b>(${P.weakSeries.avg.toFixed(1)})`);
       if (P.slump) bits.push(`${t('슬럼프')} ${P.slump.warn ? '<b class="dn">⚠ ' + t('주의') + '</b>' : '<b class="up">' + t('안정') + '</b>'}`);
       if (P.env && P.env.temp && P.env.temp.length && !P.env.temp[0].low) bits.push(`${t('최적 온도')} <b>${P.env.temp[0].k}</b>(${P.env.temp[0].psa})`);
-      if (P.env && P.env.daypart && P.env.daypart.length && !P.env.daypart[0].low) bits.push(`${t('강한 시간대')} <b>${P.env.daypart[0].k}</b>(${P.env.daypart[0].psa})`);
+      if (P.env && P.env.daypart && P.env.daypart.length && !P.env.daypart[0].low) bits.push(`${t('강한 시간대')} <b>${P.env.daypart[0].k === 'AM' ? t('오전') : t('오후')}</b>(${P.env.daypart[0].psa})`);
       h += `<div class="eval-comment">${bits.join(' · ')}</div>`;
     }
   }
@@ -1681,7 +1682,7 @@ async function renderGameTab() {
   const mc = { gold: 'gold' };
   let h = `<h3>🎮 ${t('게임 기록')} <span class="sub2">${matches.length}${t('경기')}</span></h3><div class="muted gm-help">${t('게임(챔피언 결정전 등) 연습 경기 결과 · 총점 순위')}</div>`;
   matches.forEach(mt => {
-    h += `<div class="gm-card"><div class="gm-h"><b>${(mt.date || '').replace(/-/g, '.')}</b> <span>${esc(mt.name)}</span></div>
+    h += `<div class="gm-card"><div class="gm-h"><b>${(mt.date || '').replace(/-/g, '.')}</b> <span>${esc(t(mt.name))}</span></div>
       <table class="gm-tab"><tbody>` +
       (mt.athletes || []).slice().sort((a, b) => a.rank - b.rank).map(a => `<tr class="${a.status === '우승' ? 'win' : ''}">
         <td class="gm-rk">${a.status === '우승' ? '🏆' : a.rank}</td>
@@ -1751,7 +1752,7 @@ function prBars(items, maxv, fmt) {
   return `<div class="pr-rows">` + items.map(d => {
     const pct = Math.max(2, Math.min(100, (d.v / maxv) * 100));
     const col = d.low ? PRC.fa : (d.good ? PRC.up : (d.bad ? PRC.dn : PRC.a));
-    return `<div class="pr-row"><div class="n">${esc(d.nm)}</div><div class="pr-bar"><i style="width:${pct}%;background:${col};opacity:${d.low ? .5 : .9}"></i></div><div class="vv">${d.t}${d.low ? '<span class="pr-flag">정보부족</span>' : ''}</div></div>`;
+    return `<div class="pr-row"><div class="n">${esc(d.nm)}</div><div class="pr-bar"><i style="width:${pct}%;background:${col};opacity:${d.low ? .5 : .9}"></i></div><div class="vv">${d.t}${d.low ? ('<span class="pr-flag">' + t('정보부족') + '</span>') : ''}</div></div>`;
   }).join('') + `</div>`;
 }
 function prLineFC(R) { // 최근 psa 실측 + 다음달 추정 + 구간
@@ -1860,15 +1861,15 @@ async function renderPredictTab() {
   let H = `<div class="pr-sub"><b>${esc(a.full_name)}</b> · ${esc(dlab)} · ${t('훈련')} ${R.nSessions}${t('회')} · ${t('현재 본선환산')} <b>${R.cur.qual}</b> (${t('발당')} ${R.cur.psa})</div>`;
   // 타일
   H += `<div class="pr-tiles">
-    <div class="pr-tile"><span class="rail" style="background:${PRC.a}"></span><div class="pr-k">${t('다음 대회 예상 본선')}</div><div class="pr-v">${R.nextComp.qual}</div><div class="pr-u">${t('점')} · 60발 환산</div><div class="pr-rng">${t('구간')} ${R.nextComp.lo} – ${R.nextComp.hi}</div></div>
+    <div class="pr-tile"><span class="rail" style="background:${PRC.a}"></span><div class="pr-k">${t('다음 대회 예상 본선')}</div><div class="pr-v">${R.nextComp.qual}</div><div class="pr-u">${t('점')} · ${t('60발 환산')}</div><div class="pr-rng">${t('구간')} ${R.nextComp.lo} – ${R.nextComp.hi}</div></div>
     <div class="pr-tile"><span class="rail" style="background:${PRC.up}"></span><div class="pr-k">${t('다음 달 발당 평균')}</div><div class="pr-v">${R.nextMonth.psa}</div><div class="pr-u">${t('현재')} ${R.cur.psa}</div><div class="pr-d ${up(R.nextMonth.delta)}">${R.nextMonth.delta >= 0 ? '▲' : '▼'} ${sgn(R.nextMonth.delta)}</div></div>`;
   if (R.placement && !R.placement.low) H += `<div class="pr-tile"><span class="rail" style="background:${PRC.a2}"></span><div class="pr-k">${t('예상 등위')}</div><div class="pr-v">${R.placement.expLo}<span style="font-size:17px;color:${PRC.mu}">–${R.placement.expHi}${t('위')}</span></div><div class="pr-d ${R.placement.improving ? 'up' : ''}">${R.placement.improving ? '▲ ' + t('상승세') : ''} ${t('최근평균')} ${R.placement.recentAvg}</div></div>`;
   else H += `<div class="pr-tile"><span class="rail" style="background:${PRC.fa}"></span><div class="pr-k">${t('예상 등위')}</div><div class="pr-v" style="font-size:17px;color:${PRC.mu}">—</div><div class="pr-u">${t('대회 기록 부족')}</div></div>`;
-  if (R.finals && R.finals.n >= 2) H += `<div class="pr-tile"><span class="rail" style="background:${PRC.gd}"></span><div class="pr-k">${t('결선 진출 확률')}${R.finals.low ? ' <span class="pr-flag">정보부족</span>' : ''}</div><div class="pr-v">~${R.finals.prob}<span style="font-size:16px;color:${PRC.mu}">%</span></div><div class="pr-u">${R.finals.expScore ? t('예상 결선') + ' ≈ ' + R.finals.expScore : t('결선 진출 ') + R.finals.n + t('회')}</div></div>`;
+  if (R.finals && R.finals.n >= 2) H += `<div class="pr-tile"><span class="rail" style="background:${PRC.gd}"></span><div class="pr-k">${t('결선 진출 확률')}${R.finals.low ? (' <span class="pr-flag">' + t('정보부족') + '</span>') : ''}</div><div class="pr-v">~${R.finals.prob}<span style="font-size:16px;color:${PRC.mu}">%</span></div><div class="pr-u">${R.finals.expScore ? t('예상 결선') + ' ≈ ' + R.finals.expScore : t('결선 진출 ') + R.finals.n + t('회')}</div></div>`;
   else H += `<div class="pr-tile"><span class="rail" style="background:${PRC.fa}"></span><div class="pr-k">${t('결선 진출 확률')}</div><div class="pr-v" style="font-size:17px;color:${PRC.mu}">—</div><div class="pr-u">${t('결선 기록 부족')}</div></div>`;
   H += `</div>`;
   // 단기 예측 차트
-  H += `<div class="pr-card"><h4>${t('점수 추세 & 단기 예측')}</h4>${prLineFC(R)}<p class="cap">${t('최근 발당')} <b>${R.cur.psa}</b>, ${t('변동폭')} ±${R.cur.sd}. ${t('추세 유지 시 다음 달')} <b>${R.nextMonth.psa}</b>(60발 ${R.nextMonth.qual}).${R.eta && R.eta.months ? ` ${t('목표')} ${R.eta.goalQual}${t('점 도달 예상')} ~${R.eta.months}${t('개월')}.` : ''}</p></div>`;
+  H += `<div class="pr-card"><h4>${t('점수 추세 & 단기 예측')}</h4>${prLineFC(R)}<p class="cap">${t('최근 발당')} <b>${R.cur.psa}</b>, ${t('변동폭')} ±${R.cur.sd}. ${t('추세 유지 시 다음 달')} <b>${R.nextMonth.psa}</b>(${t('60발')} ${R.nextMonth.qual}).${R.eta && R.eta.months ? ` ${t('목표')} ${R.eta.goalQual}${t('점 도달 예상')} ~${R.eta.months}${t('개월')}.` : ''}</p></div>`;
   // 장기(내년) 차트
   H += `<div class="pr-g2"><div class="pr-card"><h4>${t('내년 12개월 예측')} (${R.year})</h4>${prYearSvg(R)}<p class="cap">${t('연초')} ~${R.monthly[0].qual} → ${t('연말')} ~${R.monthly[11].qual}${t('점 전망. 다음 시즌 대회 목표')} <b>${R.nextSeason.qualMid}</b> (${R.nextSeason.lo}–${R.nextSeason.hi}).</p></div>`;
   // 대회 등위 추세
@@ -1879,7 +1880,7 @@ async function renderPredictTab() {
   if (R.env && R.env.n) {
     const mapT = v => (v - 8) / 2 * 100; // psa 8~10 → 0~100
     const tempB = R.env.temp.map(x => ({ nm: x.k, v: mapT(x.psa), t: x.psa + '·n' + x.n, low: x.low, good: x.k === '≤30℃', bad: x.k === '≥34℃' }));
-    const dayB = R.env.daypart.map(x => ({ nm: x.k, v: mapT(x.psa), t: x.psa + '·n' + x.n, low: x.low, good: x.k === '오전' }));
+    const dayB = R.env.daypart.map(x => ({ nm: x.k === 'AM' ? t('오전') : x.k === 'PM' ? t('오후') : x.k, v: mapT(x.psa), t: x.psa + '·n' + x.n, low: x.low, good: x.k === 'AM' }));
     const weaB = R.env.weather.slice(0, 5).map(x => ({ nm: x.k, v: mapT(x.psa), t: x.psa + '·n' + x.n, low: x.low }));
     H += `<div class="pr-g2"><div class="pr-card"><h4>🌡️ ${t('온도대별 발당 평균')}</h4>${prBars(tempB, 100)}<p class="cap">${t('날씨·온도·좌표는 훈련시트 기록')} (${R.env.n}${t('세션')}).${R.env.coord ? ' 📍 ' + R.env.coord.lat + ', ' + R.env.coord.lon : ''}</p></div>`;
     H += `<div class="pr-card"><h4>🕐 ${t('시간대 & 날씨별')}</h4>${prBars(dayB, 100)}${prBars(weaB, 100)}</div></div>`;
@@ -1894,7 +1895,7 @@ async function renderPredictTab() {
   // PB·ETA·슬럼프
   let aux = `<div class="pr-card"><h4>${t('추가 예측')}</h4><div class="pr-rows">`;
   aux += `<div class="pr-row"><div class="n">🎯 ${t('PB 경신 확률')}</div><div class="pr-bar"><i style="width:${R.pbProb}%;background:${PRC.a}"></i></div><div class="vv">${R.pbProb}% <span style="color:${PRC.fa}">PB ${R.pb.qual}</span></div></div>`;
-  aux += `<div class="pr-row"><div class="n">📈 ${t('목표 도달')}</div><div class="pr-bar"><i style="width:${R.eta.months ? Math.max(6, 100 - R.eta.months * 8) : 4}%;background:${PRC.up}"></i></div><div class="vv">${R.eta.months ? '~' + R.eta.months + t('개월') + ' → ' + R.eta.goalQual : (R.eta.note || '—')}</div></div>`;
+  aux += `<div class="pr-row"><div class="n">📈 ${t('목표 도달')}</div><div class="pr-bar"><i style="width:${R.eta.months ? Math.max(6, 100 - R.eta.months * 8) : 4}%;background:${PRC.up}"></i></div><div class="vv">${R.eta.months ? '~' + R.eta.months + t('개월') + ' → ' + R.eta.goalQual : (R.eta.note ? t(R.eta.note) : '—')}</div></div>`;
   if (R.slump) aux += `<div class="pr-row"><div class="n">⚠️ ${t('슬럼프 경보')}</div><div class="pr-bar"><i style="width:${R.slump.warn ? 100 : 20}%;background:${R.slump.warn ? PRC.dn : PRC.up}"></i></div><div class="vv">${R.slump.warn ? t('주의') + (R.slump.volUp ? '·' + t('변동성↑') : '') : t('안정')}</div></div>`;
   aux += `</div></div>`;
   H += aux + `</div>`;

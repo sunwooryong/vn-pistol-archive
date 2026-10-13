@@ -113,10 +113,10 @@
     const wxRows = rows.filter(s => s.wx);
     const grp = (keyFn) => { const g = {}; wxRows.forEach(s => { const k = keyFn(s); if (k == null) return; (g[k] = g[k] || []).push(s.psa); }); return Object.entries(g).map(([k, v]) => ({ k, psa: Math.round(mean(v) * 100) / 100, n: v.length, low: v.length < MIN })).sort((a, b) => b.psa - a.psa); };
     const tempBand = s => s.wx.temp == null ? null : (s.wx.temp <= 30 ? '≤30℃' : s.wx.temp <= 33 ? '31–33℃' : '≥34℃');
-    const weaKo = s => s.wx.weather ? s.wx.weather.split('/')[0].trim() : null;
+    const weaKo = s => { if (!s.wx.weather) return null; const p = s.wx.weather.split('/').map(x => x.trim()); return (typeof window !== 'undefined' && window.I18N && window.I18N.lang === 'vi' && p[1]) ? p[1] : p[0]; };
     R.env = {
       n: wxRows.length,
-      temp: grp(tempBand), weather: grp(weaKo), daypart: grp(s => s.wx.daypart === 'AM' ? '오전' : s.wx.daypart === 'PM' ? '오후' : null),
+      temp: grp(tempBand), weather: grp(weaKo), daypart: grp(s => s.wx.daypart === 'AM' ? 'AM' : s.wx.daypart === 'PM' ? 'PM' : null),
       coord: (() => { const la = wxRows.map(s => s.wx.lat).filter(v => v != null), lo = wxRows.map(s => s.wx.lon).filter(v => v != null); return la.length ? { lat: Math.round(mean(la) * 1e4) / 1e4, lon: Math.round(mean(lo) * 1e4) / 1e4, n: la.length } : null; })(),
     };
 
