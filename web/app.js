@@ -535,7 +535,7 @@ async function buildCertificate(a, allRows, year) {
     <div class="dos-htxt"><div class="dos-kick">${t('사격 · 베트남 사격연맹')}</div>
       <h1 class="cert-title">${t('선수 실적 증명서')}</h1><div class="cert-ten">Certificate of Athletic Achievement</div></div>
     <div class="dos-asof"><i>${t('기간')}</i><b>${periodLab}</b><s>${t('발급일')} ${dstr}</s></div></div>
-    <div class="cert-sub"><b class="cert-name">${esc(a.full_name)}</b>${g ? ` <span class="g g-${g}">${GENDER[g]}</span>` : ''} · ${by ? `${by}${t('년생')}` : ''} · <b>${t('소속')} ${esc(curUnit || t('미상'))}</b> · ${a.is_foreign ? esc(a.nationality || '') : t('베트남')}</div>`;
+    <div class="cert-sub"><b class="cert-name">${esc(a.full_name)}</b>${g ? ` <span class="g g-${g}">${GENDER[g]}</span>` : ''} · ${by ? `${by}${t('년생')}` : ''} · <b>${t('소속')} ${curUnit ? regionLabel(curUnit) : t('미상')}</b> · ${a.is_foreign ? esc(a.nationality || '') : t('베트남')}</div>`;
 
   if (!rows.length) return h + `<div class="muted" style="padding:20px;text-align:center">${t('해당 기간 기록이 없습니다.')}</div><div class="dos-foot"><div class="dos-note">${t('본 증명서는 베트남 사격연맹 공개 기록을 기준으로 자동 작성되었습니다.')} · ${t('발급일')} ${dstr}</div>${reportSignature()}</div></div>`;
 
@@ -954,7 +954,7 @@ async function buildReportSection(a, allRows, year) {
     <div class="dos-rings">${window.ringsSVG || ''}</div>
     <div class="dos-htxt"><div class="dos-kick">${t('사격 · 베트남 사격연맹')} · ${t('평가 보고서')}</div>
       <h1 class="dos-name">${esc(a.full_name)}${g ? ` <span class="g g-${g}">${GENDER[g]}</span>` : ''}</h1>
-      <div class="dos-meta">${by ? `${by}${t('년생')} · ${t('만')} ${NOW_YEAR - by}${t('세')}` : ''} · <b class="dos-unit-b">${t('소속')} ${esc(curUnit || t('미상'))}</b> · ${a.is_foreign ? esc(a.nationality || '') : t('베트남')}</div></div>
+      <div class="dos-meta">${by ? `${by}${t('년생')} · ${t('만')} ${NOW_YEAR - by}${t('세')}` : ''} · <b class="dos-unit-b">${t('소속')} ${curUnit ? regionLabel(curUnit) : t('미상')}</b> · ${a.is_foreign ? esc(a.nationality || '') : t('베트남')}</div></div>
     <div class="dos-asof"><i>${t('기간')}</i><b>${periodLab}</b><s>${t('발급일')} ${dstr}</s></div></div>`;
 
   if (!rows.length) return h + `<div class="muted" style="padding:20px;text-align:center">${year} ${t('기록이 없습니다.')}</div></div>`;
@@ -2224,6 +2224,7 @@ function yearlyStats(rows) {
 const REGION = { HAP: '하이퐁', HCM: '호치민', HAN: '하노이', DAN: '다낭', QUD: '군', CAD: '경찰', CAN: '경찰', QNI: '꽝닌', DON: '동나이', DAL: '닥락', THH: '타인호아', PHU: '푸토', BAC: '박닌', VPH: '빈푹' };
 const regionShort = u => (REGION[u] ? t(REGION[u]) : u);
 const regionLabel = u => (REGION[u] ? `${t(REGION[u])} (${esc(u)})` : esc(u));
+window.regionShort = regionShort; window.regionLabel = regionLabel; window.REGION = REGION;
 
 // 지역(소속) 분석 렌더 — 초등학생도 한눈에 이해되게 쉬운 말·그림으로
 async function renderRegional(a, box) {

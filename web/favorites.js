@@ -149,7 +149,7 @@ window.Fav = (function () {
           box.innerHTML = `<div class="fc-medals"><span class="medal gold">${T2('금')}</span>${s.im.gold}
               <span class="medal silver">${T2('은')}</span>${s.im.silver}
               <span class="medal bronze">${T2('동')}</span>${s.im.bronze}
-              <span class="fc-unit">${esc(s.unit || '')}</span></div>
+              <span class="fc-unit">${s.unit ? (window.regionShort ? esc(window.regionShort(s.unit)) : esc(s.unit)) : ''}</span></div>
             <div class="fc-pbs">${best || ''}</div>`;
         })();
       });
