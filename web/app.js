@@ -1714,6 +1714,8 @@ function prStyle() {
   .pr-chip{border:1px solid var(--ln);background:var(--pnl2);color:var(--tx);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer}
   .pr-chip.on{background:var(--a);border-color:var(--a);color:#fff}
   .pr-chip.add{border-style:dashed;color:var(--mu)}
+  .pr-chip small{font-weight:600;opacity:.72;margin-left:4px;font-size:11px}
+  .pr-chip.on small{opacity:.92}
   .pr-empty{color:var(--mu);padding:18px;border:1px dashed var(--ln);border-radius:12px;text-align:center}
   .pr-addrow{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap}
   .pr-addrow input{flex:1;min-width:180px;background:var(--pnl2);border:1px solid var(--ln);color:var(--tx);border-radius:8px;padding:8px 11px;font-size:13px}
@@ -1823,6 +1825,7 @@ async function renderPredictTab() {
   prStyle();
   const CG = (window.Fav && Fav.COACH_GROUP) || '내 지도';
   const roster = ((window.Fav && Fav.list()) || []).filter(it => it.group === CG);
+  const curUnitOf = car => { const wU = (car || []).filter(r => r.unit_code); const dom = wU.filter(r => r.competition.scope !== 'international'); const p = (dom.length ? dom : wU).slice().sort((x, y) => ((y.match_date || y.competition.date_start || '')).localeCompare(x.match_date || x.competition.date_start || ''))[0]; return p ? p.unit_code : ''; };
   if (!box._sel && roster.length) box._sel = roster[0].key;
   let h = `<div class="pr-head"><h3>🔮 ${t('성적 예측')}</h3><span class="pr-lock">🔒 ${t('코치 전용 · 나만')}</span></div>`;
   h += `<div class="pr-roster"><span class="pr-rlab">${t('내 지도선수')}</span>`;
@@ -1830,6 +1833,8 @@ async function renderPredictTab() {
   h += `<button class="pr-chip add" id="pr-add">＋ ${t('선수 추가')}</button></div><div id="pr-addbox"></div><div id="pr-body"></div>`;
   box.innerHTML = h;
   box.querySelectorAll('.pr-chip[data-k]').forEach(b => b.onclick = () => { box._sel = b.dataset.k; renderPredictTab(); });
+  // 칩에 소속 점진적 표시 (대회기록 기반 현재 소속)
+  roster.forEach(async it => { try { const aa = await DB.athleteByKey(it.key); if (!aa) return; const u = curUnitOf(await DB.athleteCareer(aa.id)); if (!u) return; const chip = [...box.querySelectorAll('.pr-chip[data-k]')].find(c => c.dataset.k === it.key); if (chip && !chip.querySelector('small')) chip.insertAdjacentHTML('beforeend', ' <small>' + esc(regionShort(u)) + '</small>'); } catch (e) { } });
   $('#pr-add').onclick = () => {
     const ab = $('#pr-addbox');
     if (ab.innerHTML) { ab.innerHTML = ''; return; }
@@ -1851,14 +1856,16 @@ async function renderPredictTab() {
   const sessions = (TR && TR.sessions) || [];
   if (!sessions.length) { body.innerHTML = `<div class="pr-empty">${esc(a.full_name)} — ${t('훈련 기록이 없어 예측할 수 없습니다. (일일 훈련시트에 기록이 쌓이면 자동 분석됩니다)')}</div>`; return; }
   let career = []; try { career = await DB.athleteCareer(a.id); } catch (e) { }
+  const myUnit = curUnitOf(career);
+  const unitStr = myUnit ? ' · ' + t('소속') + ' ' + regionLabel(myUnit) : '';
   const dk = window.Predict.mainDisc(sessions) || (sessions[0] && sessions[0].dk);
   const R = window.Predict.forecast(dk, sessions, career, {});
   const dlab = (window.DISC && DISC[dk]) || dk;
   if (R.low || !R.enough) {
-    body.innerHTML = `<div class="pr-sub"><b>${esc(a.full_name)}</b> · ${esc(dlab)} · ${t('훈련')} ${R.nSessions}${t('회')} <span class="pr-low">${t('정보 부족(5회 미만)')}</span></div><div class="pr-empty">${t('예측에 필요한 최소 기록(5회)이 모이지 않았습니다.')}</div>`; return;
+    body.innerHTML = `<div class="pr-sub"><b>${esc(a.full_name)}</b> · ${esc(dlab)}${unitStr} · ${t('훈련')} ${R.nSessions}${t('회')} <span class="pr-low">${t('정보 부족(5회 미만)')}</span></div><div class="pr-empty">${t('예측에 필요한 최소 기록(5회)이 모이지 않았습니다.')}</div>`; return;
   }
   const up = v => v >= 0 ? 'up' : 'dn', sgn = v => (v >= 0 ? '+' : '') + v;
-  let H = `<div class="pr-sub"><b>${esc(a.full_name)}</b> · ${esc(dlab)} · ${t('훈련')} ${R.nSessions}${t('회')} · ${t('현재 본선환산')} <b>${R.cur.qual}</b> (${t('발당')} ${R.cur.psa})</div>`;
+  let H = `<div class="pr-sub"><b>${esc(a.full_name)}</b> · ${esc(dlab)}${unitStr} · ${t('훈련')} ${R.nSessions}${t('회')} · ${t('현재 본선환산')} <b>${R.cur.qual}</b> (${t('발당')} ${R.cur.psa})</div>`;
   // 타일
   H += `<div class="pr-tiles">
     <div class="pr-tile"><span class="rail" style="background:${PRC.a}"></span><div class="pr-k">${t('다음 대회 예상 본선')}</div><div class="pr-v">${R.nextComp.qual}</div><div class="pr-u">${t('점')} · ${t('60발 환산')}</div><div class="pr-rng">${t('구간')} ${R.nextComp.lo} – ${R.nextComp.hi}</div></div>
