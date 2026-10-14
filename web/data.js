@@ -93,6 +93,8 @@
       },
       async meta() { await ensure(); return metaCache; },
       async news() { return fetch(DATA_BASE + 'news.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : []).catch(() => []); },
+      async issfRecords() { return fetch(DATA_BASE + 'issf_records.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : { records: [] }).catch(() => ({ records: [] })); },
+      async issfNews() { return fetch(DATA_BASE + 'issf_news.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : { items: [] }).catch(() => ({ items: [] })); },
       async trainingOf(name) { return trainingOf(name); },
       async gameMatches() { return gameMatches(); },
       async gameOf(a) { return gameOf(a); },
@@ -335,6 +337,8 @@
         return { generated_at: (m.started_at || '').slice(0, 10), source: m.source_url, loaded_results: m.loaded_rows, counts: {} };
       },
       async news() { return fetch(DATA_BASE + 'news.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : []).catch(() => []); },
+      async issfRecords() { return fetch(DATA_BASE + 'issf_records.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : { records: [] }).catch(() => ({ records: [] })); },
+      async issfNews() { return fetch(DATA_BASE + 'issf_news.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : { items: [] }).catch(() => ({ items: [] })); },
       async trainingOf(name) { return trainingOf(name); },
       async gameMatches() { return gameMatches(); },
       async gameOf(a) { return gameOf(a); },

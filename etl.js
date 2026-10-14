@@ -465,6 +465,58 @@ async function main() {
 
   await buildNews();
   await buildTraining();
+  await buildISSF();
+}
+
+// 범용 HTTP GET(텍스트) + 무료 번역(→한국어)
+function httpText(url, headers) {
+  return new Promise((resolve, reject) => {
+    https.get(url, { headers: headers || { 'User-Agent': 'Mozilla/5.0' } }, res => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) return httpText(res.headers.location, headers).then(resolve, reject);
+      let d = ''; res.setEncoding('utf8'); res.on('data', c => d += c); res.on('end', () => resolve(d));
+    }).on('error', reject);
+  });
+}
+// ISSF 국제사격연맹: 세계기록 + 공지(한국어 번역) → build/issf_records.json, build/issf_news.json
+async function buildISSF() {
+  const today = new Date().toISOString().slice(0, 10);
+  // 1) 세계기록 (competitions/records 페이지의 내장 JSON)
+  try {
+    const html = await httpText('https://www.issf-sports.org/competitions/records');
+    const u = html.replace(/\\"/g, '"');
+    const i = u.indexOf('"records":[');
+    let recs = [];
+    if (i >= 0) {
+      const j = u.indexOf('[', i); let depth = 0, end = -1;
+      for (let k = j; k < u.length; k++) { const c = u[k]; if (c === '[') depth++; else if (c === ']') { if (--depth === 0) { end = k; break; } } }
+      if (end > 0) recs = JSON.parse(u.slice(j, end + 1));
+    }
+    const vm = u.match(/"subtitle":"Version: ([^"]+)/);
+    const clean = recs.map(r => ({
+      event: r.eventTitle || '', code: r.eventCode || '', type: r.record || '',
+      result: r.resultStr || (r.result != null ? String(r.result) : ''),
+      nation: r.athleteNationCode || r.countryNationCode || '', name: (r.name || '').trim(),
+      date: (r.date || '').slice(0, 10), gender: r.gender || '', junior: !!r.isJunior, team: !!r.isTeam, weapon: r.weaponType || '',
+    })).filter(r => r.event);
+    fs.writeFileSync(path.join(BUILD, 'issf_records.json'), JSON.stringify({ version: vm ? vm[1] : '', generated_at: today, records: clean }, null, 0));
+    console.log(`[issf_records.json 저장: ${clean.length}건]`);
+  } catch (e) { console.log('[ISSF records 실패(건너뜀):', e.message + ']'); }
+  // 2) 공지(홈페이지 뉴스 카드) + 한국어 번역
+  try {
+    const home = await httpText('https://www.issf-sports.org/');
+    const seen = new Set(); const items = [];
+    const re = /href="\/news\/(\d+)">([\s\S]*?)<\/a>/g; let m;
+    while ((m = re.exec(home)) && items.length < 12) {
+      if (seen.has(m[1])) continue; seen.add(m[1]);
+      let txt = m[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      if (txt.length < 8) continue;
+      const dm = txt.match(/^(\d{1,2}\s+\w+\s+\d{4})\s+(.+)$/);
+      const date = dm ? dm[1] : '', title = dm ? dm[2] : txt;
+      items.push({ id: m[1], link: 'https://www.issf-sports.org/news/' + m[1], date, title });
+    }
+    fs.writeFileSync(path.join(BUILD, 'issf_news.json'), JSON.stringify({ generated_at: today, items }, null, 0));
+    console.log(`[issf_news.json 저장: ${items.length}건]`);
+  } catch (e) { console.log('[ISSF news 실패(건너뜀):', e.message + ']'); }
 }
 
 // 일일 훈련점수 시트 → build/training.json (선수 이름으로 매칭, 실패해도 본 빌드 유지)

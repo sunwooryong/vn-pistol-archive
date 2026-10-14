@@ -842,6 +842,19 @@ svg.stg-spark circle { fill: var(--acc); }
 /* 연맹 공지/뉴스 */
 .news-card { border: 1px solid var(--line); border-radius: var(--r); background: var(--card);
   box-shadow: var(--sh-sm); padding: 10px 13px; margin-bottom: 16px; }
+/* ISSF 탭 */
+.issf-head { display: flex; align-items: baseline; gap: 8px; margin: 2px 0 12px; }
+.issf-head h3 { margin: 0; }
+.issf-recwrap { border: 1px solid var(--line); border-radius: var(--r); background: var(--card); box-shadow: var(--sh-sm); padding: 10px 13px; }
+.issf-rbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.issf-filters { margin-left: auto; display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.issf-fb { border: 1px solid var(--line); background: var(--card2); color: var(--mut); border-radius: 999px; padding: 4px 11px; font-size: 12px; font-weight: 700; cursor: pointer; }
+.issf-fb.on { background: var(--acc); color: #fff; border-color: transparent; }
+.issf-fb.jr.on { background: var(--gold2); }
+.issf-tab { width: 100%; }
+.issf-tab td, .issf-tab th { text-align: left; }
+.issf-tab .dos-b { text-align: left; }
+@media (max-width: 560px) { .issf-tab { font-size: 10.5px; } .issf-tab td, .issf-tab th { padding: 4px 5px; } }
 .news-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
 .news-t { font-size: 12.5px; font-weight: 800; letter-spacing: .02em; color: var(--navy); text-transform: uppercase; }
 .news-more { margin-left: auto; font-size: 11.5px; font-weight: 700; color: var(--acc); text-decoration: none; white-space: nowrap; }

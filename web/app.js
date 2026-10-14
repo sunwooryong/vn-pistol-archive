@@ -112,6 +112,28 @@ async function renderHome() {
   await buildSchedule($('#home-sched'), year);
   if (coach) renderMyAthletesComps($('#home-myath'), year);
 }
+// 클라이언트 번역(→한국어) · localStorage 캐시 · 실패 시 원문 유지
+window.trKO = async function (text, src) {
+  text = String(text || '').trim(); if (!text) return text; src = src || 'vi';
+  const key = 'trko:' + src + ':' + text;
+  try { const c = localStorage.getItem(key); if (c != null) return c; } catch (e) { }
+  try {
+    const r = await fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=' + src + '%7Cko');
+    const j = await r.json();
+    let out = (j.responseData && j.responseData.translatedText) || '';
+    if (!out || /MYMEMORY WARNING|INVALID|QUERY LENGTH/i.test(out)) out = text;
+    try { localStorage.setItem(key, out); } catch (e) { }
+    return out;
+  } catch (e) { return text; }
+};
+// 한국어 모드일 때 .js-tr[data-text] 요소를 번역해 교체(원문은 tooltip)
+async function translateTitles(box, src) {
+  if (!box || !window.I18N || I18N.lang !== 'ko') return;
+  for (const el of [...box.querySelectorAll('.js-tr[data-text]')]) {
+    const orig = el.getAttribute('data-text'); if (!orig) continue;
+    try { const ko = await window.trKO(orig, src); if (ko && ko !== orig) { el.textContent = ko; el.title = orig; } } catch (e) { }
+  }
+}
 // 베트남 사격연맹 공지/뉴스
 async function renderNews(box) {
   if (!box) return;
@@ -126,9 +148,42 @@ async function renderNews(box) {
          ${src ? `<a class="news-more" href="${esc(src)}" target="_blank" rel="noopener noreferrer">${t('전체보기')} ›</a>` : ''}</div>
        ${top.map(n => `<a class="news-item" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">
          <span class="news-date">${esc(n.date || '')}</span>
-         <span class="news-title">${esc(n.title)}</span></a>`).join('')}
+         <span class="news-title js-tr" data-text="${esc(n.title)}">${esc(n.title)}</span></a>`).join('')}
      </div>`;
+  translateTitles(box, 'vi');
 }
+// ISSF 국제사격연맹 — 공지(한국어 번역) + 세계기록
+const ISSF_RTYPE = { WR: '세계기록', QWR: '본선 세계기록', OR: '올림픽기록', QOR: '본선 올림픽기록', WRJ: '주니어 세계기록', QWRJ: '주니어 본선 세계기록', ORJ: '주니어 올림픽기록', QORJ: '주니어 본선 올림픽기록' };
+const issfWeaponGroup = ev => /Pistol/i.test(ev) ? '권총' : /Rifle|Running Target/i.test(ev) ? '소총' : /Shotgun|Trap|Skeet/i.test(ev) ? '산탄' : '기타';
+async function renderISSF() {
+  const box = $('#view-issf'); if (!box) return;
+  box.innerHTML = `<div class="muted" style="padding:20px">${t('불러오는 중…')}</div>`;
+  let rec = { records: [] }, news = { items: [] };
+  try { rec = await DB.issfRecords(); } catch (e) { }
+  try { news = await DB.issfNews(); } catch (e) { }
+  if (!['권총', '소총', '산탄'].includes(box._w)) box._w = '권총';
+  const recsAll = (rec.records || []).filter(r => !r.team);
+  const shown = recsAll.filter(r => issfWeaponGroup(r.event) === box._w && (box._jr ? r.junior : !r.junior));
+  let h = `<div class="issf-head"><h3>🌍 ${t('ISSF 국제사격연맹')}</h3> <span class="sub2">${t('공지 · 세계기록')}</span></div>`;
+  // 공지
+  h += `<div class="news-card"><div class="news-head"><span class="news-t">📢 ${t('ISSF 공지')}</span>
+      <a class="news-more" href="https://www.issf-sports.org/news" target="_blank" rel="noopener noreferrer">${t('전체보기')} ›</a></div>` +
+    ((news.items || []).slice(0, 6).map(n => `<a class="news-item" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">
+        <span class="news-date">${esc(n.date || '')}</span>
+        <span class="news-title js-tr" data-text="${esc(n.title)}">${esc(n.title)}</span></a>`).join('') || `<div class="muted" style="padding:8px">${t('공지를 불러올 수 없습니다.')}</div>`) + `</div>`;
+  // 세계기록
+  h += `<div class="issf-recwrap"><div class="issf-rbar"><span class="news-t">🏆 ${t('세계기록')}</span>${rec.version ? `<span class="sub2">v ${esc(rec.version)}</span>` : ''}
+      <span class="issf-filters">${['권총', '소총', '산탄'].map(w => `<button class="issf-fb${box._w === w ? ' on' : ''}" data-w="${w}">${t(w)}</button>`).join('')}<button class="issf-fb jr${box._jr ? ' on' : ''}" data-jr="1">${t('주니어')}</button></span></div>
+    <table class="dos-tab issf-tab"><thead><tr><th>${t('종목')}</th><th>${t('구분')}</th><th>${t('기록')}</th><th>${t('선수')}</th><th>${t('국가')}</th><th>${t('날짜')}</th></tr></thead><tbody>` +
+    (shown.map(r => `<tr><td class="dos-nm">${esc(r.event)}</td><td>${t(ISSF_RTYPE[r.type] || r.type)}</td><td class="dos-b">${esc(r.result)}</td><td class="dos-nm">${esc(r.name || '')}</td><td>${esc(r.nation || '')}</td><td>${esc((r.date || '').replace(/-/g, '.'))}</td></tr>`).join('') || `<tr><td colspan="6" class="muted" style="padding:14px">${t('기록이 없습니다.')}</td></tr>`) +
+    `</tbody></table><div class="dos-cap">${t('출처: ISSF 공식(issf-sports.org) · WR=세계기록, QWR=본선 세계기록, OR=올림픽기록')}</div></div>`;
+  box.innerHTML = h;
+  translateTitles(box, 'en');
+  box.querySelectorAll('.issf-fb[data-w]').forEach(b => b.onclick = () => { box._w = b.dataset.w; renderISSF(); });
+  const jrb = box.querySelector('.issf-fb[data-jr]'); if (jrb) jrb.onclick = () => { box._jr = !box._jr; renderISSF(); };
+}
+init.issf = () => renderISSF();
+window.renderISSF = renderISSF;
 // 데이터 신선도(자동 갱신 기준 시각) — 베트남 시간(UTC+7)로 표시
 async function showFreshness() {
   const box = $('#bc-fresh'); if (!box) return;
@@ -2741,7 +2796,7 @@ window.startApp = function (opts) {
   window.APP_ROLE = opts || { role: 'coach' };
   const role = window.APP_ROLE.role;
   // 다국어: 헤더·탭 라벨
-  const TABS = { home: '홈', me: '내 정보', athlete: '선수', comp: '대회별', cal: '달력', game: '게임', medals: '입상실적', rank: '랭킹', predict: '🔮 예측', admin: '관리' };
+  const TABS = { home: '홈', me: '내 정보', athlete: '선수', comp: '대회별', cal: '달력', game: '게임', issf: '🌍 ISSF', medals: '입상실적', rank: '랭킹', predict: '🔮 예측', admin: '관리' };
   document.querySelectorAll('.tab').forEach(tab => {
     const k = TABS[tab.dataset.tab]; if (k) tab.textContent = t(k);
     tab.onclick = () => show(tab.dataset.tab);
