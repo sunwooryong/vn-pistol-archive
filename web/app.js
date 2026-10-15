@@ -1572,6 +1572,11 @@ async function renderCalendar() {
     CAL.overlayDays = mergeOverlayIntoCalendar(CAL.data, ov, null);
     CAL.sig = sig;
   }
+  if (!CAL.issf) {
+    try { CAL.issf = ((await DB.issfCalendar()) || {}).events || []; } catch (e) { CAL.issf = []; }
+  }
+  // 날짜 → ISSF 국제대회 목록 (기간 포함)
+  const issfOn = date => (CAL.issf || []).filter(e => (e.from || '') <= date && date <= (e.to || e.from || ''));
   const D = CAL.data;
   // 즐겨찾기 색상·숏네임 (aid 기준) — 숏네임 충돌 시 앞 토큰 이니셜 추가
   const favByKey = new Map(favs.map((f, i) => [f.key, { color: FAV_PAL[i % FAV_PAL.length], name: f.name, short: shortNameOf(f.name) }]));
@@ -1636,10 +1641,20 @@ async function renderCalendar() {
           return `<span class="cal-comp ${c.scope}" title="${esc(c.name)}">${isStart ? esc(c.name) : '›'}</span>`;
         }).join('') + (acomps.length > 2 ? `<span class="cal-comp more">+${acomps.length - 2}</span>` : '');
       }
-      const has = dObj || acomps.length;
+      // ISSF 국제대회 바 (🌍)
+      const aissf = issfOn(date);
+      let issfBar = '';
+      if (aissf.length) {
+        issfBar = aissf.slice(0, 2).map(e => {
+          const isStart = (e.from || '') === date || dow === 0;
+          return `<span class="cal-issf" title="${esc(e.name)} · ${esc(e.city || '')} ${esc(e.nat || '')}">${isStart ? '🌍 ' + esc(e.acr || e.name) : '›'}</span>`;
+        }).join('') + (aissf.length > 2 ? `<span class="cal-comp more">+${aissf.length - 2}</span>` : '');
+      }
+      const has = dObj || acomps.length || aissf.length;
       cells += `<div class="cal-cell${out ? ' out' : ''}${isToday ? ' today' : ''}${dow === 0 ? ' sun' : dow === 6 ? ' sat' : ''}${has ? ' has' : ''}${favHot ? ' fav-hot' : ''}${CAL.sel === date ? ' sel' : ''}" data-date="${date}">
         <div class="cal-dnum">${dd}${favHot ? '<span class="cal-hot">★</span>' : ''}</div>
         ${compBar ? `<div class="cal-comps">${compBar}</div>` : ''}
+        ${issfBar ? `<div class="cal-issfs">${issfBar}</div>` : ''}
         ${chips ? `<div class="cal-chips">${chips}</div>` : ''}
         ${favc ? `<div class="cal-favs">${favc}</div>` : ''}
       </div>`;
@@ -1650,8 +1665,11 @@ async function renderCalendar() {
       `<span class="lg-item"><span class="lg-sw" style="background:${DISC_COLOR[k]}"></span>${esc(DISC[k] || k)}</span>`).join('');
     const favLeg = [...favInfo.values()].map(fi =>
       `<span class="lg-item"><span class="lg-dot" style="background:${fi.color}"></span><b>${esc(fi.short)}</b> ${esc(fi.name)}</span>`).join('');
+    const ym = `${y}-${p2(m + 1)}`;
+    const monthHasIssf = (CAL.issf || []).some(e => (e.from || '').slice(0, 7) <= ym && ym <= (e.to || e.from || '').slice(0, 7));
+    const issfLeg = monthHasIssf ? `<span class="lg-item"><span class="lg-sw lg-issf">🌍</span>${t('ISSF 국제대회')}</span>` : '';
 
-    const noData = !monthsWithData.has(`${y}-${p2(m + 1)}`);
+    const noData = !monthsWithData.has(ym) && !monthHasIssf;
     box.innerHTML = `
       <div class="cal-bar">
         <button class="cal-nav" id="cal-prev">‹</button>
@@ -1666,7 +1684,7 @@ async function renderCalendar() {
       </div>
       <div class="cal-detail" id="cal-detail"></div>
       <div class="cal-legend">
-        ${discLeg ? `<div class="lg-row"><span class="lg-h">${t('종목')}</span>${discLeg}</div>` : ''}
+        ${discLeg || issfLeg ? `<div class="lg-row"><span class="lg-h">${t('종목')}</span>${discLeg}${issfLeg}</div>` : ''}
         ${favLeg ? `<div class="lg-row"><span class="lg-h">${t('즐겨찾기 선수')}</span>${favLeg}</div>` : `<div class="lg-row muted">${t('즐겨찾기(★)한 선수가 여기에 색상·숏네임으로 표시됩니다.')}</div>`}
       </div>`;
 
@@ -1680,7 +1698,8 @@ async function renderCalendar() {
   function showDetail(date) {
     const panel = $('#cal-detail'); if (!panel) return;
     const dObj = CAL.data.dayDiscs[date]; const acomps = CAL.data.comps.filter(c => (c.date_start || '') <= date && date <= (c.date_end || c.date_start || ''));
-    if (!dObj && !acomps.length) { panel.innerHTML = ''; return; }
+    const aissf = issfOn(date);
+    if (!dObj && !acomps.length && !aissf.length) { panel.innerHTML = ''; return; }
     const [Y, M, Dd] = date.split('-');
     const monLabel = MON[window.I18N.lang] || MON.ko;
     const clickable = !!window.APP_ROLE;
@@ -1693,6 +1712,13 @@ async function renderCalendar() {
         <span class="scope ${c.scope}">${SCOPE[c.scope] || ''}</span> <b>${esc(c.name)}</b>
         ${ovc ? `<span class="cd-plan">📋 ${t('예정 일정')}</span>` : ''}
         <span class="cd-loc">${esc(c.location || '')}</span>${clk ? '<span class="sched-go">›</span>' : ''}</div>`;
+    }).join('');
+    // ISSF 국제대회
+    if (aissf.length) h += aissf.map(e => {
+      const span = e.from && e.to && e.from !== e.to ? `${e.from.slice(5).replace('-', '.')}–${e.to.slice(5).replace('-', '.')}` : (e.from || '').slice(5).replace('-', '.');
+      const place = [e.city, e.natName || e.nat].filter(Boolean).join(', ');
+      return `<div class="cd-comp cd-issf"><span class="scope issf">🌍 ${esc(e.acr || 'ISSF')}</span> <b>${esc(e.name)}</b>
+        <span class="cd-loc">${esc(place)}${span ? ' · ' + span : ''}</span></div>`;
     }).join('');
     // 오버레이 당일 상세(준비일/세부 종목·성별·결선)
     const od = CAL.overlayDays && CAL.overlayDays[date];

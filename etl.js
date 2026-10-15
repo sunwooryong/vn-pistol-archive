@@ -517,6 +517,51 @@ async function buildISSF() {
     fs.writeFileSync(path.join(BUILD, 'issf_news.json'), JSON.stringify({ generated_at: today, items }, null, 0));
     console.log(`[issf_news.json 저장: ${items.length}건]`);
   } catch (e) { console.log('[ISSF news 실패(건너뜀):', e.message + ']'); }
+  // 3) 국제 대회 일정(calendar 페이지의 내장 JSON) → build/issf_calendar.json
+  try {
+    const html = await httpText('https://www.issf-sports.org/calendar');
+    const u = unescapeJS(html);
+    const i = u.indexOf('"calendarData":[');
+    const events = [];
+    if (i >= 0) {
+      const j = u.indexOf('[', i); let depth = 0, end = -1;
+      for (let k = j; k < u.length; k++) { const c = u[k]; if (c === '[') depth++; else if (c === ']') { if (--depth === 0) { end = k; break; } } }
+      if (end > 0) {
+        const arr = JSON.parse(u.slice(j, end + 1));
+        arr.forEach(mo => (mo.entries || []).forEach(e => {
+          const ct = e.competitionType || {};
+          // 회의/교육과정(대회 아님)은 제외
+          if (ct.id === 18 || /meeting|course/i.test(ct.name || '')) return;
+          events.push({
+            id: e.id,
+            from: (e.dateFrom || '').slice(0, 10),
+            to: (e.dateTo || e.dateFrom || '').slice(0, 10),
+            name: (e.name || '').trim(),
+            disc: e.discipline || '',
+            city: e.city || '',
+            nat: e.nationCode || '',
+            natName: e.nationName || '',
+            type: (e.competitionType && e.competitionType.name) || '',
+            acr: (e.competitionType && e.competitionType.acronym) || '',
+          });
+        }));
+      }
+    }
+    events.sort((a, b) => (a.from || '').localeCompare(b.from || ''));
+    fs.writeFileSync(path.join(BUILD, 'issf_calendar.json'), JSON.stringify({ generated_at: today, events }, null, 0));
+    console.log(`[issf_calendar.json 저장: ${events.length}건]`);
+  } catch (e) { console.log('[ISSF calendar 실패(건너뜀):', e.message + ']'); }
+}
+// 한 단계 JS 문자열 이스케이프 복원(\\" 중첩 따옴표 안전)
+function unescapeJS(s) {
+  return s.replace(/\\(["\\/bfnrt]|u[0-9a-fA-F]{4})/g, (m, g) => {
+    switch (g[0]) {
+      case '"': return '"'; case '\\': return '\\'; case '/': return '/';
+      case 'b': return '\b'; case 'f': return '\f'; case 'n': return '\n';
+      case 'r': return '\r'; case 't': return '\t';
+      default: return String.fromCharCode(parseInt(g.slice(1), 16));
+    }
+  });
 }
 
 // 일일 훈련점수 시트 → build/training.json (선수 이름으로 매칭, 실패해도 본 빌드 유지)
