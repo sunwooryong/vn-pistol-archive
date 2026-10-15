@@ -1724,9 +1724,10 @@ async function renderCalendar() {
     if (aissf.length) h += aissf.map(e => {
       const span = e.from && e.to && e.from !== e.to ? `${e.from.slice(5).replace('-', '.')}–${e.to.slice(5).replace('-', '.')}` : (e.from || '').slice(5).replace('-', '.');
       const place = [e.city, e.natName || e.nat].filter(Boolean).join(', ');
-      return `<div class="cd-comp cd-issf"><span class="scope issf">🌍 ${esc(e.acr || 'ISSF')}</span> <b>${esc(issfName(e))}</b>
+      const url = e._manual ? 'https://www.issf-sports.org/calendar' : ('https://www.issf-sports.org/competitions/' + e.id);
+      return `<div class="cd-comp cd-issf clickable" data-issf="${esc(url)}"><span class="scope issf">🌍 ${esc(e.acr || 'ISSF')}</span> <b>${esc(issfName(e))}</b>
         ${e._manual ? `<span class="cd-plan">📋 ${t('예정 일정')}</span>` : ''}
-        <span class="cd-loc">${esc(place)}${span ? ' · ' + span : ''}</span></div>`;
+        <span class="cd-loc">${esc(place)}${span ? ' · ' + span : ''}</span><span class="sched-go">↗</span></div>`;
     }).join('');
     // 오버레이 당일 상세(준비일/세부 종목·성별·결선)
     const od = CAL.overlayDays && CAL.overlayDays[date];
@@ -1754,6 +1755,7 @@ async function renderCalendar() {
     }
     panel.innerHTML = h;
     if (clickable) panel.querySelectorAll('.cd-comp[data-cid]').forEach(el2 => el2.onclick = () => window.openCompetition(+el2.dataset.cid));
+    panel.querySelectorAll('.cd-issf[data-issf]').forEach(el2 => el2.onclick = () => window.open(el2.dataset.issf, '_blank', 'noopener'));
   }
 
   render();
