@@ -1542,7 +1542,7 @@ function mergeOverlayIntoCalendar(D, ov, year) {
     if (real) return;   // 시트에 실대회 생기면 오버레이 숨김
     const already = D.comps.some(x => x.name === c.name && x.date_start === c.date_start && x._overlay);
     if (!already) {
-      D.comps.push({ id: c.id, name: c.name, date_start: c.date_start, date_end: c.date_end, scope: c.scope, location: c.location, _overlay: true, note_ko: c.note_ko });
+      D.comps.push({ id: c.id, name: c.name, name_ko: c.name_ko, date_start: c.date_start, date_end: c.date_end, scope: c.scope, location: c.location, _overlay: true, note_ko: c.note_ko });
       for (const date in (c.days || {})) {
         const v = c.days[date]; if (!Array.isArray(v)) continue;
         const dd = D.dayDiscs[date] || (D.dayDiscs[date] = {});
@@ -1573,8 +1573,15 @@ async function renderCalendar() {
     CAL.sig = sig;
   }
   if (!CAL.issf) {
-    try { CAL.issf = ((await DB.issfCalendar()) || {}).events || []; } catch (e) { CAL.issf = []; }
+    let auto = [];
+    try { auto = ((await DB.issfCalendar()) || {}).events || []; } catch (e) { auto = []; }
+    // 수동 국제일정(연맹 공식일정 나오면 교체) 병합 — 자동 피드에 같은 시작일·약어가 있으면 생략
+    const manual = ((await loadScheduleOverlay()).international || []).filter(m =>
+      !auto.some(a => a.from === m.from && (a.acr || '') === (m.acr || '')));
+    CAL.issf = auto.concat(manual.map(m => ({ ...m, _manual: true })));
   }
+  const issfName = e => (window.I18N.lang === 'ko' && e.name_ko ? e.name_ko : e.name);
+  const compName = c => (window.I18N.lang === 'ko' && c.name_ko ? c.name_ko : c.name);
   // 날짜 → ISSF 국제대회 목록 (기간 포함)
   const issfOn = date => (CAL.issf || []).filter(e => (e.from || '') <= date && date <= (e.to || e.from || ''));
   const D = CAL.data;
@@ -1638,7 +1645,7 @@ async function renderCalendar() {
       if (acomps.length) {
         compBar = acomps.slice(0, 2).map(c => {
           const isStart = (c.date_start || c.date_end) === date || dow === 0;
-          return `<span class="cal-comp ${c.scope}" title="${esc(c.name)}">${isStart ? esc(c.name) : '›'}</span>`;
+          return `<span class="cal-comp ${c.scope}" title="${esc(compName(c))}">${isStart ? esc(compName(c)) : '›'}</span>`;
         }).join('') + (acomps.length > 2 ? `<span class="cal-comp more">+${acomps.length - 2}</span>` : '');
       }
       // ISSF 국제대회 바 (🌍)
@@ -1647,7 +1654,7 @@ async function renderCalendar() {
       if (aissf.length) {
         issfBar = aissf.slice(0, 2).map(e => {
           const isStart = (e.from || '') === date || dow === 0;
-          return `<span class="cal-issf" title="${esc(e.name)} · ${esc(e.city || '')} ${esc(e.nat || '')}">${isStart ? '🌍 ' + esc(e.acr || e.name) : '›'}</span>`;
+          return `<span class="cal-issf${e._manual ? ' manual' : ''}" title="${esc(issfName(e))} · ${esc(e.city || '')} ${esc(e.natName || e.nat || '')}">${isStart ? '🌍 ' + esc(e.acr || issfName(e)) : '›'}</span>`;
         }).join('') + (aissf.length > 2 ? `<span class="cal-comp more">+${aissf.length - 2}</span>` : '');
       }
       const has = dObj || acomps.length || aissf.length;
@@ -1709,7 +1716,7 @@ async function renderCalendar() {
       const ovc = c._overlay;
       const clk = clickable && !ovc;
       return `<div class="cd-comp ${clk ? 'clickable' : ''}"${ovc ? '' : ` data-cid="${c.id}"`}>
-        <span class="scope ${c.scope}">${SCOPE[c.scope] || ''}</span> <b>${esc(c.name)}</b>
+        <span class="scope ${c.scope}">${SCOPE[c.scope] || ''}</span> <b>${esc(compName(c))}</b>
         ${ovc ? `<span class="cd-plan">📋 ${t('예정 일정')}</span>` : ''}
         <span class="cd-loc">${esc(c.location || '')}</span>${clk ? '<span class="sched-go">›</span>' : ''}</div>`;
     }).join('');
@@ -1717,7 +1724,8 @@ async function renderCalendar() {
     if (aissf.length) h += aissf.map(e => {
       const span = e.from && e.to && e.from !== e.to ? `${e.from.slice(5).replace('-', '.')}–${e.to.slice(5).replace('-', '.')}` : (e.from || '').slice(5).replace('-', '.');
       const place = [e.city, e.natName || e.nat].filter(Boolean).join(', ');
-      return `<div class="cd-comp cd-issf"><span class="scope issf">🌍 ${esc(e.acr || 'ISSF')}</span> <b>${esc(e.name)}</b>
+      return `<div class="cd-comp cd-issf"><span class="scope issf">🌍 ${esc(e.acr || 'ISSF')}</span> <b>${esc(issfName(e))}</b>
+        ${e._manual ? `<span class="cd-plan">📋 ${t('예정 일정')}</span>` : ''}
         <span class="cd-loc">${esc(place)}${span ? ' · ' + span : ''}</span></div>`;
     }).join('');
     // 오버레이 당일 상세(준비일/세부 종목·성별·결선)

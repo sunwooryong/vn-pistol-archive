@@ -1,6 +1,84 @@
 {
-  "_comment": "ETL(build/*.json)이 건드리지 않는 수동 예정일정 오버레이. app.js가 달력·홈에 병합. 성적이 시트에 들어오면 동명·동일 시작일 대회는 자동 숨김.",
+  "_comment": "ETL(build/*.json)이 건드리지 않는 수동 예정일정 오버레이. app.js가 달력·홈에 병합. 성적이 시트에 들어오면 동명·동일 시작일 대회는 자동 숨김. international[] 은 🌍 ISSF 달력 레이어에 병합(연맹 공식일정 나오면 교체).",
+  "international": [
+    { "id": "intl-2027-1", "name": "Giải Cúp Bắn súng thế giới", "name_ko": "사격 월드컵 (인도)", "from": "2027-04-21", "to": "2027-04-30", "city": "", "natName": "Ấn Độ", "nat": "IND", "acr": "WC" },
+    { "id": "intl-2027-2", "name": "Cúp Bắn súng thế giới", "name_ko": "사격 월드컵 (독일)", "from": "2027-05-22", "to": "2027-05-29", "city": "", "natName": "Đức", "nat": "GER", "acr": "WC" },
+    { "id": "intl-2027-3", "name": "Cúp Bắn súng trẻ thế giới", "name_ko": "주니어 사격 월드컵 (독일)", "from": "2027-06-19", "to": "2027-06-27", "city": "", "natName": "Đức", "nat": "GER", "acr": "JWC" },
+    { "id": "intl-2027-4", "name": "Giải Cúp Bắn súng thế giới", "name_ko": "사격 월드컵 (바쿠)", "from": "2027-07-14", "to": "2027-07-23", "city": "Baku", "natName": "Azerbaijan", "nat": "AZE", "acr": "WC" },
+    { "id": "intl-2027-5", "name": "Vô địch Bắn súng Đông Nam Á", "name_ko": "동남아 사격선수권 (7~8월 예정)", "from": "2027-08-01", "to": "2027-08-07", "city": "", "natName": "Malaysia", "nat": "MAS", "acr": "SEA", "tentative": true },
+    { "id": "intl-2027-6", "name": "Đại hội Thể thao Đông Nam Á (SEA Games)", "name_ko": "동남아시안게임 (SEA Games)", "from": "2027-09-18", "to": "2027-09-29", "city": "", "natName": "Malaysia", "nat": "MAS", "acr": "SEAG" },
+    { "id": "intl-2027-7", "name": "Vô địch Bắn súng thế giới", "name_ko": "세계선수권 (한국)", "from": "2027-10-28", "to": "2027-11-09", "city": "", "natName": "Hàn Quốc", "nat": "KOR", "acr": "WCH" },
+    { "id": "intl-2027-8", "name": "Chung kết Cúp Bắn súng thế giới", "name_ko": "월드컵 파이널 (한국)", "from": "2027-11-10", "to": "2027-11-15", "city": "", "natName": "Hàn Quốc", "nat": "KOR", "acr": "WCF" },
+    { "id": "intl-2027-9", "name": "Vô địch Bắn súng trẻ thế giới", "name_ko": "주니어 세계선수권 (중국)", "from": "2027-11-19", "to": "2027-11-29", "city": "", "natName": "Trung Quốc", "nat": "CHN", "acr": "JWCH" },
+    { "id": "intl-2027-11", "name": "Vô địch Bắn súng Châu Á", "name_ko": "아시아선수권 (인도)", "from": "2027-12-01", "to": "2027-12-10", "city": "", "natName": "Ấn Độ", "nat": "IND", "acr": "ASC" }
+  ],
   "competitions": [
+    {
+      "id": "vn2027-1",
+      "year": 2027,
+      "name": "Giải Vô địch súng hơi quốc gia",
+      "name_ko": "전국 공기총 선수권",
+      "location": "Hải Phòng",
+      "scope": "domestic",
+      "date_start": "2027-03-17",
+      "date_end": "2027-03-28",
+      "note_ko": "전국 공기총 선수권 · 하이퐁"
+    },
+    {
+      "id": "vn2027-2",
+      "year": 2027,
+      "name": "Vô địch các đội mạnh quốc gia",
+      "name_ko": "전국 강팀 선수권",
+      "location": "TTHLVĐV trẻ quốc gia (Đà Nẵng)",
+      "scope": "domestic",
+      "date_start": "2027-04-10",
+      "date_end": "2027-04-20",
+      "note_ko": "전국 강팀 선수권 · 다낭 청소년훈련원"
+    },
+    {
+      "id": "vn2027-3",
+      "year": 2027,
+      "name": "Vô địch tay súng xuất sắc quốc gia",
+      "name_ko": "전국 우수선수 선수권",
+      "location": "TTĐTVĐVCCQG",
+      "scope": "domestic",
+      "date_start": "2027-06-05",
+      "date_end": "2027-06-20",
+      "note_ko": "전국 우수선수 선수권"
+    },
+    {
+      "id": "vn2027-4",
+      "year": 2027,
+      "name": "Vô địch các nhóm tuổi thanh thiếu niên quốc gia",
+      "name_ko": "전국 청소년 연령별 선수권",
+      "location": "Đắk Lắk",
+      "scope": "domestic",
+      "date_start": "2027-06-29",
+      "date_end": "2027-07-09",
+      "note_ko": "전국 청소년 연령별 선수권 · 닥락"
+    },
+    {
+      "id": "vn2027-5",
+      "year": 2027,
+      "name": "Vô địch Bắn súng trẻ quốc gia",
+      "name_ko": "전국 주니어 사격 선수권",
+      "location": "Tp. HCM",
+      "scope": "domestic",
+      "date_start": "2027-08-10",
+      "date_end": "2027-08-22",
+      "note_ko": "전국 주니어 사격 선수권 · 호치민"
+    },
+    {
+      "id": "vn2027-6",
+      "year": 2027,
+      "name": "Vô địch Bắn súng quốc gia",
+      "name_ko": "전국 사격 선수권",
+      "location": "TTĐTVĐVCCQG",
+      "scope": "domestic",
+      "date_start": "2027-10-01",
+      "date_end": "2027-10-15",
+      "note_ko": "전국 사격 선수권"
+    },
     {
       "id": "dhtttq10-2026",
       "year": 2026,
