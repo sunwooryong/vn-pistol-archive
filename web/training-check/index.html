@@ -152,6 +152,7 @@ header{display:flex;align-items:center;gap:16px}
       <div class="day-date" id="day-date">—</div>
       <button class="btn" id="day-next">›</button>
       <div class="ctrl">
+        <div class="seg" id="viewmode"><button data-v="all">전체</button><button data-v="sched">일정</button><button data-v="score">점수</button></div>
         <div class="seg" id="lang"><button data-l="vi">VI</button><button data-l="ko">KO</button></div>
         <div class="speed"><span id="speed-lbl">Speed</span><input type="range" id="speed" min="0" max="3" step="0.25"></div>
       </div>
@@ -176,8 +177,8 @@ const vnShort = ds => { const [,m,d]=ds.split("-"); return `${d}/${m}`; };
 // ===== 다국어 UI =====
 let LANG=localStorage.getItem("tc_lang")||"vi";
 const UI={
-  ko:{plan:"일정",scores:"최근 3일",ath:"선수",disc:"종목",series:"시리즈",total:"총점",streak:"연속",am:"오전",pm:"오후",noRec:"기록 없음",speed:"속도"},
-  vi:{plan:"Lịch tập",scores:"3 ngày gần nhất",ath:"VĐV",disc:"Nội dung",series:"Loạt",total:"Tổng",streak:"Chuỗi",am:"Sáng",pm:"Chiều",noRec:"Không có dữ liệu",speed:"Tốc độ"}
+  ko:{plan:"일정",scores:"최근 3일",ath:"선수",disc:"종목",series:"시리즈",total:"총점",streak:"연속",am:"오전",pm:"오후",noRec:"기록 없음",speed:"속도",vAll:"전체",vSched:"일정",vScore:"점수"},
+  vi:{plan:"Lịch tập",scores:"3 ngày gần nhất",ath:"VĐV",disc:"Nội dung",series:"Loạt",total:"Tổng",streak:"Chuỗi",am:"Sáng",pm:"Chiều",noRec:"Không có dữ liệu",speed:"Tốc độ",vAll:"Tất cả",vSched:"Lịch",vScore:"Điểm"}
 };
 const L = () => UI[LANG];
 const pick = o => o ? (LANG==="vi"?(o.vi||o.ko):(o.ko||o.vi)) : "";
@@ -271,13 +272,16 @@ function buildDay(){
   document.getElementById("day-date").textContent=vnDate(SEL);
   const amPm=new Date().getHours()<12?"AM":"PM";
   SLIDES=[];
-  for(const disc of (SCHED.order||Object.keys(SCHED.disc))){
-    const sc=SCHED.disc[disc] && SCHED.disc[disc][SEL]; if(!sc) continue;
-    const rows=(sc.rows||[]).filter(r=>{ const h=parseInt((r.s||"").slice(0,2)); if(isNaN(h))return true; return amPm==="AM"?h<12:h>=12; });
-    if(!rows.length) continue;
-    SLIDES.push({type:"sched",disc,routine:sc.routine,rows,amPm});
+  if(VIEW!=="score"){
+    for(const disc of (SCHED.order||Object.keys(SCHED.disc))){
+      const sc=SCHED.disc[disc] && SCHED.disc[disc][SEL]; if(!sc) continue;
+      const rows=(sc.rows||[]).filter(r=>{ const h=parseInt((r.s||"").slice(0,2)); if(isNaN(h))return true; return amPm==="AM"?h<12:h>=12; });
+      if(!rows.length) continue;
+      SLIDES.push({type:"sched",disc,routine:sc.routine,rows,amPm});
+    }
   }
-  SLIDES.push({type:"scores"});
+  if(VIEW!=="sched") SLIDES.push({type:"scores"});
+  if(!SLIDES.length) SLIDES.push({type:"scores"});   // 일정만인데 일정이 없으면 점수로 대체
   renderSlides(); showSlide(0); restartTimer();
 }
 function scoreRange(){ const a=new Date(SEL+"T00:00:00"); const b=new Date(SEL+"T00:00:00"); b.setDate(b.getDate()-2); return `${vnShort(iso(b))}~${vnShort(iso(a))}`; }
@@ -285,7 +289,7 @@ function slideHTML(s){
   if(s.type==="scores"){
     const days=[0,1,2].map(k=>{const x=new Date(SEL+"T00:00:00");x.setDate(x.getDate()-k);return iso(x);});
     let body="",any=false;
-    for(const dt of days){ const ss=sessOn(dt); if(!ss.length)continue; any=true;
+    for(const dt of days){ const ss=sessOn(dt).slice().sort((a,b)=>(b.total||0)-(a.total||0)); if(!ss.length)continue; any=true;
       body+=`<div class="daygroup"><div class="daygroup-h">${vnShort(dt)}${dt===SEL?' <span class="sel">●</span>':''}</div>`+
         `<table class="tbl"><thead><tr><th class="l">${esc(L().ath)}</th><th>${esc(L().disc)}</th><th class="l">${esc(L().series)}</th><th>${esc(L().total)}</th><th>10</th><th>9</th><th>8</th><th>${esc(L().streak)}</th></tr></thead><tbody>`+
         ss.map(x=>{const d=x.dist||[];return `<tr><td class="l ath">${esc(x.name)}</td><td><span class="disc" style="background:${DISC_COLOR[x.dk]||'#888'}">${esc(discLabel(x))}</span></td><td class="l series">${x.series.join(" ")||"—"}</td><td class="total">${fmt(x.total)}</td><td class="d10">${d[0]!=null?d[0]:"—"}</td><td>${d[1]!=null?d[1]:"—"}</td><td>${d[2]!=null?d[2]:"—"}</td><td class="lng">${x.long10!=null?x.long10:"—"}</td></tr>`;}).join("")+
@@ -342,7 +346,14 @@ function setLang(l){
   LANG=l; localStorage.setItem("tc_lang",l);
   document.querySelectorAll("#lang button,#lang-cal button").forEach(b=>b.classList.toggle("on",b.dataset.l===l));
   document.getElementById("speed-lbl").textContent=L().speed;
+  document.querySelectorAll("#viewmode button").forEach(b=>b.textContent=b.dataset.v==="all"?L().vAll:b.dataset.v==="sched"?L().vSched:L().vScore);
   if(!document.getElementById("day").hidden){ renderSlides(); showSlide(CUR); } else renderCal();
+}
+let VIEW=localStorage.getItem("tc_view")||"all";
+function setView(v){
+  VIEW=v; localStorage.setItem("tc_view",v);
+  document.querySelectorAll("#viewmode button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
+  if(!document.getElementById("day").hidden) buildDay();
 }
 
 // ===== 이벤트 =====
@@ -353,13 +364,14 @@ document.getElementById("day-back").onclick=closeDay;
 document.getElementById("day-prev").onclick=()=>shiftDay(-1);
 document.getElementById("day-next").onclick=()=>shiftDay(1);
 document.querySelectorAll("#lang button,#lang-cal button").forEach(b=>b.onclick=()=>setLang(b.dataset.l));
+document.querySelectorAll("#viewmode button").forEach(b=>b.onclick=()=>setView(b.dataset.v));
 const sp=document.getElementById("speed"); sp.value=SPEED;
 sp.oninput=()=>{ SPEED=parseFloat(sp.value); localStorage.setItem("tc_speed",SPEED); };
 
 // ===== 시작 =====
 async function boot(){
   const n=new Date(); CY=n.getFullYear(); CM=n.getMonth();
-  setLang(LANG);
+  setLang(LANG); setView(VIEW);
   await loadSchedule();
   try{ await loadData(); }catch(e){ document.getElementById("cal-grid").innerHTML=`<div class="err" style="grid-column:1/-1">${esc(e.message)}</div>`; }
   renderCal();
