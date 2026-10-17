@@ -2831,10 +2831,10 @@ window.startApp = function (opts) {
   window.APP_ROLE = opts || { role: 'coach' };
   const role = window.APP_ROLE.role;
   // 다국어: 헤더·탭 라벨
-  const TABS = { home: '홈', me: '내 정보', athlete: '선수', comp: '대회별', cal: '달력', game: '게임', issf: '🌍 ISSF', medals: '입상실적', rank: '랭킹', predict: '🔮 예측', admin: '관리' };
+  const TABS = { home: '홈', me: '내 정보', athlete: '선수', comp: '대회별', cal: '달력', game: '게임', issf: '🌍 ISSF', training: '🎯 트레이닝', medals: '입상실적', rank: '랭킹', predict: '🔮 예측', admin: '관리' };
   document.querySelectorAll('.tab').forEach(tab => {
     const k = TABS[tab.dataset.tab]; if (k) tab.textContent = t(k);
-    tab.onclick = () => show(tab.dataset.tab);
+    tab.onclick = () => tab.dataset.tab === 'training' ? (location.href = 'training-check/') : show(tab.dataset.tab);
   });
   const h1 = document.querySelector('header h1'); if (h1) h1.innerHTML = `<span class="brand-rings">${window.ringsSVG || ''}</span><span class="brand-tt"><span class="brand-title">${t('베트남 사격 기록·분석 시스템')}</span><span class="brand-en">Vietnam Shooting Records &amp; Analytics</span></span>`;
   const tag = document.querySelector('.tag'); if (tag) tag.textContent = t('사격 · 베트남 사격연맹');
@@ -2842,6 +2842,7 @@ window.startApp = function (opts) {
   // 역할별 탭 노출
   const showTab = (name, on) => { const el2 = document.querySelector(`.tab[data-tab="${name}"]`); if (el2) el2.hidden = !on; };
   showTab('fav', role === 'coach');
+  showTab('training', role === 'coach');
   showTab('predict', role === 'coach');
   showTab('admin', role === 'coach');
   showTab('me', role === 'athlete');
