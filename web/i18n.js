@@ -11,7 +11,7 @@
     'ISSF 국제사격연맹': 'ISSF (LĐ Bắn súng Quốc tế)', '공지 · 세계기록': 'Thông báo · Kỷ lục thế giới',
     'ISSF 공지': 'Thông báo ISSF', '세계기록': 'Kỷ lục thế giới', '공지를 불러올 수 없습니다.': 'Không tải được thông báo.',
     'ISSF 국제대회': 'Giải quốc tế ISSF',
-    '🎯 트레이닝': '🎯 Tập luyện',
+    '🎯 트레이닝': '🎯 Tập luyện', '🔮 예측': '🔮 Dự đoán',
     '예측 대상': 'Đối tượng', '이 그룹에 선수가 없습니다. 위에서 다른 그룹을 선택하거나 “＋ 선수 추가”로 등록하세요. (★ 즐겨찾기 그룹이 그대로 예측 대상이 됩니다)': 'Nhóm này chưa có VĐV. Chọn nhóm khác ở trên hoặc “＋ Thêm VĐV”. (Nhóm yêu thích ★ chính là đối tượng dự đoán)',
     '국가': 'Quốc gia', '주니어': 'Trẻ (Junior)', '산탄': 'Súng hoa cải',
     '본선 세계기록': 'KLTG vòng loại', '올림픽기록': 'Kỷ lục Olympic', '본선 올림픽기록': 'KL Olympic vòng loại',
