@@ -1801,6 +1801,7 @@ function prStyle() {
   .pr-lock{font-size:11px;font-weight:800;color:var(--wn);border:1px solid rgba(242,178,74,.4);border-radius:5px;padding:1px 8px}
   .pr-roster{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
   .pr-rlab{font-size:12px;color:var(--mu);font-weight:700;margin-right:4px}
+  .pr-gsel{border:1px solid var(--a);background:var(--pnl);color:var(--tx);border-radius:8px;padding:6px 10px;font-size:13px;font-weight:700;cursor:pointer;margin-right:6px}
   .pr-chip{border:1px solid var(--ln);background:var(--pnl2);color:var(--tx);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer}
   .pr-chip.on{background:var(--a);border-color:var(--a);color:#fff}
   .pr-chip.add{border-style:dashed;color:var(--mu)}
@@ -1914,14 +1915,24 @@ async function renderPredictTab() {
   if (!window.Predict) { box.innerHTML = `<div class="muted">${t('예측 모듈 로드 실패')}</div>`; return; }
   prStyle();
   const CG = (window.Fav && Fav.COACH_GROUP) || '내 지도';
-  const roster = ((window.Fav && Fav.list()) || []).filter(it => it.group === CG);
+  const favList = (window.Fav && Fav.list()) || [];
+  const allGroups = (window.Fav && Fav.groups()) || [CG];
+  // 예측 대상 그룹: 저장된 선택 → '내 지도'(선수 있으면) → 선수가 가장 많은 그룹(자동 복구)
+  let selGroup = localStorage.getItem('vpa_pr_group');
+  if (!selGroup || !allGroups.includes(selGroup)) {
+    const byG = {}; favList.forEach(it => byG[it.group] = (byG[it.group] || 0) + 1);
+    selGroup = byG[CG] ? CG : (Object.entries(byG).sort((a, b) => b[1] - a[1])[0] || [CG])[0];
+  }
+  const roster = favList.filter(it => it.group === selGroup);
   const curUnitOf = car => { const wU = (car || []).filter(r => r.unit_code); const dom = wU.filter(r => r.competition.scope !== 'international'); const p = (dom.length ? dom : wU).slice().sort((x, y) => ((y.match_date || y.competition.date_start || '')).localeCompare(x.match_date || x.competition.date_start || ''))[0]; return p ? p.unit_code : ''; };
   if (!box._sel && roster.length) box._sel = roster[0].key;
   let h = `<div class="pr-head"><h3>🔮 ${t('성적 예측')}</h3><span class="pr-lock">🔒 ${t('코치 전용 · 나만')}</span></div>`;
-  h += `<div class="pr-roster"><span class="pr-rlab">${t('내 지도선수')}</span>`;
+  h += `<div class="pr-roster"><span class="pr-rlab">${t('예측 대상')}</span>`;
+  h += `<select id="pr-group" class="pr-gsel">${allGroups.map(g => `<option value="${esc(g)}"${g === selGroup ? ' selected' : ''}>${esc(t(g))} (${favList.filter(it => it.group === g).length})</option>`).join('')}</select>`;
   roster.forEach(it => h += `<button class="pr-chip${it.key === box._sel ? ' on' : ''}" data-k="${esc(it.key)}">${esc(it.full_name || it.name || it.key)}</button>`);
   h += `<button class="pr-chip add" id="pr-add">＋ ${t('선수 추가')}</button></div><div id="pr-addbox"></div><div id="pr-body"></div>`;
   box.innerHTML = h;
+  const gsel = $('#pr-group'); if (gsel) gsel.onchange = () => { localStorage.setItem('vpa_pr_group', gsel.value); box._sel = null; renderPredictTab(); };
   box.querySelectorAll('.pr-chip[data-k]').forEach(b => b.onclick = () => { box._sel = b.dataset.k; renderPredictTab(); });
   // 칩에 소속 점진적 표시 (대회기록 기반 현재 소속)
   roster.forEach(async it => { try { const aa = await DB.athleteByKey(it.key); if (!aa) return; const u = curUnitOf(await DB.athleteCareer(aa.id)); if (!u) return; const chip = [...box.querySelectorAll('.pr-chip[data-k]')].find(c => c.dataset.k === it.key); if (chip && !chip.querySelector('small')) chip.insertAdjacentHTML('beforeend', ' <small>' + esc(regionShort(u)) + '</small>'); } catch (e) { } });
@@ -1934,10 +1945,10 @@ async function renderPredictTab() {
       const v = q.value.trim(); if (v.length < 2) { rb.innerHTML = ''; return; }
       let rows = []; try { rows = await DB.searchAthletes(v); } catch (e) { }
       rb.innerHTML = rows.slice(0, 20).map(r => `<button data-k="${esc(r.identity_key || r.key || '')}" data-nm="${esc(r.full_name)}">${esc(r.full_name)}${r.birth_year ? ` <span style="color:${PRC.fa}">${r.birth_year}</span>` : ''}</button>`).join('') || `<div class="muted">${t('검색 결과 없음')}</div>`;
-      rb.querySelectorAll('button[data-k]').forEach(b => b.onclick = () => { if (window.Fav) { Fav.add({ identity_key: b.dataset.k, full_name: b.dataset.nm, key: b.dataset.k }, CG); box._sel = b.dataset.k; renderPredictTab(); } });
+      rb.querySelectorAll('button[data-k]').forEach(b => b.onclick = () => { if (window.Fav) { Fav.add({ identity_key: b.dataset.k, full_name: b.dataset.nm, key: b.dataset.k }, selGroup); box._sel = b.dataset.k; renderPredictTab(); } });
     }, 250); };
   };
-  if (!roster.length) { $('#pr-body').innerHTML = `<div class="pr-empty">${t('아직 지도 선수가 없습니다. “＋ 선수 추가”로 담당 선수를 등록하세요. (선수 화면의 별 ★에서 ‘내 지도’ 그룹으로도 추가됩니다)')}</div>`; return; }
+  if (!roster.length) { $('#pr-body').innerHTML = `<div class="pr-empty">${t('이 그룹에 선수가 없습니다. 위에서 다른 그룹을 선택하거나 “＋ 선수 추가”로 등록하세요. (★ 즐겨찾기 그룹이 그대로 예측 대상이 됩니다)')}</div>`; return; }
   // 본문
   const body = $('#pr-body'); body.innerHTML = `<div class="muted">${t('분석 중…')}</div>`;
   const key = box._sel || roster[0].key;

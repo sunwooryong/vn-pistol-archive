@@ -31,7 +31,10 @@ window.Fav = (function () {
   // 로그인 사용자: Supabase 를 백엔드로 사용
   function setCloud(data, saveFn) {
     cloudSave = saveFn;
-    if (data && data.items) { state = { groups: data.groups || DEFAULT_GROUPS.slice(), items: data.items }; }
+    if (data && data.items) {
+      state = { groups: data.groups || DEFAULT_GROUPS.slice(), items: data.items };
+      if (!state.groups.includes(COACH_GROUP)) state.groups.unshift(COACH_GROUP); // 마이그레이션: 클라우드에도 '내 지도' 보강
+    }
     else { save(); }  // 클라우드에 없으면 현재(로컬) 즐겨찾기를 올림
     listeners.forEach(f => f());
   }
