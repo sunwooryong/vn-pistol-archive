@@ -25,7 +25,7 @@ body{background:linear-gradient(180deg,#eef5fc,#e3ecf7 55%) fixed,var(--bg);colo
 header{display:flex;align-items:center;gap:16px}
 .hl,.hr{display:flex;align-items:center;gap:11px;flex:1;min-width:0}
 .hr{justify-content:flex-end}
-.rings{height:48px;background:#fff;border-radius:10px;padding:5px 11px;box-shadow:0 2px 10px rgba(0,0,0,.14)}
+.rings{height:52px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.18))}
 .flag{height:30px;border-radius:4px;box-shadow:0 2px 7px rgba(0,0,0,.22);border:1.5px solid rgba(255,255,255,.7)}
 .name{display:flex;flex-direction:column;line-height:1.15;text-align:right}
 .name b{font-size:16px;font-weight:800;letter-spacing:.5px}
@@ -79,9 +79,15 @@ header{display:flex;align-items:center;gap:16px}
 
 .sched-scroll{overflow:hidden;flex:1;min-height:0}
 .routine{font-size:15px;font-weight:800;color:var(--gold2);background:var(--accsoft);border-radius:8px;padding:8px 12px;margin-bottom:9px}
-.sched-row{display:grid;grid-template-columns:86px 1fr;gap:9px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:15px}
+.sched-row{display:grid;grid-template-columns:104px 1fr;gap:9px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:15px}
 .sched-row .t{font-weight:800;color:var(--acc2);font-variant-numeric:tabular-nums}
+.sched-row .ev{font-size:11px;font-weight:800;color:#fff;background:var(--acc);border-radius:5px;padding:1px 6px;margin-right:5px}
+.sched-row .shots{font-size:12px;font-weight:800;color:var(--good)}
+.sched-row .foc{font-size:12px;color:var(--mut)}
 .ph{color:var(--mut);font-size:14px;text-align:center;padding:22px;border:1px dashed var(--line2);border-radius:10px}
+.speed{display:flex;align-items:center;gap:7px;margin-left:auto}
+.speed span{font-size:13px;color:var(--mut);font-weight:800}
+.speed input{width:120px;accent-color:var(--acc)}
 
 .data-wrap{flex:1;overflow:hidden;min-height:0;position:relative}
 .data-scroll{position:absolute;inset:0;overflow:hidden}
@@ -116,7 +122,7 @@ header{display:flex;align-items:center;gap:16px}
       <div class="date"><span id="c-date">--/--/----</span> <span class="live"><span class="dot"></span>LIVE <span id="c-upd"></span></span></div>
     </div>
     <div class="hr">
-      <img class="flag" src="../dashboard/kr.svg" alt="KR">
+      <img class="flag" src="../flag-kr.png" alt="KR">
       <div class="name"><b>SUNWOO RYONG</b><span>EXPERT</span></div>
     </div>
   </header>
@@ -142,11 +148,11 @@ header{display:flex;align-items:center;gap:16px}
       <button class="btn" id="day-prev">‹</button>
       <div class="day-date" id="day-date">—</div>
       <button class="btn" id="day-next">›</button>
-      <button class="btn" id="autoscroll" style="margin-left:auto">⟳</button>
+      <div class="speed"><span>⟳ 속도</span><input type="range" id="speed" min="0" max="3" step="0.25"></div>
     </div>
     <div class="cols">
       <div class="card">
-        <h3>📋 일정</h3>
+        <h3>📋 일정 <small id="sched-half"></small></h3>
         <div class="routine" id="day-routine" hidden></div>
         <div class="sched-scroll" id="day-sched"><div class="ph">—</div></div>
       </div>
@@ -213,6 +219,10 @@ async function loadData(){
 }
 const sessOn = d => SESSIONS.filter(x=>x.date===d);
 
+// ===== 훈련일정 (현재 임시: 저장된 플랜 스냅샷 schedule.json / 2단계: GAS 라이브) =====
+let SCHEDULE={};
+async function loadSchedule(){ try{ const r=await fetch("schedule.json",{cache:"no-store"}); SCHEDULE=r.ok?await r.json():{}; }catch(e){ SCHEDULE={}; } }
+
 // ===== 시계 (숫자·베트남식) =====
 function tick(){
   const n=new Date();
@@ -253,8 +263,20 @@ function openDay(date){ SEL=date; document.getElementById("cal").hidden=true; do
 function closeDay(){ document.getElementById("day").hidden=true; document.getElementById("cal").hidden=false; renderCal(); }
 function shiftDay(delta){ const d=new Date(SEL+"T00:00:00"); d.setDate(d.getDate()+delta); openDay(iso(d)); }
 
+function renderSchedule(){
+  const sc=SCHEDULE[SEL];
+  const box=document.getElementById("day-sched"), rt=document.getElementById("day-routine"), half=document.getElementById("sched-half");
+  const amPm=new Date().getHours()<12?"AM":"PM";
+  half.textContent=amPm==="AM"?"(오전)":"(오후)";
+  if(!sc){ rt.hidden=true; box.innerHTML='<div class="ph">—</div>'; return; }
+  rt.hidden=!sc.routine; rt.textContent=sc.routine||"";
+  const rows=(sc.rows||[]).filter(r=>{ const h=parseInt((r.s||"").slice(0,2)); if(isNaN(h))return true; return amPm==="AM"?h<12:h>=12; });
+  if(!rows.length){ box.innerHTML=`<div class="ph">${amPm==="AM"?"오전":"오후"} 일정 없음</div>`; return; }
+  box.innerHTML=rows.map(r=>`<div class="sched-row"><span class="t">${esc(r.s)}${r.e&&r.e!==r.s?"~"+esc(r.e):""}</span><span>${r.ev?`<span class="ev">${esc(r.ev)}</span>`:""}${esc(r.tr)}${r.sh?` <span class="shots">${esc(r.sh)}</span>`:""}${r.fc?`<span class="foc"> · ${esc(r.fc)}</span>`:""}</span></div>`).join("");
+}
 function renderDay(){
   document.getElementById("day-date").textContent=vnDate(SEL);
+  renderSchedule();
   const days=[0,1,2].map(k=>{const x=new Date(SEL+"T00:00:00");x.setDate(x.getDate()-k);return iso(x);});
   document.getElementById("data-range").textContent=`${vnShort(days[2])}~${vnShort(days[0])}`;
   const box=document.getElementById("day-data"); box.innerHTML="";
@@ -286,20 +308,25 @@ function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','
 // ===== 전달문구 (2단계: GAS 연동 시 setMsg 호출) =====
 function setMsg(txt){ const m=document.getElementById("msg"); if(txt){ document.getElementById("msg-txt").textContent=txt; m.hidden=false; } else m.hidden=true; }
 
-// ===== 자동스크롤 =====
-let scrollOn=true, scrollState={pos:0,dir:1,pause:0};
-function resetScroll(){ const el=document.getElementById("day-data"); if(el)el.scrollTop=0; scrollState={pos:0,dir:1,pause:60}; }
+// ===== 자동스크롤 (일정·훈련기록 둘 다, 속도 수동 조절) =====
+const SCROLLERS=["day-sched","day-data"];
+let SPEED=parseFloat(localStorage.getItem("tc_speed")||"0.25");   // px/frame (기본 느리게)
+const SST={};
+function resetScroll(){ SCROLLERS.forEach(id=>{ const el=document.getElementById(id); if(el)el.scrollTop=0; SST[id]={pos:0,dir:1,pause:70}; }); }
 function animScroll(){
   requestAnimationFrame(animScroll);
-  if(!scrollOn||document.getElementById("day").hidden) return;
-  const el=document.getElementById("day-data"); if(!el) return;
-  const max=el.scrollHeight-el.clientHeight;
-  if(max<=4){ el.scrollTop=0; return; }
-  if(scrollState.pause>0){ scrollState.pause--; return; }
-  scrollState.pos+=scrollState.dir*0.5;
-  if(scrollState.pos>=max){ scrollState.pos=max; scrollState.dir=-1; scrollState.pause=90; }
-  else if(scrollState.pos<=0){ scrollState.pos=0; scrollState.dir=1; scrollState.pause=90; }
-  el.scrollTop=scrollState.pos;
+  if(SPEED<=0||document.getElementById("day").hidden) return;
+  for(const id of SCROLLERS){
+    const el=document.getElementById(id); if(!el) continue;
+    const st=SST[id]||(SST[id]={pos:0,dir:1,pause:70});
+    const max=el.scrollHeight-el.clientHeight;
+    if(max<=4){ el.scrollTop=0; continue; }
+    if(st.pause>0){ st.pause--; continue; }
+    st.pos+=st.dir*SPEED;
+    if(st.pos>=max){ st.pos=max; st.dir=-1; st.pause=100; }
+    else if(st.pos<=0){ st.pos=0; st.dir=1; st.pause=100; }
+    el.scrollTop=st.pos;
+  }
 }
 animScroll();
 
@@ -310,14 +337,16 @@ document.getElementById("cal-today").onclick=()=>{const n=new Date();CY=n.getFul
 document.getElementById("day-back").onclick=closeDay;
 document.getElementById("day-prev").onclick=()=>shiftDay(-1);
 document.getElementById("day-next").onclick=()=>shiftDay(1);
-document.getElementById("autoscroll").onclick=function(){scrollOn=!scrollOn;this.style.opacity=scrollOn?1:.4;};
+const sp=document.getElementById("speed"); sp.value=SPEED;
+sp.oninput=()=>{ SPEED=parseFloat(sp.value); localStorage.setItem("tc_speed",SPEED); };
 
 // ===== 시작 =====
 async function boot(){
   const n=new Date(); CY=n.getFullYear(); CM=n.getMonth();
+  await loadSchedule();
   try{ await loadData(); }catch(e){ document.getElementById("cal-grid").innerHTML=`<div class="err" style="grid-column:1/-1">${esc(e.message)}</div>`; }
   renderCal();
-  if(sessOn(iso(new Date())).length) openDay(iso(new Date()));
+  if(sessOn(iso(new Date())).length||SCHEDULE[iso(new Date())]) openDay(iso(new Date()));
 }
 boot();
 setInterval(async()=>{ try{ await loadData(); if(!document.getElementById("day").hidden) renderDay(); else renderCal(); }catch(e){} }, 60000);
