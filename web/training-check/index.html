@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko" data-theme="light">
+<html lang="vi" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -21,7 +21,6 @@ body{background:linear-gradient(180deg,#eef5fc,#e3ecf7 55%) fixed,var(--bg);colo
   -webkit-font-smoothing:antialiased;overflow:hidden}
 .wrap{height:100vh;display:flex;flex-direction:column;padding:12px 18px;gap:10px;max-width:1700px;margin:0 auto}
 
-/* 헤더 — 좌:오륜기+베트남 / 중앙:시계 / 우:한국+영문명 */
 header{display:flex;align-items:center;gap:16px}
 .hl,.hr{display:flex;align-items:center;gap:11px;flex:1;min-width:0}
 .hr{justify-content:flex-end}
@@ -38,17 +37,17 @@ header{display:flex;align-items:center;gap:16px}
 .dot{width:8px;height:8px;border-radius:50%;background:#2fbf71;box-shadow:0 0 0 0 rgba(47,191,113,.6);animation:pulse 2s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,191,113,.6)}70%{box-shadow:0 0 0 8px rgba(47,191,113,0)}100%{box-shadow:0 0 0 0 rgba(47,191,113,0)}}
 
-/* 전달문구 */
 .msg{display:flex;align-items:center;gap:10px;background:linear-gradient(100deg,var(--acc2),var(--acc));
   color:#fff;border-radius:12px;padding:9px 16px;font-size:18px;font-weight:700;box-shadow:var(--shadow)}
 .msg .tag{font-size:12px;font-weight:800;background:rgba(255,255,255,.22);padding:2px 10px;border-radius:999px;white-space:nowrap}
 
-.btn{border:1px solid var(--line2);background:var(--panel);color:var(--tx);border-radius:9px;
-  padding:7px 13px;font-size:15px;font-weight:800;cursor:pointer;line-height:1}
+.btn{border:1px solid var(--line2);background:var(--panel);color:var(--tx);border-radius:9px;padding:7px 13px;font-size:15px;font-weight:800;cursor:pointer;line-height:1}
 .btn:hover{border-color:var(--acc)}
 .btn.pri{background:var(--acc);color:#fff;border-color:var(--acc)}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:9px;overflow:hidden}
+.seg button{border:0;background:var(--panel);color:var(--mut);font-size:13px;font-weight:800;padding:6px 11px;cursor:pointer}
+.seg button.on{background:var(--acc);color:#fff}
 
-/* 달력 */
 #cal{flex:1;display:flex;flex-direction:column;gap:9px;min-height:0}
 .cal-bar{display:flex;align-items:center;gap:10px}
 .cal-title{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
@@ -56,8 +55,7 @@ header{display:flex;align-items:center;gap:16px}
 .cal-grid{flex:1;display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;gap:6px;min-height:0}
 .cal-wd{font-size:13px;font-weight:800;color:var(--mut);text-align:center;padding:2px}
 .cal-wd.sun{color:#d6336c}.cal-wd.sat{color:#1971c2}
-.cal-cell{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 7px;
-  display:flex;flex-direction:column;gap:3px;cursor:pointer;overflow:hidden}
+.cal-cell{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 7px;display:flex;flex-direction:column;gap:3px;cursor:pointer;overflow:hidden}
 .cal-cell:hover{border-color:var(--acc)}
 .cal-cell.out{opacity:.4}
 .cal-cell.today{border-color:var(--acc);box-shadow:inset 0 0 0 2px var(--acc)}
@@ -67,47 +65,51 @@ header{display:flex;align-items:center;gap:16px}
 .cal-pill{font-size:11px;font-weight:800;color:#fff;border-radius:5px;padding:1px 6px}
 .cal-cnt{font-size:12px;color:var(--mut);font-weight:800}
 
-/* 하루 */
-#day{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
+#day{flex:1;display:flex;flex-direction:column;gap:9px;min-height:0}
 .day-head{display:flex;align-items:center;gap:9px}
 .day-date{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums}
-.cols{flex:1;display:grid;grid-template-columns:330px 1fr;gap:12px;min-height:0}
-@media (max-width:960px){.cols{grid-template-columns:1fr}}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px 16px;box-shadow:var(--shadow);min-height:0;display:flex;flex-direction:column}
-.card h3{margin:0 0 9px;font-size:16px;font-weight:800;display:flex;align-items:center;gap:7px}
-.card h3 small{font-weight:700;color:var(--mut);font-size:13px;font-variant-numeric:tabular-nums}
-
-.sched-scroll{overflow:hidden;flex:1;min-height:0}
-.routine{font-size:15px;font-weight:800;color:var(--gold2);background:var(--accsoft);border-radius:8px;padding:8px 12px;margin-bottom:9px}
-.sched-row{display:grid;grid-template-columns:104px 1fr;gap:9px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:15px}
-.sched-row .t{font-weight:800;color:var(--acc2);font-variant-numeric:tabular-nums}
-.sched-row .ev{font-size:11px;font-weight:800;color:#fff;background:var(--acc);border-radius:5px;padding:1px 6px;margin-right:5px}
-.sched-row .shots{font-size:12px;font-weight:800;color:var(--good)}
-.sched-row .foc{font-size:12px;color:var(--mut)}
-.ph{color:var(--mut);font-size:14px;text-align:center;padding:22px;border:1px dashed var(--line2);border-radius:10px}
-.speed{display:flex;align-items:center;gap:7px;margin-left:auto}
+.ctrl{margin-left:auto;display:flex;align-items:center;gap:12px}
+.speed{display:flex;align-items:center;gap:7px}
 .speed span{font-size:13px;color:var(--mut);font-weight:800}
-.speed input{width:120px;accent-color:var(--acc)}
+.speed input{width:110px;accent-color:var(--acc)}
 
-.data-wrap{flex:1;overflow:hidden;min-height:0;position:relative}
-.data-scroll{position:absolute;inset:0;overflow:hidden}
-.daygroup{margin-bottom:13px}
-.daygroup-h{font-size:15px;font-weight:800;color:var(--acc2);padding:3px 0 6px;border-bottom:2px solid var(--line2);margin-bottom:7px;font-variant-numeric:tabular-nums}
+/* 슬라이드 */
+.slides{flex:1;position:relative;min-height:0}
+.slide{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .55s ease}
+.slide.active{opacity:1;pointer-events:auto}
+.card{height:100%;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 20px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:0}
+.slide-h{font-size:22px;font-weight:800;margin-bottom:11px;display:flex;align-items:baseline;gap:10px}
+.slide-h small{font-size:15px;color:var(--mut);font-weight:700;font-variant-numeric:tabular-nums}
+.scroller{flex:1;overflow:hidden;min-height:0}
+.routine{font-size:17px;font-weight:800;color:var(--gold2);background:var(--accsoft);border-radius:9px;padding:9px 14px;margin-bottom:11px}
+.sched-row{display:grid;grid-template-columns:116px 1fr;gap:11px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:17px}
+.sched-row .t{font-weight:800;color:var(--acc2);font-variant-numeric:tabular-nums}
+.sched-row .ev{font-size:12px;font-weight:800;color:#fff;background:var(--acc);border-radius:5px;padding:1px 7px;margin-right:6px}
+.sched-row .shots{font-size:13px;font-weight:800;color:var(--good)}
+.sched-row .foc{font-size:14px;color:var(--mut)}
+
+.daygroup{margin-bottom:14px}
+.daygroup-h{font-size:16px;font-weight:800;color:var(--acc2);padding:3px 0 6px;border-bottom:2px solid var(--line2);margin-bottom:7px;font-variant-numeric:tabular-nums}
 .daygroup-h .sel{color:var(--gold2)}
-.tbl{width:100%;border-collapse:collapse;font-size:15px}
-.tbl th{font-size:12px;font-weight:800;color:var(--mut);text-align:center;padding:4px 6px;border-bottom:1px solid var(--line)}
+.tbl{width:100%;border-collapse:collapse;font-size:16px}
+.tbl th{font-size:12px;font-weight:800;color:var(--mut);text-align:center;padding:4px 7px;border-bottom:1px solid var(--line)}
 .tbl th.l,.tbl td.l{text-align:left}
-.tbl td{padding:6px;text-align:center;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.tbl td{padding:7px;text-align:center;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
 .tbl tr:last-child td{border-bottom:none}
 .ath{font-weight:800}
-.disc{font-size:11px;font-weight:800;color:#fff;border-radius:5px;padding:1px 6px}
-.series{font-size:13px;color:var(--mut);font-variant-numeric:tabular-nums}
-.total{font-weight:800;font-size:17px}
+.disc{font-size:11px;font-weight:800;color:#fff;border-radius:5px;padding:1px 7px}
+.series{font-size:14px;color:var(--mut);font-variant-numeric:tabular-nums}
+.total{font-weight:800;font-size:18px}
 .d10{color:var(--gold2);font-weight:800}
 .lng{font-weight:800;color:var(--good)}
-.nodata{color:var(--mut);text-align:center;padding:28px;font-size:15px}
-.loading,.err{color:var(--mut);text-align:center;padding:36px;font-size:15px}
-.err{color:var(--warn)}
+.nodata{color:var(--mut);text-align:center;padding:30px;font-size:16px}
+.ph{color:var(--mut);font-size:15px;text-align:center;padding:24px;border:1px dashed var(--line2);border-radius:10px}
+.loading{color:var(--mut);text-align:center;padding:36px;font-size:15px}
+.err{color:var(--warn);text-align:center;padding:20px}
+
+.dots{display:flex;gap:8px;justify-content:center;align-items:center;padding-top:2px}
+.dot2{height:10px;width:10px;border-radius:50%;background:var(--line2);cursor:pointer;transition:all .2s}
+.dot2.on{background:var(--acc);width:26px;border-radius:5px}
 </style>
 </head>
 <body>
@@ -136,31 +138,26 @@ header{display:flex;align-items:center;gap:16px}
       <div class="cal-title" id="cal-title">—</div>
       <button class="btn" id="cal-next">›</button>
       <button class="btn pri" id="cal-today">●</button>
+      <div class="seg" id="lang-cal" style="margin-left:auto"><button data-l="vi">VI</button><button data-l="ko">KO</button></div>
       <span class="cal-sum" id="cal-sum"></span>
     </div>
     <div class="cal-grid" id="cal-grid"></div>
   </section>
 
-  <!-- 하루 -->
+  <!-- 하루 (슬라이드쇼) -->
   <section id="day" hidden>
     <div class="day-head">
       <button class="btn" id="day-back">🗓</button>
       <button class="btn" id="day-prev">‹</button>
       <div class="day-date" id="day-date">—</div>
       <button class="btn" id="day-next">›</button>
-      <div class="speed"><span>⟳ 속도</span><input type="range" id="speed" min="0" max="3" step="0.25"></div>
-    </div>
-    <div class="cols">
-      <div class="card">
-        <h3>📋 일정 <small id="sched-half"></small></h3>
-        <div class="routine" id="day-routine" hidden></div>
-        <div class="sched-scroll" id="day-sched"><div class="ph">—</div></div>
-      </div>
-      <div class="card">
-        <h3>📊 최근 3일 <small id="data-range"></small></h3>
-        <div class="data-wrap"><div class="data-scroll" id="day-data"><div class="loading">…</div></div></div>
+      <div class="ctrl">
+        <div class="seg" id="lang"><button data-l="vi">VI</button><button data-l="ko">KO</button></div>
+        <div class="speed"><span id="speed-lbl">Speed</span><input type="range" id="speed" min="0" max="3" step="0.25"></div>
       </div>
     </div>
+    <div class="slides" id="slides"></div>
+    <div class="dots" id="dots"></div>
   </section>
 </div>
 
@@ -169,11 +166,21 @@ header{display:flex;align-items:center;gap:16px}
 const PRACTICE = { id:"16zdF1VFnNFNR36zQuSu5dzas9ZM-v_NDFF-me-o6Oco", gid:"1804031283" };
 const CSV = s => `https://docs.google.com/spreadsheets/d/${s.id}/export?format=csv&gid=${s.gid}`;
 const DISC_COLOR = { air:"#0081C8", pistol_50:"#00a651", rapid:"#ee334e", sport:"#d99a1f", standard:"#8e44ad", "":"#8b98a8" };
-const WD_VI = ["CN","T2","T3","T4","T5","T6","T7"];   // 일~토
+const WD_VI = ["CN","T2","T3","T4","T5","T6","T7"];
+const SLIDE_MS = 14000;
 const pad = n => String(n).padStart(2,"0");
 const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-const vnDate = ds => { const [y,m,d]=ds.split("-"); return `${d}/${m}/${y}`; };   // dd/mm/yyyy
+const vnDate = ds => { const [y,m,d]=ds.split("-"); return `${d}/${m}/${y}`; };
 const vnShort = ds => { const [,m,d]=ds.split("-"); return `${d}/${m}`; };
+
+// ===== 다국어 UI =====
+let LANG=localStorage.getItem("tc_lang")||"vi";
+const UI={
+  ko:{plan:"일정",scores:"최근 3일",ath:"선수",disc:"종목",series:"시리즈",total:"총점",streak:"연속",am:"오전",pm:"오후",noRec:"기록 없음",speed:"속도"},
+  vi:{plan:"Lịch tập",scores:"3 ngày gần nhất",ath:"VĐV",disc:"Nội dung",series:"Loạt",total:"Tổng",streak:"Chuỗi",am:"Sáng",pm:"Chiều",noRec:"Không có dữ liệu",speed:"Tốc độ"}
+};
+const L = () => UI[LANG];
+const pick = o => o ? (LANG==="vi"?(o.vi||o.ko):(o.ko||o.vi)) : "";
 
 // ===== CSV =====
 function parseCSV(text){
@@ -197,7 +204,7 @@ function tDisc(s){ s=(s||"").toLowerCase(); if(/50m|50 m/.test(s))return"pistol_
 const discLabel = s => s.dk==='air'?'10m':s.dk==='pistol_50'?'50m':s.dk==='rapid'?'속사':s.dk==='sport'?'스포츠':s.dk==='standard'?'표준':(s.disc||'·');
 
 // ===== 데이터 =====
-let SESSIONS=[];
+let SESSIONS=[], SCHED={disc:{},order:["10m","50m"]};
 async function loadData(){
   const r=await fetch(CSV(PRACTICE),{cache:"no-store"});
   if(!r.ok) throw new Error("load "+r.status);
@@ -211,19 +218,15 @@ async function loadData(){
     const series=row.slice(8,14).map(num).filter(v=>v!=null);
     const dist=[37,38,39,40,41,42,43,44,45,46,47].map(i=>cnum(row[i]));
     const hasDist=dist.some(v=>v!=null);
-    out.push({ date, name, disc, dk:tDisc(disc), total, series,
-      dist:hasDist?dist.map(v=>v||0):null, long10:cnum(row[48]) });
+    out.push({ date, name, disc, dk:tDisc(disc), total, series, dist:hasDist?dist.map(v=>v||0):null, long10:cnum(row[48]) });
   }
   SESSIONS=out;
   document.getElementById("c-upd").textContent="· "+new Date().toLocaleTimeString("vi-VN",{hour12:false});
 }
+async function loadSchedule(){ try{ const r=await fetch("schedule.json",{cache:"no-store"}); const j=r.ok?await r.json():null; if(j&&j.disc)SCHED=j; }catch(e){} }
 const sessOn = d => SESSIONS.filter(x=>x.date===d);
 
-// ===== 훈련일정 (현재 임시: 저장된 플랜 스냅샷 schedule.json / 2단계: GAS 라이브) =====
-let SCHEDULE={};
-async function loadSchedule(){ try{ const r=await fetch("schedule.json",{cache:"no-store"}); SCHEDULE=r.ok?await r.json():{}; }catch(e){ SCHEDULE={}; } }
-
-// ===== 시계 (숫자·베트남식) =====
+// ===== 시계 =====
 function tick(){
   const n=new Date();
   document.getElementById("c-date").textContent=`${pad(n.getDate())}/${pad(n.getMonth()+1)}/${n.getFullYear()}`;
@@ -255,80 +258,92 @@ function renderCal(){
     cell.onclick=()=>openDay(date);
     g.appendChild(cell);
   }
-  document.getElementById("cal-sum").textContent=monthCnt?monthCnt+"일":"";
+  document.getElementById("cal-sum").textContent=monthCnt?monthCnt+(LANG==="vi"?" ngày":"일"):"";
 }
 
-// ===== 하루 =====
-function openDay(date){ SEL=date; document.getElementById("cal").hidden=true; document.getElementById("day").hidden=false; renderDay(); }
-function closeDay(){ document.getElementById("day").hidden=true; document.getElementById("cal").hidden=false; renderCal(); }
+// ===== 하루 슬라이드쇼 =====
+let SLIDES=[], CUR=0, slideTimer=null;
+function openDay(date){ SEL=date; document.getElementById("cal").hidden=true; document.getElementById("day").hidden=false; buildDay(); }
+function closeDay(){ clearInterval(slideTimer); document.getElementById("day").hidden=true; document.getElementById("cal").hidden=false; renderCal(); }
 function shiftDay(delta){ const d=new Date(SEL+"T00:00:00"); d.setDate(d.getDate()+delta); openDay(iso(d)); }
 
-function renderSchedule(){
-  const sc=SCHEDULE[SEL];
-  const box=document.getElementById("day-sched"), rt=document.getElementById("day-routine"), half=document.getElementById("sched-half");
-  const amPm=new Date().getHours()<12?"AM":"PM";
-  half.textContent=amPm==="AM"?"(오전)":"(오후)";
-  if(!sc){ rt.hidden=true; box.innerHTML='<div class="ph">—</div>'; return; }
-  rt.hidden=!sc.routine; rt.textContent=sc.routine||"";
-  const rows=(sc.rows||[]).filter(r=>{ const h=parseInt((r.s||"").slice(0,2)); if(isNaN(h))return true; return amPm==="AM"?h<12:h>=12; });
-  if(!rows.length){ box.innerHTML=`<div class="ph">${amPm==="AM"?"오전":"오후"} 일정 없음</div>`; return; }
-  box.innerHTML=rows.map(r=>`<div class="sched-row"><span class="t">${esc(r.s)}${r.e&&r.e!==r.s?"~"+esc(r.e):""}</span><span>${r.ev?`<span class="ev">${esc(r.ev)}</span>`:""}${esc(r.tr)}${r.sh?` <span class="shots">${esc(r.sh)}</span>`:""}${r.fc?`<span class="foc"> · ${esc(r.fc)}</span>`:""}</span></div>`).join("");
-}
-function renderDay(){
+function buildDay(){
   document.getElementById("day-date").textContent=vnDate(SEL);
-  renderSchedule();
-  const days=[0,1,2].map(k=>{const x=new Date(SEL+"T00:00:00");x.setDate(x.getDate()-k);return iso(x);});
-  document.getElementById("data-range").textContent=`${vnShort(days[2])}~${vnShort(days[0])}`;
-  const box=document.getElementById("day-data"); box.innerHTML="";
-  let any=false;
-  for(const dt of days){
-    const ss=sessOn(dt); if(!ss.length) continue; any=true;
-    const grp=document.createElement("div"); grp.className="daygroup";
-    grp.innerHTML=`<div class="daygroup-h">${vnShort(dt)}${dt===SEL?' <span class="sel">●</span>':''}</div>`+
-      `<table class="tbl"><thead><tr>
-        <th class="l">선수</th><th>종목</th><th class="l">시리즈</th><th>총점</th>
-        <th>10</th><th>9</th><th>8</th><th>연속</th></tr></thead><tbody>${
-        ss.map(s=>{ const d=s.dist||[]; return `<tr>
-            <td class="l ath">${esc(s.name)}</td>
-            <td><span class="disc" style="background:${DISC_COLOR[s.dk]||'#888'}">${esc(discLabel(s))}</span></td>
-            <td class="l series">${s.series.join(" ")||"—"}</td>
-            <td class="total">${fmt(s.total)}</td>
-            <td class="d10">${d[0]!=null?d[0]:"—"}</td>
-            <td>${d[1]!=null?d[1]:"—"}</td>
-            <td>${d[2]!=null?d[2]:"—"}</td>
-            <td class="lng">${s.long10!=null?s.long10:"—"}</td></tr>`; }).join("")}</tbody></table>`;
-    box.appendChild(grp);
+  const amPm=new Date().getHours()<12?"AM":"PM";
+  SLIDES=[];
+  for(const disc of (SCHED.order||Object.keys(SCHED.disc))){
+    const sc=SCHED.disc[disc] && SCHED.disc[disc][SEL]; if(!sc) continue;
+    const rows=(sc.rows||[]).filter(r=>{ const h=parseInt((r.s||"").slice(0,2)); if(isNaN(h))return true; return amPm==="AM"?h<12:h>=12; });
+    if(!rows.length) continue;
+    SLIDES.push({type:"sched",disc,routine:sc.routine,rows,amPm});
   }
-  if(!any) box.innerHTML=`<div class="nodata">기록 없음</div>`;
-  resetScroll();
+  SLIDES.push({type:"scores"});
+  renderSlides(); showSlide(0); restartTimer();
 }
+function scoreRange(){ const a=new Date(SEL+"T00:00:00"); const b=new Date(SEL+"T00:00:00"); b.setDate(b.getDate()-2); return `${vnShort(iso(b))}~${vnShort(iso(a))}`; }
+function slideHTML(s){
+  if(s.type==="scores"){
+    const days=[0,1,2].map(k=>{const x=new Date(SEL+"T00:00:00");x.setDate(x.getDate()-k);return iso(x);});
+    let body="",any=false;
+    for(const dt of days){ const ss=sessOn(dt); if(!ss.length)continue; any=true;
+      body+=`<div class="daygroup"><div class="daygroup-h">${vnShort(dt)}${dt===SEL?' <span class="sel">●</span>':''}</div>`+
+        `<table class="tbl"><thead><tr><th class="l">${esc(L().ath)}</th><th>${esc(L().disc)}</th><th class="l">${esc(L().series)}</th><th>${esc(L().total)}</th><th>10</th><th>9</th><th>8</th><th>${esc(L().streak)}</th></tr></thead><tbody>`+
+        ss.map(x=>{const d=x.dist||[];return `<tr><td class="l ath">${esc(x.name)}</td><td><span class="disc" style="background:${DISC_COLOR[x.dk]||'#888'}">${esc(discLabel(x))}</span></td><td class="l series">${x.series.join(" ")||"—"}</td><td class="total">${fmt(x.total)}</td><td class="d10">${d[0]!=null?d[0]:"—"}</td><td>${d[1]!=null?d[1]:"—"}</td><td>${d[2]!=null?d[2]:"—"}</td><td class="lng">${x.long10!=null?x.long10:"—"}</td></tr>`;}).join("")+
+        `</tbody></table></div>`;
+    }
+    return `<div class="card"><div class="slide-h">📊 ${esc(L().scores)} <small>${scoreRange()}</small></div><div class="scroller">${any?body:`<div class="nodata">${esc(L().noRec)}</div>`}</div></div>`;
+  }
+  const half=s.amPm==="AM"?L().am:L().pm;
+  const rt=pick(s.routine);
+  const rows=s.rows.map(r=>`<div class="sched-row"><span class="t">${esc(r.s)}${r.e&&r.e!==r.s?"~"+esc(r.e):""}</span><span>${pick(r.ev)?`<span class="ev">${esc(pick(r.ev))}</span>`:""}${esc(pick(r.tr))}${pick(r.sh)?` <span class="shots">${esc(pick(r.sh))}</span>`:""}${pick(r.fc)?`<span class="foc"> · ${esc(pick(r.fc))}</span>`:""}</span></div>`).join("");
+  return `<div class="card"><div class="slide-h">📋 ${esc(s.disc)} · ${esc(L().plan)} <small>(${esc(half)})</small></div>${rt?`<div class="routine">${esc(rt)}</div>`:""}<div class="scroller">${rows}</div></div>`;
+}
+function renderSlides(){
+  const box=document.getElementById("slides");
+  box.innerHTML=SLIDES.map(s=>`<div class="slide">${slideHTML(s)}</div>`).join("");
+  const dots=document.getElementById("dots");
+  dots.innerHTML=SLIDES.map((_,i)=>`<div class="dot2" data-i="${i}"></div>`).join("");
+  dots.querySelectorAll(".dot2").forEach(d=>d.onclick=()=>{ showSlide(+d.dataset.i); restartTimer(); });
+}
+function showSlide(i){
+  CUR=(i%SLIDES.length+SLIDES.length)%SLIDES.length;
+  const box=document.getElementById("slides");
+  [...box.children].forEach((el,k)=>el.classList.toggle("active",k===CUR));
+  document.querySelectorAll("#dots .dot2").forEach((d,k)=>d.classList.toggle("on",k===CUR));
+  SST={pos:0,dir:1,pause:70};
+  const el=activeScroller(); if(el)el.scrollTop=0;
+}
+function restartTimer(){ clearInterval(slideTimer); if(SLIDES.length>1) slideTimer=setInterval(()=>showSlide(CUR+1), SLIDE_MS); }
 const fmt = v => Number.isInteger(v)?v:(Math.round(v*10)/10);
-function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
-// ===== 전달문구 (2단계: GAS 연동 시 setMsg 호출) =====
+// ===== 전달문구 (2단계 연동 시 setMsg) =====
 function setMsg(txt){ const m=document.getElementById("msg"); if(txt){ document.getElementById("msg-txt").textContent=txt; m.hidden=false; } else m.hidden=true; }
 
-// ===== 자동스크롤 (일정·훈련기록 둘 다, 속도 수동 조절) =====
-const SCROLLERS=["day-sched","day-data"];
-let SPEED=parseFloat(localStorage.getItem("tc_speed")||"0.25");   // px/frame (기본 느리게)
-const SST={};
-function resetScroll(){ SCROLLERS.forEach(id=>{ const el=document.getElementById(id); if(el)el.scrollTop=0; SST[id]={pos:0,dir:1,pause:70}; }); }
+// ===== 활성 슬라이드 자동스크롤 =====
+let SPEED=parseFloat(localStorage.getItem("tc_speed")||"0.25"), SST={pos:0,dir:1,pause:70};
+function activeScroller(){ return document.querySelector(".slide.active .scroller"); }
 function animScroll(){
   requestAnimationFrame(animScroll);
   if(SPEED<=0||document.getElementById("day").hidden) return;
-  for(const id of SCROLLERS){
-    const el=document.getElementById(id); if(!el) continue;
-    const st=SST[id]||(SST[id]={pos:0,dir:1,pause:70});
-    const max=el.scrollHeight-el.clientHeight;
-    if(max<=4){ el.scrollTop=0; continue; }
-    if(st.pause>0){ st.pause--; continue; }
-    st.pos+=st.dir*SPEED;
-    if(st.pos>=max){ st.pos=max; st.dir=-1; st.pause=100; }
-    else if(st.pos<=0){ st.pos=0; st.dir=1; st.pause=100; }
-    el.scrollTop=st.pos;
-  }
+  const el=activeScroller(); if(!el) return;
+  const max=el.scrollHeight-el.clientHeight;
+  if(max<=4){ el.scrollTop=0; return; }
+  if(SST.pause>0){ SST.pause--; return; }
+  SST.pos+=SST.dir*SPEED;
+  if(SST.pos>=max){ SST.pos=max; SST.dir=-1; SST.pause=100; }
+  else if(SST.pos<=0){ SST.pos=0; SST.dir=1; SST.pause=100; }
+  el.scrollTop=SST.pos;
 }
 animScroll();
+
+// ===== 언어 =====
+function setLang(l){
+  LANG=l; localStorage.setItem("tc_lang",l);
+  document.querySelectorAll("#lang button,#lang-cal button").forEach(b=>b.classList.toggle("on",b.dataset.l===l));
+  document.getElementById("speed-lbl").textContent=L().speed;
+  if(!document.getElementById("day").hidden){ renderSlides(); showSlide(CUR); } else renderCal();
+}
 
 // ===== 이벤트 =====
 document.getElementById("cal-prev").onclick=()=>{CM--;if(CM<0){CM=11;CY--;}renderCal();};
@@ -337,19 +352,22 @@ document.getElementById("cal-today").onclick=()=>{const n=new Date();CY=n.getFul
 document.getElementById("day-back").onclick=closeDay;
 document.getElementById("day-prev").onclick=()=>shiftDay(-1);
 document.getElementById("day-next").onclick=()=>shiftDay(1);
+document.querySelectorAll("#lang button,#lang-cal button").forEach(b=>b.onclick=()=>setLang(b.dataset.l));
 const sp=document.getElementById("speed"); sp.value=SPEED;
 sp.oninput=()=>{ SPEED=parseFloat(sp.value); localStorage.setItem("tc_speed",SPEED); };
 
 // ===== 시작 =====
 async function boot(){
   const n=new Date(); CY=n.getFullYear(); CM=n.getMonth();
+  setLang(LANG);
   await loadSchedule();
   try{ await loadData(); }catch(e){ document.getElementById("cal-grid").innerHTML=`<div class="err" style="grid-column:1/-1">${esc(e.message)}</div>`; }
   renderCal();
-  if(sessOn(iso(new Date())).length||SCHEDULE[iso(new Date())]) openDay(iso(new Date()));
+  const td=iso(new Date());
+  if(sessOn(td).length || (SCHED.disc["10m"]&&SCHED.disc["10m"][td]) || (SCHED.disc["50m"]&&SCHED.disc["50m"][td])) openDay(td);
 }
 boot();
-setInterval(async()=>{ try{ await loadData(); if(!document.getElementById("day").hidden) renderDay(); else renderCal(); }catch(e){} }, 60000);
+setInterval(async()=>{ try{ await loadData(); if(document.getElementById("day").hidden) renderCal(); else { const keep=CUR; renderSlides(); showSlide(keep); } }catch(e){} }, 60000);
 </script>
 </body>
 </html>
