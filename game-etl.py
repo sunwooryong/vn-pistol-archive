@@ -28,6 +28,21 @@ if os.path.exists(ap):
     except Exception: ath_list = []
 by_norm = {norm(a['full_name']): a for a in ath_list}
 
+# 선수명 후보(공백·기호 제거 정규화) — 신형 템플릿의 뒤섞인 이름 복원용
+def despace(s): return re.sub(r'[^a-z0-9]', '', norm(s))
+CAND = [(a['full_name'], despace(a['full_name'])) for a in ath_list if len(despace(a['full_name'])) >= 6]
+def _subseq(a, b):
+    it = iter(b)
+    return all(c in it for c in a)
+def recover_name(field):
+    """소속(지역)이 글자 단위로 뒤섞인 이름 문자열에서 로스터와 부분수열 매칭으로 실제 이름 복원"""
+    blob = despace(field)
+    if not blob: return None
+    hits = [(full, ct) for full, ct in CAND if _subseq(ct, blob)]
+    if not hits: return None
+    hits.sort(key=lambda x: -len(x[1]))
+    return hits[0][0]
+
 def date_from(text, base):
     m = re.search(r'(\d{4}-\d{2}-\d{2})', base) or re.search(r'(\d{4}-\d{2}-\d{2})', text or '')
     if m: return m.group(1)
@@ -105,11 +120,39 @@ def parse_ranking(text, base):
                      'result': result, 'status': status, 'shootoff': None})
     return [{'date': date_from(text, base), 'name': mname, 'file': base, 'game_type': gtype, 'athletes': rows}] if rows else []
 
+RE_DETAIL_ROW = re.compile(r'^(\d+)\s+(.+?)\s+(\d{2,4}(?:\.\d+)?)\s+(우승|탈락|vô địch|bị loại)\s*$', re.I)
+def parse_detail(text, base):
+    """신형 Shooting Game v5 템플릿: '선수 / 소속' · 'VĐV / Đội' 발별 상세표(소속이 이름과 뒤섞임).
+       순위행 '<순위> <이름(뒤섞임)> <총점> <상태>' 를 순위별 1회만 추출, 로스터로 이름 복원."""
+    title = next((l.strip() for l in text.split('\n') if l.strip()), '')
+    low = title.lower()
+    if '챔피언' in title or 'chung kết' in low or 'hồ sơ' in low or 'vô địch' in low: mname = '챔피언 결정전'
+    elif 'final' in low: mname = 'Final Match'
+    elif 'knockdown' in low: mname = 'Knockdown'
+    else: mname = (title.split('·')[0].strip()[:30] or '게임')
+    byrank = {}
+    for line in text.split('\n'):
+        m = RE_DETAIL_ROW.match(line.strip())
+        if not m: continue
+        rk = int(m.group(1))
+        if rk in byrank: continue  # 발 구간(1–10,11–20…)마다 같은 순위가 반복 → 1회만
+        tot = float(m.group(3)); tot = int(tot) if tot.is_integer() else tot
+        st = m.group(4).lower()
+        status = '우승' if ('우승' in st or 'vô' in st) else '탈락'
+        name = recover_name(m.group(2)) or re.sub(r'\s+', ' ', m.group(2)).strip()
+        byrank[rk] = {'rank': rk, 'raw_name': name, 'region': None, 'total': tot,
+                      'result': None, 'status': status, 'shootoff': None}
+    rows = [byrank[r] for r in sorted(byrank)]
+    return [{'date': date_from(text, base), 'name': mname, 'file': base, 'game_type': 'elimination', 'athletes': rows}] if rows else []
+
 def parse_pdf(f):
     base = os.path.basename(f); text, _ = pdf_text(f)
     if not text: return []
     if re.search(r'순위\s+선수\s+지역', text):
         return parse_ranking(text, base)
+    if re.search(r'(선수\s*/\s*소속|VĐV\s*/\s*Đội)', text):
+        d = parse_detail(text, base)
+        if d: return d
     return parse_scoreline(text, base)
 
 def parse_csv(f):
