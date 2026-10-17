@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>트레이닝 체크 · 베트남 청소년 권총 대표팀</title>
+<title>Training Check</title>
 <style>
 :root{
   --bg:#e7eef8; --bg2:#f4f8fd; --panel:#ffffff; --line:#dbe4f1; --line2:#c6d5e7;
@@ -13,127 +13,115 @@
   --ring5:linear-gradient(90deg,#0081C8 0%,#00a1e0 22%,#f4c300 46%,#00a651 72%,#ee334e 100%);
   --shadow:0 8px 22px rgba(24,58,105,.10);
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0d1420; --bg2:#121c2b; --panel:#16202f; --line:#243244; --line2:#2d3e54;
-  --tx:#e8f0fb; --mut:#9fb2c9; --accsoft:#12304b; --shadow:0 10px 30px rgba(0,0,0,.4);
-}}
-:root[data-theme="dark"]{
-  --bg:#0d1420; --bg2:#121c2b; --panel:#16202f; --line:#243244; --line2:#2d3e54;
-  --tx:#e8f0fb; --mut:#9fb2c9; --accsoft:#12304b; --shadow:0 10px 30px rgba(0,0,0,.4);
-}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0;padding:0;height:100%}
-body{background:var(--bg);color:var(--tx);
+body{background:linear-gradient(180deg,#eef5fc,#e3ecf7 55%) fixed,var(--bg);color:var(--tx);
   font-family:"Malgun Gothic","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
   -webkit-font-smoothing:antialiased;overflow:hidden}
-.wrap{height:100vh;display:flex;flex-direction:column;padding:14px 18px;gap:12px;max-width:1600px;margin:0 auto}
+.wrap{height:100vh;display:flex;flex-direction:column;padding:12px 18px;gap:10px;max-width:1700px;margin:0 auto}
 
-/* 헤더 */
-header{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:10px}
-.brand b{font-size:20px;font-weight:800;letter-spacing:.2px}
-.brand .sub{font-size:11px;color:var(--mut)}
-.clock{margin-left:auto;display:flex;align-items:baseline;gap:12px;text-align:right}
-.clock .date{font-size:17px;font-weight:700;color:var(--mut)}
-.clock .time{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:1px;
+/* 헤더 — 좌:오륜기+베트남 / 중앙:시계 / 우:한국+영문명 */
+header{display:flex;align-items:center;gap:16px}
+.hl,.hr{display:flex;align-items:center;gap:11px;flex:1;min-width:0}
+.hr{justify-content:flex-end}
+.rings{height:48px;background:#fff;border-radius:10px;padding:5px 11px;box-shadow:0 2px 10px rgba(0,0,0,.14)}
+.flag{height:30px;border-radius:4px;box-shadow:0 2px 7px rgba(0,0,0,.22);border:1.5px solid rgba(255,255,255,.7)}
+.name{display:flex;flex-direction:column;line-height:1.15;text-align:right}
+.name b{font-size:16px;font-weight:800;letter-spacing:.5px}
+.name span{font-size:10px;color:var(--mut);font-weight:700;letter-spacing:2px}
+.clock{display:flex;flex-direction:column;align-items:center;line-height:1}
+.clock .time{font-size:40px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:2px;
   background:var(--ring5);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--good);font-weight:700}
-.dot{width:9px;height:9px;border-radius:50%;background:#2fbf71;box-shadow:0 0 0 0 rgba(47,191,113,.6);animation:pulse 2s infinite}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,191,113,.6)}70%{box-shadow:0 0 0 9px rgba(47,191,113,0)}100%{box-shadow:0 0 0 0 rgba(47,191,113,0)}}
+.clock .date{display:flex;align-items:center;gap:8px;margin-top:3px;font-size:16px;font-weight:700;color:var(--mut);font-variant-numeric:tabular-nums}
+.live{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--good);font-weight:800}
+.dot{width:8px;height:8px;border-radius:50%;background:#2fbf71;box-shadow:0 0 0 0 rgba(47,191,113,.6);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,191,113,.6)}70%{box-shadow:0 0 0 8px rgba(47,191,113,0)}100%{box-shadow:0 0 0 0 rgba(47,191,113,0)}}
 
-/* 전달문구 배너 */
+/* 전달문구 */
 .msg{display:flex;align-items:center;gap:10px;background:linear-gradient(100deg,var(--acc2),var(--acc));
-  color:#fff;border-radius:12px;padding:9px 16px;font-size:16px;font-weight:600;box-shadow:var(--shadow);min-height:40px}
-.msg .tag{font-size:11px;font-weight:800;background:rgba(255,255,255,.22);padding:2px 9px;border-radius:999px;white-space:nowrap}
-.msg.empty{background:var(--panel);color:var(--mut);font-weight:500;border:1px dashed var(--line2)}
-.msg.empty .tag{background:var(--accsoft);color:var(--acc)}
+  color:#fff;border-radius:12px;padding:9px 16px;font-size:18px;font-weight:700;box-shadow:var(--shadow)}
+.msg .tag{font-size:12px;font-weight:800;background:rgba(255,255,255,.22);padding:2px 10px;border-radius:999px;white-space:nowrap}
 
-/* 버튼 */
 .btn{border:1px solid var(--line2);background:var(--panel);color:var(--tx);border-radius:9px;
-  padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer}
+  padding:7px 13px;font-size:15px;font-weight:800;cursor:pointer;line-height:1}
 .btn:hover{border-color:var(--acc)}
 .btn.pri{background:var(--acc);color:#fff;border-color:var(--acc)}
 
 /* 달력 */
-#cal{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
-.cal-bar{display:flex;align-items:center;gap:12px}
-.cal-title{font-size:20px;font-weight:800}
-.cal-grid{flex:1;display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;gap:7px;min-height:0}
-.cal-wd{font-size:12px;font-weight:800;color:var(--mut);text-align:center;padding:2px}
+#cal{flex:1;display:flex;flex-direction:column;gap:9px;min-height:0}
+.cal-bar{display:flex;align-items:center;gap:10px}
+.cal-title{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.cal-sum{margin-left:auto;font-size:14px;color:var(--mut);font-weight:700}
+.cal-grid{flex:1;display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;gap:6px;min-height:0}
+.cal-wd{font-size:13px;font-weight:800;color:var(--mut);text-align:center;padding:2px}
 .cal-wd.sun{color:#d6336c}.cal-wd.sat{color:#1971c2}
-.cal-cell{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:7px 8px;
-  display:flex;flex-direction:column;gap:4px;cursor:pointer;overflow:hidden;transition:border-color .12s}
+.cal-cell{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 7px;
+  display:flex;flex-direction:column;gap:3px;cursor:pointer;overflow:hidden}
 .cal-cell:hover{border-color:var(--acc)}
 .cal-cell.out{opacity:.4}
 .cal-cell.today{border-color:var(--acc);box-shadow:inset 0 0 0 2px var(--acc)}
-.cal-dnum{font-size:15px;font-weight:800}
+.cal-dnum{font-size:16px;font-weight:800}
 .cal-cell.sun .cal-dnum{color:#d6336c}.cal-cell.sat .cal-dnum{color:#1971c2}
 .cal-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:auto}
-.cal-pill{font-size:10px;font-weight:800;color:#fff;border-radius:5px;padding:1px 5px}
-.cal-cnt{font-size:11px;color:var(--mut);font-weight:700}
+.cal-pill{font-size:11px;font-weight:800;color:#fff;border-radius:5px;padding:1px 6px}
+.cal-cnt{font-size:12px;color:var(--mut);font-weight:800}
 
-/* 하루 일과 */
-#day{flex:1;display:flex;flex-direction:column;gap:12px;min-height:0}
-.day-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.day-date{font-size:24px;font-weight:800}
-.day-date small{font-size:14px;color:var(--mut);font-weight:700;margin-left:8px}
-.cols{flex:1;display:grid;grid-template-columns:360px 1fr;gap:14px;min-height:0}
-@media (max-width:1000px){.cols{grid-template-columns:1fr}}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);min-height:0;display:flex;flex-direction:column}
-.card h3{margin:0 0 10px;font-size:15px;font-weight:800;display:flex;align-items:center;gap:7px}
-.card h3 .em{font-size:17px}
+/* 하루 */
+#day{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
+.day-head{display:flex;align-items:center;gap:9px}
+.day-date{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums}
+.cols{flex:1;display:grid;grid-template-columns:330px 1fr;gap:12px;min-height:0}
+@media (max-width:960px){.cols{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px 16px;box-shadow:var(--shadow);min-height:0;display:flex;flex-direction:column}
+.card h3{margin:0 0 9px;font-size:16px;font-weight:800;display:flex;align-items:center;gap:7px}
+.card h3 small{font-weight:700;color:var(--mut);font-size:13px;font-variant-numeric:tabular-nums}
 
-/* 일정 (placeholder/실데이터) */
 .sched-scroll{overflow:hidden;flex:1;min-height:0}
-.sched-row{display:grid;grid-template-columns:76px 1fr;gap:9px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.routine{font-size:15px;font-weight:800;color:var(--gold2);background:var(--accsoft);border-radius:8px;padding:8px 12px;margin-bottom:9px}
+.sched-row{display:grid;grid-template-columns:86px 1fr;gap:9px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:15px}
 .sched-row .t{font-weight:800;color:var(--acc2);font-variant-numeric:tabular-nums}
-.sched-row .ev{font-size:11px;font-weight:800;color:#fff;background:var(--acc);border-radius:5px;padding:1px 6px;margin-left:6px}
-.sched-row .foc{font-size:12px;color:var(--mut)}
-.placeholder{color:var(--mut);font-size:14px;text-align:center;padding:24px;border:1px dashed var(--line2);border-radius:10px}
-.routine{font-size:14px;font-weight:700;color:var(--gold2);background:var(--accsoft);border-radius:8px;padding:8px 12px;margin-bottom:10px}
+.ph{color:var(--mut);font-size:14px;text-align:center;padding:22px;border:1px dashed var(--line2);border-radius:10px}
 
-/* 훈련 데이터 (최근 3일) */
 .data-wrap{flex:1;overflow:hidden;min-height:0;position:relative}
 .data-scroll{position:absolute;inset:0;overflow:hidden}
-.daygroup{margin-bottom:14px}
-.daygroup-h{font-size:14px;font-weight:800;color:var(--acc2);padding:4px 0 7px;border-bottom:2px solid var(--line2);margin-bottom:8px;display:flex;gap:10px;align-items:baseline}
-.daygroup-h .wd{font-size:12px;color:var(--mut)}
-.tbl{width:100%;border-collapse:collapse;font-size:14px}
-.tbl th{font-size:11px;font-weight:800;color:var(--mut);text-align:center;padding:4px 6px;border-bottom:1px solid var(--line)}
+.daygroup{margin-bottom:13px}
+.daygroup-h{font-size:15px;font-weight:800;color:var(--acc2);padding:3px 0 6px;border-bottom:2px solid var(--line2);margin-bottom:7px;font-variant-numeric:tabular-nums}
+.daygroup-h .sel{color:var(--gold2)}
+.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th{font-size:12px;font-weight:800;color:var(--mut);text-align:center;padding:4px 6px;border-bottom:1px solid var(--line)}
 .tbl th.l,.tbl td.l{text-align:left}
 .tbl td{padding:6px;text-align:center;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
 .tbl tr:last-child td{border-bottom:none}
 .ath{font-weight:800}
-.disc{font-size:10px;font-weight:800;color:#fff;border-radius:5px;padding:1px 6px}
-.series{font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums}
-.total{font-weight:800;font-size:16px}
+.disc{font-size:11px;font-weight:800;color:#fff;border-radius:5px;padding:1px 6px}
+.series{font-size:13px;color:var(--mut);font-variant-numeric:tabular-nums}
+.total{font-weight:800;font-size:17px}
 .d10{color:var(--gold2);font-weight:800}
 .lng{font-weight:800;color:var(--good)}
-.nodata{color:var(--mut);text-align:center;padding:30px}
-.loading{color:var(--mut);text-align:center;padding:40px;font-size:15px}
-.err{color:var(--warn);text-align:center;padding:20px;font-size:13px}
-.foot{font-size:11px;color:var(--mut);text-align:center;padding-top:2px}
+.nodata{color:var(--mut);text-align:center;padding:28px;font-size:15px}
+.loading,.err{color:var(--mut);text-align:center;padding:36px;font-size:15px}
+.err{color:var(--warn)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="brand">
-      <a href="../" class="btn" style="text-decoration:none" title="아카이브로">🗄</a>
-      <b>🎯 트레이닝 체크</b>
-      <span class="sub">베트남 청소년 권총 대표팀 · 실시간 훈련 현황</span>
+    <div class="hl">
+      <a href="../" title="archive"><img class="rings" src="../dashboard/rings.svg" alt="Olympic"></a>
+      <img class="flag" src="../dashboard/vn.svg" alt="VN">
     </div>
     <div class="clock">
-      <div>
-        <div class="date" id="c-date">—</div>
-        <div><span class="live"><span class="dot"></span>LIVE</span> · <span id="c-upd" style="font-size:11px;color:var(--mut)">—</span></div>
-      </div>
       <div class="time" id="c-time">--:--:--</div>
+      <div class="date"><span id="c-date">--/--/----</span> <span class="live"><span class="dot"></span>LIVE <span id="c-upd"></span></span></div>
+    </div>
+    <div class="hr">
+      <img class="flag" src="../dashboard/kr.svg" alt="KR">
+      <div class="name"><b>SUNWOO RYONG</b><span>EXPERT</span></div>
     </div>
   </header>
 
-  <div class="msg empty" id="msg"><span class="tag">전달</span><span id="msg-txt">오늘 전달 문구가 없습니다 (2단계에서 훈련일정 앱과 연결)</span></div>
+  <div class="msg" id="msg" hidden><span class="tag">📢</span><span id="msg-txt"></span></div>
 
   <!-- 달력 -->
   <section id="cal">
@@ -141,37 +129,33 @@ header{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
       <button class="btn" id="cal-prev">‹</button>
       <div class="cal-title" id="cal-title">—</div>
       <button class="btn" id="cal-next">›</button>
-      <button class="btn pri" id="cal-today">오늘</button>
-      <span class="cal-cnt" id="cal-sum" style="margin-left:auto"></span>
+      <button class="btn pri" id="cal-today">●</button>
+      <span class="cal-sum" id="cal-sum"></span>
     </div>
     <div class="cal-grid" id="cal-grid"></div>
   </section>
 
-  <!-- 하루 일과 -->
+  <!-- 하루 -->
   <section id="day" hidden>
     <div class="day-head">
-      <button class="btn" id="day-back">‹ 달력</button>
+      <button class="btn" id="day-back">🗓</button>
+      <button class="btn" id="day-prev">‹</button>
       <div class="day-date" id="day-date">—</div>
-      <button class="btn" id="day-prev">‹ 전날</button>
-      <button class="btn" id="day-next">다음날 ›</button>
-      <button class="btn" id="autoscroll" style="margin-left:auto">⟳ 자동스크롤: 켬</button>
+      <button class="btn" id="day-next">›</button>
+      <button class="btn" id="autoscroll" style="margin-left:auto">⟳</button>
     </div>
     <div class="cols">
       <div class="card">
-        <h3><span class="em">📋</span> 오늘 훈련 일정</h3>
+        <h3>📋 일정</h3>
         <div class="routine" id="day-routine" hidden></div>
-        <div class="sched-scroll" id="day-sched">
-          <div class="placeholder">훈련일정은 2단계(훈련일정 앱 연결)에서 표시됩니다.</div>
-        </div>
+        <div class="sched-scroll" id="day-sched"><div class="ph">—</div></div>
       </div>
       <div class="card">
-        <h3><span class="em">📊</span> 최근 3일 훈련 기록 <span id="data-range" style="font-weight:600;color:var(--mut);font-size:12px"></span></h3>
-        <div class="data-wrap"><div class="data-scroll" id="day-data"><div class="loading">실시간 데이터를 불러오는 중…</div></div></div>
+        <h3>📊 최근 3일 <small id="data-range"></small></h3>
+        <div class="data-wrap"><div class="data-scroll" id="day-data"><div class="loading">…</div></div></div>
       </div>
     </div>
   </section>
-
-  <div class="foot">데이터: 데일리 인풋 시트 실시간 · 60초마다 갱신 · <span id="foot-gen"></span></div>
 </div>
 
 <script>
@@ -179,11 +163,13 @@ header{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 const PRACTICE = { id:"16zdF1VFnNFNR36zQuSu5dzas9ZM-v_NDFF-me-o6Oco", gid:"1804031283" };
 const CSV = s => `https://docs.google.com/spreadsheets/d/${s.id}/export?format=csv&gid=${s.gid}`;
 const DISC_COLOR = { air:"#0081C8", pistol_50:"#00a651", rapid:"#ee334e", sport:"#d99a1f", standard:"#8e44ad", "":"#8b98a8" };
-const WD = ["일","월","화","수","목","금","토"];
+const WD_VI = ["CN","T2","T3","T4","T5","T6","T7"];   // 일~토
 const pad = n => String(n).padStart(2,"0");
 const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const vnDate = ds => { const [y,m,d]=ds.split("-"); return `${d}/${m}/${y}`; };   // dd/mm/yyyy
+const vnShort = ds => { const [,m,d]=ds.split("-"); return `${d}/${m}`; };
 
-// ===== CSV 파서 =====
+// ===== CSV =====
 function parseCSV(text){
   const rows=[]; let f="",row=[],q=false;
   for(let i=0;i<text.length;i++){const c=text[i];
@@ -200,14 +186,15 @@ const LBL=/Thời tiết|Nhiệt độ|Độ ẩm|Vĩ độ|Kinh độ|Buổi t�
 const clean = v => { v=String(v||"").trim(); return (!v||LBL.test(v))?"":v; };
 const cnum = v => { const c=clean(v); return c?num(c):null; };
 function tDate(s){ const m=String(s||"").match(/(\d{4})[-.\s]+(\d{1,2})[-.\s]+(\d{1,2})/); return m?`${m[1]}-${pad(+m[2])}-${pad(+m[3])}`:null; }
-function tDisc(s){ s=(s||"").toLowerCase(); if(/50m|50 m/.test(s))return"pistol_50"; if(/속사|급사|rapid|25m rapid/.test(s))return"rapid";
+function tDisc(s){ s=(s||"").toLowerCase(); if(/50m|50 m/.test(s))return"pistol_50"; if(/속사|급사|rapid/.test(s))return"rapid";
   if(/스포츠|sport/.test(s))return"sport"; if(/스탠다드|standard|표준/.test(s))return"standard"; if(/10m|공기|air/.test(s))return"air"; return""; }
+const discLabel = s => s.dk==='air'?'10m':s.dk==='pistol_50'?'50m':s.dk==='rapid'?'속사':s.dk==='sport'?'스포츠':s.dk==='standard'?'표준':(s.disc||'·');
 
-// ===== 시트 → 세션 =====
-let SESSIONS=[], GEN="";
+// ===== 데이터 =====
+let SESSIONS=[];
 async function loadData(){
   const r=await fetch(CSV(PRACTICE),{cache:"no-store"});
-  if(!r.ok) throw new Error("시트 로드 실패 "+r.status);
+  if(!r.ok) throw new Error("load "+r.status);
   const rows=parseCSV(await r.text()).slice(4);
   const out=[];
   for(const row of rows){
@@ -216,24 +203,20 @@ async function loadData(){
     if(!date||!name||total==null) continue;
     const disc=(row[4]||"").trim();
     const series=row.slice(8,14).map(num).filter(v=>v!=null);
-    const shots=num(row[6]);
     const dist=[37,38,39,40,41,42,43,44,45,46,47].map(i=>cnum(row[i]));
     const hasDist=dist.some(v=>v!=null);
-    out.push({ date, name, disc, dk:tDisc(disc), shots, total, series,
-      dist:hasDist?dist.map(v=>v||0):null, long10:cnum(row[48]),
-      daypart:/오전|sáng/i.test(clean(row[30]))?"AM":(/오후|chiều/i.test(clean(row[30]))?"PM":null) });
+    out.push({ date, name, disc, dk:tDisc(disc), total, series,
+      dist:hasDist?dist.map(v=>v||0):null, long10:cnum(row[48]) });
   }
-  SESSIONS=out; GEN=new Date().toLocaleTimeString("ko-KR");
-  document.getElementById("c-upd").textContent="갱신 "+GEN;
-  document.getElementById("foot-gen").textContent="마지막 갱신 "+GEN;
+  SESSIONS=out;
+  document.getElementById("c-upd").textContent="· "+new Date().toLocaleTimeString("vi-VN",{hour12:false});
 }
-const datesWith = () => { const s=new Set(); SESSIONS.forEach(x=>s.add(x.date)); return s; };
 const sessOn = d => SESSIONS.filter(x=>x.date===d);
 
-// ===== 시계 =====
+// ===== 시계 (숫자·베트남식) =====
 function tick(){
   const n=new Date();
-  document.getElementById("c-date").textContent=`${n.getFullYear()}.${pad(n.getMonth()+1)}.${pad(n.getDate())} (${WD[n.getDay()]})`;
+  document.getElementById("c-date").textContent=`${pad(n.getDate())}/${pad(n.getMonth()+1)}/${n.getFullYear()}`;
   document.getElementById("c-time").textContent=`${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
 }
 setInterval(tick,1000); tick();
@@ -241,12 +224,11 @@ setInterval(tick,1000); tick();
 // ===== 달력 =====
 let CY, CM, SEL=null;
 function renderCal(){
-  const has=datesWith();
-  document.getElementById("cal-title").textContent=`${CY}. ${pad(CM+1)}`;
+  document.getElementById("cal-title").textContent=`${pad(CM+1)}/${CY}`;
   const first=new Date(CY,CM,1), startDow=first.getDay(), dim=new Date(CY,CM+1,0).getDate(), prevDim=new Date(CY,CM,0).getDate();
   const todayIso=iso(new Date());
   const g=document.getElementById("cal-grid"); g.innerHTML="";
-  ["일","월","화","수","목","금","토"].forEach((w,i)=>{const e=document.createElement("div");e.className="cal-wd"+(i===0?" sun":i===6?" sat":"");e.textContent=w;g.appendChild(e);});
+  WD_VI.forEach((w,i)=>{const e=document.createElement("div");e.className="cal-wd"+(i===0?" sun":i===6?" sat":"");e.textContent=w;g.appendChild(e);});
   let monthCnt=0;
   for(let i=0;i<42;i++){
     const dow=i%7; let dy=CY,dm=CM,dd=i-startDow+1,out=false;
@@ -258,68 +240,58 @@ function renderCal(){
     cell.className="cal-cell"+(out?" out":"")+(date===todayIso?" today":"")+(dow===0?" sun":dow===6?" sat":"");
     const discs=[...new Set(ss.map(x=>x.dk))];
     cell.innerHTML=`<div class="cal-dnum">${dd}</div>`+
-      (ss.length?`<div class="cal-cnt">${ss.length}세션</div>`:"")+
+      (ss.length?`<div class="cal-cnt">${ss.length}</div>`:"")+
       (discs.length?`<div class="cal-tags">${discs.map(dk=>`<span class="cal-pill" style="background:${DISC_COLOR[dk]||'#888'}">${dk==='air'?'10m':dk==='pistol_50'?'50m':(dk||'·')}</span>`).join("")}</div>`:"");
     cell.onclick=()=>openDay(date);
     g.appendChild(cell);
   }
-  document.getElementById("cal-sum").textContent=`이번 달 ${monthCnt}일 훈련 기록`;
+  document.getElementById("cal-sum").textContent=monthCnt?monthCnt+"일":"";
 }
 
-// ===== 하루 일과 =====
-function openDay(date){
-  SEL=date;
-  document.getElementById("cal").hidden=true;
-  document.getElementById("day").hidden=false;
-  renderDay();
-}
+// ===== 하루 =====
+function openDay(date){ SEL=date; document.getElementById("cal").hidden=true; document.getElementById("day").hidden=false; renderDay(); }
 function closeDay(){ document.getElementById("day").hidden=true; document.getElementById("cal").hidden=false; renderCal(); }
 function shiftDay(delta){ const d=new Date(SEL+"T00:00:00"); d.setDate(d.getDate()+delta); openDay(iso(d)); }
 
 function renderDay(){
-  const d=new Date(SEL+"T00:00:00");
-  document.getElementById("day-date").innerHTML=`${SEL} <small>(${WD[d.getDay()]})</small>`;
-  // 최근 3일 = 선택일 + 이전 2일
+  document.getElementById("day-date").textContent=vnDate(SEL);
   const days=[0,1,2].map(k=>{const x=new Date(SEL+"T00:00:00");x.setDate(x.getDate()-k);return iso(x);});
+  document.getElementById("data-range").textContent=`${vnShort(days[2])}~${vnShort(days[0])}`;
   const box=document.getElementById("day-data"); box.innerHTML="";
-  document.getElementById("data-range").textContent=`(${days[2]} ~ ${days[0]})`;
   let any=false;
   for(const dt of days){
     const ss=sessOn(dt); if(!ss.length) continue; any=true;
-    const dd=new Date(dt+"T00:00:00");
     const grp=document.createElement("div"); grp.className="daygroup";
-    grp.innerHTML=`<div class="daygroup-h"><b>${dt}</b><span class="wd">(${WD[dd.getDay()]})${dt===SEL?' · 선택일':''}</span></div>`+
+    grp.innerHTML=`<div class="daygroup-h">${vnShort(dt)}${dt===SEL?' <span class="sel">●</span>':''}</div>`+
       `<table class="tbl"><thead><tr>
         <th class="l">선수</th><th>종목</th><th class="l">시리즈</th><th>총점</th>
-        <th>10점</th><th>9점</th><th>8점</th><th>연속10</th></tr></thead><tbody>${
-        ss.map(s=>{
-          const dist=s.dist||[];
-          return `<tr>
+        <th>10</th><th>9</th><th>8</th><th>연속</th></tr></thead><tbody>${
+        ss.map(s=>{ const d=s.dist||[]; return `<tr>
             <td class="l ath">${esc(s.name)}</td>
-            <td><span class="disc" style="background:${DISC_COLOR[s.dk]||'#888'}">${s.dk==='air'?'10m':s.dk==='pistol_50'?'50m':(s.disc||'·')}</span></td>
-            <td class="l series">${s.series.join(" · ")||"—"}</td>
+            <td><span class="disc" style="background:${DISC_COLOR[s.dk]||'#888'}">${esc(discLabel(s))}</span></td>
+            <td class="l series">${s.series.join(" ")||"—"}</td>
             <td class="total">${fmt(s.total)}</td>
-            <td class="d10">${dist[0]!=null?dist[0]:"—"}</td>
-            <td>${dist[1]!=null?dist[1]:"—"}</td>
-            <td>${dist[2]!=null?dist[2]:"—"}</td>
-            <td class="lng">${s.long10!=null?s.long10:"—"}</td>
-          </tr>`;
-        }).join("")}</tbody></table>`;
+            <td class="d10">${d[0]!=null?d[0]:"—"}</td>
+            <td>${d[1]!=null?d[1]:"—"}</td>
+            <td>${d[2]!=null?d[2]:"—"}</td>
+            <td class="lng">${s.long10!=null?s.long10:"—"}</td></tr>`; }).join("")}</tbody></table>`;
     box.appendChild(grp);
   }
-  if(!any) box.innerHTML=`<div class="nodata">최근 3일간 훈련 기록이 없습니다.</div>`;
+  if(!any) box.innerHTML=`<div class="nodata">기록 없음</div>`;
   resetScroll();
 }
 const fmt = v => Number.isInteger(v)?v:(Math.round(v*10)/10);
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
-// ===== 자동스크롤 (아래로 천천히 → 끝에서 멈춤 → 위로 복귀) =====
-let scrollOn=true, rafId=null, scrollState={pos:0,dir:1,pause:0};
-function resetScroll(){ const el=document.getElementById("day-data"); if(el){el.scrollTop=0;} scrollState={pos:0,dir:1,pause:60}; }
+// ===== 전달문구 (2단계: GAS 연동 시 setMsg 호출) =====
+function setMsg(txt){ const m=document.getElementById("msg"); if(txt){ document.getElementById("msg-txt").textContent=txt; m.hidden=false; } else m.hidden=true; }
+
+// ===== 자동스크롤 =====
+let scrollOn=true, scrollState={pos:0,dir:1,pause:0};
+function resetScroll(){ const el=document.getElementById("day-data"); if(el)el.scrollTop=0; scrollState={pos:0,dir:1,pause:60}; }
 function animScroll(){
-  rafId=requestAnimationFrame(animScroll);
-  if(!scrollOn) return;
-  const day=document.getElementById("day"); if(day.hidden) return;
+  requestAnimationFrame(animScroll);
+  if(!scrollOn||document.getElementById("day").hidden) return;
   const el=document.getElementById("day-data"); if(!el) return;
   const max=el.scrollHeight-el.clientHeight;
   if(max<=4){ el.scrollTop=0; return; }
@@ -338,14 +310,13 @@ document.getElementById("cal-today").onclick=()=>{const n=new Date();CY=n.getFul
 document.getElementById("day-back").onclick=closeDay;
 document.getElementById("day-prev").onclick=()=>shiftDay(-1);
 document.getElementById("day-next").onclick=()=>shiftDay(1);
-document.getElementById("autoscroll").onclick=function(){scrollOn=!scrollOn;this.textContent="⟳ 자동스크롤: "+(scrollOn?"켬":"끔");};
+document.getElementById("autoscroll").onclick=function(){scrollOn=!scrollOn;this.style.opacity=scrollOn?1:.4;};
 
 // ===== 시작 =====
 async function boot(){
   const n=new Date(); CY=n.getFullYear(); CM=n.getMonth();
-  try{ await loadData(); }catch(e){ document.getElementById("cal-grid").innerHTML=`<div class="err" style="grid-column:1/-1">데이터 로드 실패: ${esc(e.message)}</div>`; }
+  try{ await loadData(); }catch(e){ document.getElementById("cal-grid").innerHTML=`<div class="err" style="grid-column:1/-1">${esc(e.message)}</div>`; }
   renderCal();
-  // TV 항상 켜짐: 오늘 데이터 있으면 바로 하루 일과로
   if(sessOn(iso(new Date())).length) openDay(iso(new Date()));
 }
 boot();
