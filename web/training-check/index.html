@@ -210,7 +210,38 @@ async function loadData(){
   SESSIONS=out;
   document.getElementById("c-upd").textContent="· "+new Date().toLocaleTimeString("vi-VN",{hour12:false});
 }
-async function loadSchedule(){ try{ const r=await fetch("schedule.json",{cache:"no-store"}); const j=r.ok?await r.json():null; if(j&&j.disc)SCHED=j; }catch(e){} }
+// 훈련일정 GAS 라이브(암호문 복호화) — 실패 시 정적 schedule.json 폴백
+const GAS_PLAN="https://script.google.com/macros/s/AKfycbzHDGIi0kB7edpoF0UPOLu__X6CxEZpmjSlh8fWC8kGB27GDx4yl2lG_eFe_SpwO4SobQ/exec?api=plan";
+const PLAN_KEY=localStorage.getItem("tc_key")||"312427";
+function xorCipher(d,k){let r="";for(let i=0;i<d.length;i++)r+=String.fromCharCode(d.charCodeAt(i)^k.charCodeAt(i%k.length));return r;}
+function decryptData(raw){ if(!raw||!raw.startsWith("ENC:"))return raw; try{return xorCipher(decodeURIComponent(escape(atob(raw.slice(4)))),PLAN_KEY);}catch(e){return null;} }
+function buildSchedFromPlan(plan){
+  const MV={},ME={};
+  ["training","events","focus"].forEach(c=>((plan.lists&&plan.lists[c])||[]).forEach(r=>{ if(r&&r[0]){ if(r[1])MV[String(r[0]).trim()]=String(r[1]).trim(); if(r[2])ME[String(r[0]).trim()]=String(r[2]).trim(); } }));
+  (plan.customTrans||[]).forEach(r=>{ if(r&&r[0]){ if(r[1])MV[String(r[0]).trim()]=String(r[1]).trim(); if(r[2])ME[String(r[0]).trim()]=String(r[2]).trim(); } });
+  const bi=x=>{x=String(x||"").trim();return x?{ko:x,vi:MV[x]||x,en:ME[x]||""}:{ko:"",vi:"",en:""};};
+  const disc={}; const AS=plan.allSchedules||{};
+  for(const k in AS){ const days=(AS[k]&&AS[k].days)||[]; const o={};
+    days.forEach(x=>{ const dt=x.date,rows=x.rows||[]; if(!dt||!rows.length)return;
+      const keep=[]; rows.forEach(r=>{ const t=(r.training||"").trim(); if(!t)return; keep.push({s:r.start||"",e:r.end||"",ev:bi(r.event),tr:bi(t),sh:bi(r.shots),fc:bi(r.focus)}); });
+      if(keep.length)o[dt]={routine:bi(x.routine),rows:keep}; });
+    disc[k]=o;
+  }
+  return {disc, order:(plan.eventOrder&&plan.eventOrder.length?plan.eventOrder:Object.keys(disc)), _live:true};
+}
+async function loadLiveSchedule(){
+  try{
+    const raw=await fetch(GAS_PLAN,{cache:"no-store"}).then(r=>r.text());
+    if(!raw||!raw.startsWith("ENC:"))return false;
+    const plan=JSON.parse(decryptData(raw));
+    const s=buildSchedFromPlan(plan);
+    if(s&&Object.keys(s.disc).length){ SCHED=s; return true; }
+  }catch(e){}
+  return false;
+}
+async function loadStatic(){ if(SCHED._live)return; try{ const r=await fetch("schedule.json",{cache:"no-store"}); const j=r.ok?await r.json():null; if(j&&j.disc&&!SCHED._live)SCHED=j; }catch(e){} }
+const schedHas = d => Object.values(SCHED.disc||{}).some(m=>m&&m[d]);
+function routineOf(d){ for(const k of (SCHED.order||Object.keys(SCHED.disc))){ const sc=SCHED.disc[k]&&SCHED.disc[k][d]; if(sc&&sc.routine&&pick(sc.routine))return pick(sc.routine); } return ""; }
 const sessOn = d => SESSIONS.filter(x=>x.date===d);
 
 function tick(){
@@ -241,6 +272,7 @@ function bindTools(){
 let CY, CM, SEL=null;
 function renderCal(){
   document.getElementById("day").hidden=true; document.getElementById("cal").hidden=false;
+  setMsg("");
   document.getElementById("tools").innerHTML=`<button class="tb" id="cal-prev">‹</button><b class="tt">${pad(CM+1)}/${CY}</b><button class="tb" id="cal-next">›</button><button class="tb" id="cal-today">●</button>`+langSeg();
   bindTools();
   const first=new Date(CY,CM,1), startDow=first.getDay(), dim=new Date(CY,CM+1,0).getDate(), prevDim=new Date(CY,CM,0).getDate();
@@ -273,6 +305,7 @@ function buildDay(){
   document.getElementById("cal").hidden=true; document.getElementById("day").hidden=false;
   document.getElementById("tools").innerHTML=`<button class="tb" id="day-back">🗓</button><button class="tb" id="day-prev">‹</button><b class="tt">${vnDate(SEL)}</b><button class="tb" id="day-next">›</button>`+viewSeg()+langSeg()+speedCtl();
   bindTools();
+  setMsg(routineOf(SEL));
   const amPm=new Date().getHours()<12?"AM":"PM";
   SLIDES=[];
   if(VIEW!=="score"){
@@ -300,9 +333,8 @@ function slideHTML(s){
     return `<div class="card"><div class="slide-h">📊 ${esc(L().scores)} <small>${vnShort(iso(new Date(new Date(SEL+"T00:00:00").getTime()-2*864e5)))}~${vnShort(SEL)}</small></div><div class="scroller">${any?body:`<div class="nodata">${esc(L().noRec)}</div>`}</div></div>`;
   }
   const half=s.amPm==="AM"?L().am:L().pm;
-  const rt=pick(s.routine);
   const rows=s.rows.map(r=>`<div class="sched-row"><span class="t">${esc(r.s)}${r.e&&r.e!==r.s?"~"+esc(r.e):""}</span><span>${pick(r.ev)?`<span class="ev">${esc(pick(r.ev))}</span>`:""}${esc(pick(r.tr))}${pick(r.sh)?` <span class="shots">${esc(pick(r.sh))}</span>`:""}${pick(r.fc)?`<span class="foc"> · ${esc(pick(r.fc))}</span>`:""}</span></div>`).join("");
-  return `<div class="card"><div class="slide-h">📋 ${esc(s.disc)} · ${esc(L().plan)} <small>(${esc(half)})</small></div>${rt?`<div class="routine">${esc(rt)}</div>`:""}<div class="scroller">${rows}</div></div>`;
+  return `<div class="card"><div class="slide-h">📋 ${esc(s.disc)} · ${esc(L().plan)} <small>(${esc(half)})</small></div><div class="scroller">${rows}</div></div>`;
 }
 function renderSlides(){
   const box=document.getElementById("slides");
@@ -344,16 +376,18 @@ animScroll();
 function setLang(l){ LANG=l; localStorage.setItem("tc_lang",l); document.documentElement.lang=(l==="ko"?"ko":l==="en"?"en":"vi"); if(document.getElementById("day").hidden) renderCal(); else { const k=CUR; buildDay(); showSlide(Math.min(k,SLIDES.length-1)); } }
 function setView(v){ VIEW=v; localStorage.setItem("tc_view",v); if(!document.getElementById("day").hidden) buildDay(); }
 
+function rerenderKeep(){ if(document.getElementById("day").hidden) renderCal(); else { const k=CUR; buildDay(); showSlide(Math.min(k,SLIDES.length-1)); } }
 async function boot(){
   const n=new Date(); CY=n.getFullYear(); CM=n.getMonth();
-  await loadSchedule();
   try{ await loadData(); }catch(e){ document.getElementById("cal-grid").innerHTML=`<div class="err" style="grid-column:1/-1">${esc(e.message)}</div>`; }
+  await loadStatic();   // 즉시 기준(정적) — 라이브는 느리므로 먼저 표시
   const td=iso(new Date());
-  if(sessOn(td).length || (SCHED.disc["10m"]&&SCHED.disc["10m"][td]) || (SCHED.disc["50m"]&&SCHED.disc["50m"][td])) openDay(td);
-  else renderCal();
+  if(sessOn(td).length || schedHas(td)) openDay(td); else renderCal();
+  loadLiveSchedule().then(ok=>{ if(ok) rerenderKeep(); });   // 라이브 일정(느림) 도착 시 교체
 }
 boot();
-setInterval(async()=>{ try{ await loadData(); if(document.getElementById("day").hidden) renderCal(); else { const k=CUR; buildDay(); showSlide(Math.min(k,SLIDES.length-1)); } }catch(e){} }, 60000);
+setInterval(async()=>{ try{ await loadData(); rerenderKeep(); }catch(e){} }, 60000);              // 점수(빠름)
+setInterval(()=>{ loadLiveSchedule().then(ok=>{ if(ok) rerenderKeep(); }); }, 600000);            // 일정(느림·10분)
 </script>
 </body>
 </html>
