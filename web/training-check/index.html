@@ -30,29 +30,25 @@ body{background:linear-gradient(180deg,#eef5fc,#e3ecf7 55%) fixed,var(--bg);colo
 
 /* ===== 상단 한 줄 통합 바 ===== */
 header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
-.brand{display:flex;align-items:center;gap:12px;flex:0 0 auto}
+.brand{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;flex:0 0 auto;overflow:hidden;padding:5px 12px;border-radius:12px}
+.flags{display:flex;align-items:center;gap:12px}
 .ic{height:46px;width:auto;display:block}
-.rings{filter:drop-shadow(0 2px 5px rgba(0,0,0,.16))}
 .flag{height:46px;border-radius:5px;box-shadow:0 2px 7px rgba(0,0,0,.22);border:1.5px solid rgba(255,255,255,.75)}
-/* 이름+한국기 금색 글로우 + 좌→우 빛 스윕 */
-.sig{position:relative;display:flex;align-items:center;gap:11px;padding:4px 10px;border-radius:12px;overflow:hidden}
-.sig .flag.kr{animation:krglow 2.6s ease-in-out infinite}
-@keyframes krglow{0%,100%{filter:drop-shadow(0 0 3px rgba(217,154,31,.45))}50%{filter:drop-shadow(0 0 11px rgba(240,200,90,.95))}}
-.name{display:flex;flex-direction:column;line-height:1.12}
-.name b{font-size:calc(21px*var(--fz));font-weight:800;letter-spacing:.6px;
-  background:linear-gradient(90deg,#9a6a10 0%,#d99a1f 28%,#fff6d0 50%,#d99a1f 72%,#9a6a10 100%);
-  background-size:220% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-  animation:goldmove 3s linear infinite;filter:drop-shadow(0 1px 2px rgba(180,124,18,.35))}
-@keyframes goldmove{0%{background-position:160% 0}100%{background-position:-160% 0}}
-.name span{font-size:calc(11px*var(--fz));color:var(--gold2);font-weight:800;letter-spacing:3px}
-.sig::after{content:"";position:absolute;top:0;bottom:0;left:-50%;width:38%;pointer-events:none;
-  background:linear-gradient(100deg,transparent,rgba(255,244,190,.85),transparent);transform:skewX(-18deg);
-  animation:sweep 3.4s ease-in-out infinite}
-@keyframes sweep{0%{left:-55%}55%,100%{left:125%}}
+/* 오륜기~한국기 전체 금색 글로우(아주 느리게) + 좌→우 빛 스윕(아주 느리게) */
+.flags .ic{animation:glowpulse 11s ease-in-out infinite}
+@keyframes glowpulse{0%,100%{filter:drop-shadow(0 0 2px rgba(217,154,31,.30))}50%{filter:drop-shadow(0 0 13px rgba(240,200,90,.95))}}
+.sig-name{font-size:calc(12.5px*var(--fz));font-weight:800;letter-spacing:1.5px;white-space:nowrap;
+  background:linear-gradient(90deg,#9a6a10 0%,#d99a1f 30%,#fff6d0 50%,#d99a1f 70%,#9a6a10 100%);
+  background-size:240% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  animation:goldmove 12s linear infinite}
+@keyframes goldmove{0%{background-position:170% 0}100%{background-position:-170% 0}}
+.brand::after{content:"";position:absolute;top:0;bottom:0;left:-55%;width:42%;pointer-events:none;
+  background:linear-gradient(100deg,transparent,rgba(255,244,190,.7),transparent);transform:skewX(-18deg);
+  animation:sweep 13s ease-in-out infinite}
+@keyframes sweep{0%{left:-55%}55%,100%{left:135%}}
 
 .clock{display:flex;flex-direction:column;align-items:center;line-height:1;flex:0 0 auto;margin:0 auto}
-.clock .time{font-size:calc(46px*var(--fz));font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:2px;
-  background:var(--ring5);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.clock .time{font-size:calc(50px*var(--fz));font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:2px;color:#0a3a6b;text-shadow:0 1px 1px rgba(255,255,255,.65),0 2px 10px rgba(10,58,107,.22)}
 .clock .date{display:flex;align-items:center;gap:9px;margin-top:3px;font-size:calc(17px*var(--fz));font-weight:700;color:var(--mut);font-variant-numeric:tabular-nums}
 .live{display:inline-flex;align-items:center;gap:5px;font-size:calc(13px*var(--fz));color:var(--good);font-weight:800}
 .dot{width:9px;height:9px;border-radius:50%;background:#2fbf71;box-shadow:0 0 0 0 rgba(47,191,113,.6);animation:pulse 2s infinite}
@@ -70,7 +66,14 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .speed span{font-size:calc(14px*var(--fz));color:var(--mut);font-weight:800;white-space:nowrap}
 .speed input{width:120px;accent-color:var(--acc)}
 .clock{cursor:pointer}
-.hend{flex:0 0 auto;display:flex;justify-content:flex-end}
+.hend{flex:0 0 auto;display:flex;align-items:center;gap:12px;justify-content:flex-end}
+.wx{display:flex;align-items:center;gap:11px;font-weight:800;white-space:nowrap}
+.wx span{display:inline-flex;align-items:center;gap:4px;font-size:calc(17px*var(--fz))}
+.wx .wx-loc{color:var(--acc2)}
+.wx .wx-t{color:#e8590c}
+.wx .wx-h{color:#1971c2}
+.wx .wx-c{color:var(--mut)}
+@media (max-width:1100px){.wx .wx-c{display:none}}
 .gear{width:46px;height:46px;border-radius:12px;border:1px solid var(--line2);background:var(--panel);color:var(--acc2);font-size:24px;cursor:pointer;line-height:1}
 .gear:hover{border-color:var(--acc);background:var(--accsoft)}
 /* 설정 패널 */
@@ -79,6 +82,8 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .pn-lab{font-size:calc(14px*var(--fz));font-weight:800;color:var(--mut);min-width:58px}
 .pt-input{flex:1;min-width:220px;border:1px solid var(--line2);border-radius:9px;padding:10px 13px;font-size:calc(17px*var(--fz));font-weight:700;color:var(--tx);background:var(--bg2);outline:none}
 .pt-input:focus{border-color:var(--acc)}
+.pn-sub{font-size:calc(13px*var(--fz));font-weight:800;color:var(--mut);white-space:nowrap}
+.pn-row input[type=range]{accent-color:var(--acc)}
 
 /* LED 전광판 티커 (우→좌 연속) */
 .ticker{display:flex;align-items:center;background:#000;border-radius:11px;overflow:hidden;height:74px;box-shadow:inset 0 0 0 1px rgba(255,200,60,.18),0 4px 16px rgba(0,0,0,.35)}
@@ -147,15 +152,26 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 <div class="wrap">
   <header>
     <div class="brand">
-      <a href="../" title="archive"><img class="ic rings" src="../dashboard/rings.svg" alt="Olympic"></a>
-      <img class="ic flag" src="../dashboard/vn.svg" alt="VN">
-      <div class="sig"><img class="ic flag kr" src="../flag-kr.png" alt="KR"><div class="name"><b>SUNWOO RYONG</b><span>EXPERT</span></div></div>
+      <div class="flags">
+        <a href="../" title="archive"><img class="ic rings" src="../dashboard/rings.svg" alt="Olympic"></a>
+        <img class="ic flag" src="../dashboard/vn.svg" alt="VN">
+        <img class="ic flag kr" src="../flag-kr.png" alt="KR">
+      </div>
+      <div class="sig-name">선우룡 · 사격 전문가</div>
     </div>
     <div class="clock" id="clock" title="설정 열기">
       <div class="time" id="c-time">--:--:--</div>
       <div class="date"><span id="c-date">--/--/----</span> <span class="live"><span class="dot"></span>LIVE <span id="c-upd"></span></span></div>
     </div>
-    <div class="hend"><button class="gear" id="gear" title="설정">⚙</button></div>
+    <div class="hend">
+      <div class="wx" id="wx">
+        <span class="wx-loc" id="wx-loc">📍 다낭</span>
+        <span class="wx-c" id="wx-c">—</span>
+        <span class="wx-t" id="wx-t">—</span>
+        <span class="wx-h" id="wx-h">—</span>
+      </div>
+      <button class="gear" id="gear" title="설정">⚙</button>
+    </div>
   </header>
 
   <!-- 설정 패널 (시계/⚙ 클릭으로 열림) -->
@@ -190,9 +206,9 @@ let VIEW=localStorage.getItem("tc_view")||"all";
 let DISC_SEL=localStorage.getItem("tc_disc")||"all";   // 종목 선택: all/10m/50m
 let SPEED=parseFloat(localStorage.getItem("tc_speed")||"0.25");
 const UI={
-  ko:{plan:"일정",scores:"최근 3일",ath:"선수",disc:"종목",series:"시리즈",total:"총점",streak:"연속",am:"오전",pm:"오후",noRec:"기록 없음",speed:"속도",vAll:"전체",vSched:"일정",vScore:"점수",tkPH:"전광판 문구 입력 후 Enter…",tkSave:"적용",vMode:"보기",langLab:"언어",dateLab:"날짜"},
-  vi:{plan:"Lịch tập",scores:"3 ngày gần nhất",ath:"VĐV",disc:"Nội dung",series:"Loạt",total:"Tổng",streak:"Chuỗi",am:"Sáng",pm:"Chiều",noRec:"Không có dữ liệu",speed:"Tốc độ",vAll:"Tất cả",vSched:"Lịch",vScore:"Điểm",tkPH:"Nhập dòng chữ chạy rồi nhấn Enter…",tkSave:"Áp dụng",vMode:"Chế độ",langLab:"Ngôn ngữ",dateLab:"Ngày"},
-  en:{plan:"Schedule",scores:"Last 3 days",ath:"Athlete",disc:"Event",series:"Series",total:"Total",streak:"Streak",am:"AM",pm:"PM",noRec:"No data",speed:"Speed",vAll:"All",vSched:"Schedule",vScore:"Scores",tkPH:"Type ticker text, press Enter…",tkSave:"Apply",vMode:"View",langLab:"Language",dateLab:"Date"}
+  ko:{plan:"일정",scores:"최근 3일",ath:"선수",disc:"종목",series:"시리즈",total:"총점",streak:"연속",am:"오전",pm:"오후",noRec:"기록 없음",speed:"속도",vAll:"전체",vSched:"일정",vScore:"점수",tkPH:"전광판 문구 입력 후 Enter…",tkSave:"적용",vMode:"보기",langLab:"언어",dateLab:"날짜",tkPauseLab:"시작멈춤"},
+  vi:{plan:"Lịch tập",scores:"3 ngày gần nhất",ath:"VĐV",disc:"Nội dung",series:"Loạt",total:"Tổng",streak:"Chuỗi",am:"Sáng",pm:"Chiều",noRec:"Không có dữ liệu",speed:"Tốc độ",vAll:"Tất cả",vSched:"Lịch",vScore:"Điểm",tkPH:"Nhập dòng chữ chạy rồi nhấn Enter…",tkSave:"Áp dụng",vMode:"Chế độ",langLab:"Ngôn ngữ",dateLab:"Ngày",tkPauseLab:"Dừng đầu"},
+  en:{plan:"Schedule",scores:"Last 3 days",ath:"Athlete",disc:"Event",series:"Series",total:"Total",streak:"Streak",am:"AM",pm:"PM",noRec:"No data",speed:"Speed",vAll:"All",vSched:"Schedule",vScore:"Scores",tkPH:"Type ticker text, press Enter…",tkSave:"Apply",vMode:"View",langLab:"Language",dateLab:"Date",tkPauseLab:"Start pause"}
 };
 const L = () => UI[LANG]||UI.vi;
 const pick = o => o ? (LANG==="en"?(o.en||o.vi||o.ko):LANG==="vi"?(o.vi||o.ko):(o.ko||o.vi)) : "";
@@ -268,6 +284,46 @@ async function loadLiveSchedule(){
 async function loadStatic(){ if(SCHED._live)return; try{ const r=await fetch("schedule.json",{cache:"no-store"}); const j=r.ok?await r.json():null; if(j&&j.disc&&!SCHED._live)SCHED=j; }catch(e){} }
 const schedHas = d => Object.values(SCHED.disc||{}).some(m=>m&&m[d]);
 function routineOf(d){ for(const k of (SCHED.order||Object.keys(SCHED.disc))){ const sc=SCHED.disc[k]&&SCHED.disc[k][d]; if(sc&&sc.routine&&pick(sc.routine))return pick(sc.routine); } return ""; }
+
+// ===== 현재 사격장 위치 + 실시간 날씨 (IP 위치 → Open-Meteo) =====
+const RANGE_WORD={ko:"사격장",vi:"Trường bắn",en:"Range"};
+const CITY_NAME={
+  "da nang":{ko:"다낭",vi:"Đà Nẵng",en:"Da Nang"}, "danang":{ko:"다낭",vi:"Đà Nẵng",en:"Da Nang"},
+  "hanoi":{ko:"하노이",vi:"Hà Nội",en:"Hanoi"}, "ha noi":{ko:"하노이",vi:"Hà Nội",en:"Hanoi"},
+  "ho chi minh city":{ko:"호치민",vi:"TP.HCM",en:"Ho Chi Minh"}, "ho chi minh":{ko:"호치민",vi:"TP.HCM",en:"Ho Chi Minh"}, "thu duc":{ko:"호치민",vi:"TP.HCM",en:"Ho Chi Minh"},
+  "daegu":{ko:"대구",vi:"Daegu",en:"Daegu"}, "seoul":{ko:"서울",vi:"Seoul",en:"Seoul"},
+  "changwon":{ko:"창원",vi:"Changwon",en:"Changwon"}, "incheon":{ko:"인천",vi:"Incheon",en:"Incheon"}
+};
+function wmoKind(c){ if(c===0)return"clear"; if(c<=2)return"partly"; if(c===3)return"cloudy"; if(c<=48)return"fog"; if(c<=57)return"drizzle"; if(c<=67)return"rain"; if(c<=77)return"snow"; if(c<=82)return"rain"; if(c<=86)return"snow"; return"storm"; }
+const WX_ICON={clear:"☀️",partly:"⛅",cloudy:"☁️",fog:"🌫️",drizzle:"🌦️",rain:"🌧️",snow:"🌨️",storm:"⛈️"};
+const WX_TXT={
+  ko:{clear:"맑음",partly:"구름조금",cloudy:"흐림",fog:"안개",drizzle:"이슬비",rain:"비",snow:"눈",storm:"뇌우"},
+  vi:{clear:"Nắng",partly:"Ít mây",cloudy:"Nhiều mây",fog:"Sương mù",drizzle:"Mưa phùn",rain:"Mưa",snow:"Tuyết",storm:"Giông"},
+  en:{clear:"Clear",partly:"Partly",cloudy:"Cloudy",fog:"Fog",drizzle:"Drizzle",rain:"Rain",snow:"Snow",storm:"Storm"}
+};
+let WX_DATA=null;   // {cityRaw, lat, lon, temp, hum, kind}
+async function loadWeather(){
+  let lat=16.0678, lon=108.2208, cityRaw="Da Nang";   // 기본값(다낭)
+  try{
+    const g=await fetch("https://ipwho.is/?fields=success,city,latitude,longitude",{cache:"no-store"}).then(r=>r.json());
+    if(g&&g.success&&g.latitude){ lat=g.latitude; lon=g.longitude; cityRaw=g.city||cityRaw; }
+  }catch(e){}
+  try{
+    const w=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code&timezone=auto`,{cache:"no-store"}).then(r=>r.json());
+    const c=w&&w.current;
+    if(c){ WX_DATA={cityRaw,lat,lon,temp:Math.round(c.temperature_2m),hum:Math.round(c.relative_humidity_2m),kind:wmoKind(c.weather_code)}; renderWeather(); }
+  }catch(e){}
+}
+function renderWeather(){
+  if(!WX_DATA) return;
+  const key=(WX_DATA.cityRaw||"").toLowerCase().replace(/\s+city$/,"").trim();
+  const cm=CITY_NAME[key];
+  const city=cm?cm[LANG]:(WX_DATA.cityRaw||"");
+  const loc=document.getElementById("wx-loc"); if(loc)loc.textContent="📍 "+city+" "+RANGE_WORD[LANG];
+  const ce=document.getElementById("wx-c"); if(ce)ce.textContent=WX_ICON[WX_DATA.kind]+" "+WX_TXT[LANG][WX_DATA.kind];
+  const te=document.getElementById("wx-t"); if(te)te.textContent="🌡 "+WX_DATA.temp+"°";
+  const he=document.getElementById("wx-h"); if(he)he.textContent="💧 "+WX_DATA.hum+"%";
+}
 const sessOn = d => SESSIONS.filter(x=>x.date===d);
 
 function tick(){
@@ -299,6 +355,7 @@ function renderPanel(){
   }
   h+=`<div class="pn-row"><span class="pn-lab">${esc(L().langLab)}</span>${langSeg()}</div>`;
   h+=`<div class="pn-row"><span class="pn-lab">📢</span><input class="pt-input" id="pt-input" placeholder="${esc(L().tkPH)}"><button class="tb" id="pt-save">${esc(L().tkSave)}</button></div>`;
+  h+=`<div class="pn-row"><span class="pn-lab"></span><span class="pn-sub">${esc(L().speed)}</span><input type="range" id="tk-speed" min="20" max="220" step="10" value="${TK_SPEED}"><span class="pn-sub">${esc(L().tkPauseLab)}</span><input type="range" id="tk-pause" min="0" max="10" step="0.5" value="${TK_PAUSE}"></div>`;
   document.getElementById("panel").innerHTML=h;
   const i=document.getElementById("pt-input"); if(i)i.value=localStorage.getItem("tc_ticker")||"";
   bindPanel(); applyPanel();
@@ -318,6 +375,8 @@ function bindPanel(){
   const save=()=>{ localStorage.setItem("tc_ticker",(q("pt-input").value||"").trim()); renderTicker(); PANEL_OPEN=false; applyPanel(); };
   if(q("pt-save"))q("pt-save").onclick=save;
   if(q("pt-input"))q("pt-input").onkeydown=e=>{ if(e.key==="Enter")save(); else if(e.key==="Escape"){PANEL_OPEN=false;applyPanel();} };
+  const ts=q("tk-speed"); if(ts)ts.oninput=()=>{ TK_SPEED=parseFloat(ts.value); localStorage.setItem("tc_tkspeed",TK_SPEED); renderTicker(); };
+  const tp=q("tk-pause"); if(tp)tp.oninput=()=>{ TK_PAUSE=parseFloat(tp.value); localStorage.setItem("tc_tkpause",TK_PAUSE); renderTicker(); };
 }
 
 // ===== 달력 =====
@@ -406,7 +465,8 @@ function restartTimer(){ clearInterval(slideTimer); if(SLIDES.length>1) slideTim
 const fmt = v => Number.isInteger(v)?v:(Math.round(v*10)/10);
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 // LED 전광판 티커: 수동 입력(localStorage) 우선, 없으면 당일 routine. 우→좌 연속 스크롤.
-const TK_SPEED=55;   // px/초 (천천히)
+let TK_SPEED=parseFloat(localStorage.getItem("tc_tkspeed")||"60");   // px/초 (조절 가능)
+let TK_PAUSE=parseFloat(localStorage.getItem("tc_tkpause")||"3");    // 시작 멈춤(초, 조절 가능)
 function tickerText(){
   const manual=(localStorage.getItem("tc_ticker")||"").trim();
   if(manual) return manual;
@@ -419,16 +479,20 @@ function renderTicker(){
   track.style.animation="none";
   if(!text){ track.innerHTML=`<span class="tk-empty">${esc(L().tkPH)}</span>`; return; }
   const seg=esc(text)+"    •    ";
-  track.innerHTML=`<span id="tk-seg">${seg}</span>`;
+  track.innerHTML=`<span id="tk-seg">${esc(text)}</span>`;
   const segEl=document.getElementById("tk-seg");
-  const segW=segEl?segEl.getBoundingClientRect().width:300;
-  const contW=view.getBoundingClientRect().width||900;
-  const k=Math.max(1, Math.ceil(contW/Math.max(segW,1))+1);
-  let half=""; for(let i=0;i<k;i++) half+=seg;
-  track.innerHTML=half+half;
-  const dur=Math.max(10,(segW*k)/TK_SPEED);
-  void track.offsetWidth;   // 리플로우 강제(애니메이션 재시작) — hidden 탭에서도 동작(rAF 미사용)
-  track.style.animation=`ticker ${dur}s linear infinite`;
+  const TW=segEl?segEl.getBoundingClientRect().width:300;
+  const VW=view.getBoundingClientRect().width||900;
+  const dist=Math.max(0, TW-VW+40);
+  let kf=document.getElementById("tk-kf"); if(!kf){ kf=document.createElement("style"); kf.id="tk-kf"; document.head.appendChild(kf); }
+  if(dist<=1){ kf.textContent="@keyframes tkrun{from,to{transform:translateX(0)}}"; return; }   // 짧으면 정지
+  const scrollT=dist/Math.max(TK_SPEED,5);
+  const dur=TK_PAUSE+scrollT+1.2;                        // 시작멈춤 + 스크롤 + 끝여운
+  const holdPct=(TK_PAUSE/dur*100).toFixed(2);
+  const endPct=((TK_PAUSE+scrollT)/dur*100).toFixed(2);
+  kf.textContent=`@keyframes tkrun{0%,${holdPct}%{transform:translateX(0)}${endPct}%,100%{transform:translateX(-${dist}px)}}`;
+  void track.offsetWidth;   // 리플로우 강제(재시작) — hidden 탭에서도 동작
+  track.style.animation=`tkrun ${dur}s linear infinite`;
 }
 // (티커 편집은 설정 패널의 pt-input/pt-save에서 처리)
 
@@ -449,7 +513,7 @@ function animScroll(){
 }
 animScroll();
 
-function setLang(l){ LANG=l; localStorage.setItem("tc_lang",l); document.documentElement.lang=(l==="ko"?"ko":l==="en"?"en":"vi"); if(document.getElementById("day").hidden) renderCal(); else { const k=CUR; buildDay(); showSlide(Math.min(k,SLIDES.length-1)); } }
+function setLang(l){ LANG=l; localStorage.setItem("tc_lang",l); document.documentElement.lang=(l==="ko"?"ko":l==="en"?"en":"vi"); renderWeather(); if(document.getElementById("day").hidden) renderCal(); else { const k=CUR; buildDay(); showSlide(Math.min(k,SLIDES.length-1)); } }
 function setView(v){ VIEW=v; localStorage.setItem("tc_view",v); if(!document.getElementById("day").hidden) buildDay(); }
 function setDisc(d){ DISC_SEL=d; localStorage.setItem("tc_disc",d); if(!document.getElementById("day").hidden) buildDay(); }
 
@@ -464,8 +528,10 @@ async function boot(){
   const td=iso(new Date());
   if(sessOn(td).length || schedHas(td)) openDay(td); else renderCal();
   loadLiveSchedule().then(ok=>{ if(ok) rerenderKeep(); });   // 라이브 일정(느림) 도착 시 교체
+  loadWeather();   // 현재 사격장 위치 + 실시간 날씨
 }
 boot();
+setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
 let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(renderTicker,300); });
 setInterval(async()=>{ try{ await loadData(); rerenderKeep(); }catch(e){} }, 60000);              // 점수(빠름)
 setInterval(()=>{ loadLiveSchedule().then(ok=>{ if(ok) rerenderKeep(); }); }, 600000);            // 일정(느림·10분)
