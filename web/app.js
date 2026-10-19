@@ -943,6 +943,17 @@ function reportSignature() {
   </div>`;
 }
 // 평가보고서 섹션 재배치: 현황→강약점→세부→추세→전망→부록 서사 순서 (섹션 머리 이모지로 식별, 언어 무관)
+// 예측사격 8방향 분석 — 예측 GAS(?api=dir8) 라이브 집계 (선수별 방향분포·자기인식)
+let _DIR8 = null, _DIR8p = null;
+const DIR8_URL = 'https://script.google.com/macros/s/AKfycbz5_L2mocoXlEYEATQEr4a1QOAHQmW_lwPt2REKJH0p20fOVLGDoONNDcpEDO40fKzw/exec?api=dir8';
+function loadDir8() {
+  if (_DIR8) return Promise.resolve(_DIR8);
+  if (_DIR8p) return _DIR8p;
+  _DIR8p = fetch(DIR8_URL, { cache: 'no-store' }).then(r => r.json()).then(j => { _DIR8 = j; return j; }).catch(() => ({ athletes: [] }));
+  return _DIR8p;
+}
+window.loadDir8 = loadDir8;
+
 function reorderReportSections(html) {
   const footIdx = html.indexOf('<div class="dos-foot">');
   const foot = footIdx >= 0 ? html.slice(footIdx) : '';
@@ -951,7 +962,7 @@ function reorderReportSections(html) {
   if (first < 0) return html;
   const pre = body.slice(0, first);
   const chunks = body.slice(first).split('<div class="dos-sec">').filter(c => c.trim()).map(c => '<div class="dos-sec">' + c);
-  const ORDER = ['📝', '📊', '🎯', '🎖️', '🔬', '🔢', '🧩', '📈', '🏆', '📅', '🌤️', '🏋️', '🎮', '👥', '🔮', '🗂️'];
+  const ORDER = ['📝', '📊', '🎯', '🎖️', '🔬', '🔢', '🧩', '📈', '🏆', '📅', '🌤️', '🏋️', '🧭', '🎮', '👥', '🔮', '🗂️'];
   const re = /📝|📊|🎯|🎖️|🔬|🔢|🧩|📈|🏆|📅|🌤️|🏋️|🎮|👥|🔮|🗂️/;
   const keyOf = c => { const m = c.slice(0, 180).match(re); const i = m ? ORDER.indexOf(m[0]) : -1; return i < 0 ? 99 : i; };
   return pre + chunks.map((c, i) => [keyOf(c), i, c]).sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(x => x[2]).join('') + foot;
@@ -1304,6 +1315,27 @@ async function buildReportSection(a, allRows, year) {
       h += `<div class="eval-comment">${bits.join(' · ')}</div>`;
     }
   }
+
+  // 🧭 방향 분석 (예측사격 8방향 자기인식 · 예측 GAS 라이브)
+  try {
+    const D8 = await loadDir8();
+    const d8 = D8 && D8.athletes && D8.athletes.find(x => (x.name || '').trim() === (a.full_name || '').trim());
+    if (d8 && d8.total >= 10) {
+      const CL = ['12시', '1시', '3시', '4시', '6시', '7시', '9시', '10시'];
+      const maxc = Math.max(1, ...CL.map(c => d8.actualCounts[c] || 0));
+      const bars = CL.map(c => { const n = d8.actualCounts[c] || 0; const pct = Math.round(n / maxc * 100); return `<div style="display:grid;grid-template-columns:52px 1fr 40px;gap:8px;align-items:center;font-size:12px;padding:1px 0"><span style="font-weight:800;color:#0a63a8">${esc(t(c))}</span><span style="height:12px;background:#eef2f8;border-radius:6px;overflow:hidden"><i style="display:block;height:100%;width:${pct}%;background:${c === d8.topMiss ? '#c62828' : '#0b5cab'}"></i></span><span style="text-align:right;font-variant-numeric:tabular-nums;font-weight:700">${n}</span></div>`; }).join('');
+      const selfLab = d8.dirMatchRate >= 45 ? t('양호') : d8.dirMatchRate >= 35 ? t('보통') : t('개선 필요');
+      h += `<div class="dos-sec">🧭 ${t('방향 분석')} <span class="dos-help">${t('예측사격 8방향 · 방향 자기인식')}</span> <span>${d8.total}${t('발')}</span></div>
+        <div class="dos-cap">${t('탄착 방향을 예측↔실제로 비교 · 8방향(1·2→1시, 4·5→4시, 7·8→7시, 10·11→10시)')}</div>
+        <div class="dos-kpis sm">`
+        + tile(t('방향 일치율'), d8.dirMatchRate + '%', t('방향 자기인식') + ' · ' + selfLab)
+        + tile(t('완전 일치율'), d8.perfectRate + '%', t('방향+점수'))
+        + tile(t('최다 오차 방향'), t(d8.topMiss) || '–', d8.topMiss ? d8.topMissN + t('발') : '')
+        + tile(t('중앙 적중'), (d8.actualCounts['Center'] || 0), t('발'))
+        + `</div><div style="margin:8px 0;display:flex;flex-direction:column;gap:2px">${bars}</div>
+        <div class="eval-comment">${t('가장 자주 벗어나는 방향')} <b>${t(d8.topMiss) || '–'}</b> · ${t('방향 자기인식')} <b>${d8.dirMatchRate}%</b>(${selfLab}).</div>`;
+    }
+  } catch (e) { }
 
   // 총평 (자동)
   const main = discRows.slice().sort((x, y) => { const rx = R && R.disciplines && R.disciplines.find(z => z.disc === x.k); const ry = R && R.disciplines && R.disciplines.find(z => z.disc === y.k); return (rx ? rx.natRank : 999) - (ry ? ry.natRank : 999); })[0];
@@ -2853,6 +2885,7 @@ window.startApp = function (opts) {
   // 역할별 탭 노출
   const showTab = (name, on) => { const el2 = document.querySelector(`.tab[data-tab="${name}"]`); if (el2) el2.hidden = !on; };
   showTab('fav', role === 'coach');
+  if (role === 'coach') { try { loadDir8(); } catch (e) { } }   // 8방향 분석 미리 불러오기(보고서 지연 완화)
   showTab('training', role === 'coach');
   showTab('predict', role === 'coach');
   showTab('admin', role === 'coach');
