@@ -134,11 +134,18 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .tbl tr:last-child td{border-bottom:none}
 .ath{font-weight:800}
 .disc{font-size:calc(13px*var(--fz));font-weight:800;color:#fff;border-radius:5px;padding:2px 9px}
-.series{font-size:calc(18px*var(--fz));color:var(--mut);font-variant-numeric:tabular-nums}
+.series{font-size:calc(26px*var(--fz));color:var(--mut);font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+.series .sv{display:inline-block;margin:0 3px;font-weight:800}
+.series .s-good{color:var(--good);font-weight:900}
+.series .s-bad{color:#d62828;font-weight:900}
+.series .s-blink{color:var(--good);font-weight:900;animation:blinkhi .8s ease-in-out infinite}
 .total{font-weight:800;font-size:calc(29px*var(--fz))}
 .d10{color:var(--gold2);font-weight:900}
 .dlow{color:#d62828;font-weight:900}
 .lng span{display:inline-block;min-width:32px;background:#1f9d57;color:#fff;font-weight:900;border-radius:7px;padding:2px 8px;font-size:calc(22px*var(--fz))}
+.lng span.blink10{background:#e23b3b;box-shadow:0 0 0 2px rgba(226,59,59,.35);animation:blinkhi .8s ease-in-out infinite}
+@keyframes blinkhi{0%,100%{opacity:1}50%{opacity:.28}}
+.tbl thead th{position:sticky;top:0;z-index:3;background:var(--panel);box-shadow:0 2px 0 var(--line2)}
 .nodata{color:var(--mut);text-align:center;padding:32px;font-size:calc(18px*var(--fz))}
 .loading{color:var(--mut);text-align:center;padding:36px}
 .err{color:var(--warn);text-align:center;padding:20px}
@@ -436,7 +443,10 @@ function slideHTML(s){
     for(const dt of days){ const ss=sessOn(dt).slice().sort((a,b)=>(b.total||0)-(a.total||0)); if(!ss.length)continue; any=true;
       body+=`<div class="daygroup"><div class="daygroup-h">${vnShort(dt)}${dt===SEL?' <span class="sel">●</span>':''}</div>`+
         `<table class="tbl"><thead><tr><th class="l">${esc(L().ath)}</th><th>${esc(L().disc)}</th><th class="l">${esc(L().series)}</th><th>${esc(L().total)}</th><th>10</th><th>9</th><th class="rd">8</th><th class="rd">7</th><th class="rd">6↓</th><th>${esc(L().streak)}</th></tr></thead><tbody>`+
-        ss.map(x=>{const d=x.dist||[];const hd=d.length>0;const d6=hd?d.slice(4,11).reduce((s,v)=>s+(v||0),0):null;return `<tr><td class="l ath">${esc(x.name)}</td><td><span class="disc" style="background:${DISC_COLOR[x.dk]||'#888'}">${esc(discLabel(x))}</span></td><td class="l series">${x.series.join(" ")||"—"}</td><td class="total">${fmt(x.total)}</td><td class="d10">${d[0]!=null?d[0]:"—"}</td><td>${d[1]!=null?d[1]:"—"}</td><td class="dlow">${d[2]!=null?d[2]:"—"}</td><td class="dlow">${d[3]!=null?d[3]:"—"}</td><td class="dlow">${d6!=null?d6:"—"}</td><td class="lng">${x.long10!=null?'<span>'+x.long10+'</span>':"—"}</td></tr>`;}).join("")+
+        ss.map(x=>{const d=x.dist||[];const hd=d.length>0;const d6=hd?d.slice(4,11).reduce((s,v)=>s+(v||0),0):null;
+          const serHTML=x.series.length?x.series.map(v=>{let c="";if(v>=99)c="s-blink";else if(v>=96)c="s-good";else if(v<=94)c="s-bad";return `<span class="sv ${c}">${v}</span>`;}).join(""):"—";
+          const lngHTML=x.long10!=null?`<span class="${x.long10>=10?'blink10':''}">${x.long10}</span>`:"—";
+          return `<tr><td class="l ath">${esc(x.name)}</td><td><span class="disc" style="background:${DISC_COLOR[x.dk]||'#888'}">${esc(discLabel(x))}</span></td><td class="l series">${serHTML}</td><td class="total">${fmt(x.total)}</td><td class="d10">${d[0]!=null?d[0]:"—"}</td><td>${d[1]!=null?d[1]:"—"}</td><td class="dlow">${d[2]!=null?d[2]:"—"}</td><td class="dlow">${d[3]!=null?d[3]:"—"}</td><td class="dlow">${d6!=null?d6:"—"}</td><td class="lng">${lngHTML}</td></tr>`;}).join("")+
         `</tbody></table></div>`;
     }
     return `<div class="card"><div class="slide-h">📊 ${esc(L().scores)} <small>${vnShort(iso(new Date(new Date(SEL+"T00:00:00").getTime()-2*864e5)))}~${vnShort(SEL)}</small></div><div class="scroller">${any?body:`<div class="nodata">${esc(L().noRec)}</div>`}</div></div>`;
