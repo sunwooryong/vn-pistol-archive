@@ -30,7 +30,7 @@ body{background:linear-gradient(180deg,#eef5fc,#e3ecf7 55%) fixed,var(--bg);colo
 
 /* ===== 상단 한 줄 통합 바 ===== */
 header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
-.brand{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;flex:0 0 auto;overflow:hidden;padding:5px 12px;border-radius:12px}
+.brand{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:3px;flex:1;min-width:0;overflow:hidden;padding:5px 10px;border-radius:12px}
 .flags{display:flex;align-items:center;gap:12px}
 .ic{height:46px;width:auto;display:block}
 .flag{height:46px;border-radius:5px;box-shadow:0 2px 7px rgba(0,0,0,.22);border:1.5px solid rgba(255,255,255,.75)}
@@ -47,7 +47,7 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
   animation:sweep 13s ease-in-out infinite}
 @keyframes sweep{0%{left:-55%}55%,100%{left:135%}}
 
-.clock{display:flex;flex-direction:column;align-items:center;line-height:1;flex:0 0 auto;margin:0 auto}
+.clock{display:flex;flex-direction:column;align-items:center;line-height:1;flex:0 0 auto}
 .clock .time{font-size:calc(50px*var(--fz));font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:2px;color:#0a3a6b;text-shadow:0 1px 1px rgba(255,255,255,.65),0 2px 10px rgba(10,58,107,.22)}
 .clock .date{display:flex;align-items:center;gap:9px;margin-top:3px;font-size:calc(17px*var(--fz));font-weight:700;color:var(--mut);font-variant-numeric:tabular-nums}
 .live{display:inline-flex;align-items:center;gap:5px;font-size:calc(13px*var(--fz));color:var(--good);font-weight:800}
@@ -66,14 +66,11 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .speed span{font-size:calc(14px*var(--fz));color:var(--mut);font-weight:800;white-space:nowrap}
 .speed input{width:120px;accent-color:var(--acc)}
 .clock{cursor:pointer}
-.hend{flex:0 0 auto;display:flex;align-items:center;gap:12px;justify-content:flex-end}
-.wx{display:flex;align-items:center;gap:11px;font-weight:800;white-space:nowrap}
-.wx span{display:inline-flex;align-items:center;gap:4px;font-size:calc(17px*var(--fz))}
+.hend{flex:1;min-width:0;display:flex;align-items:center;gap:16px;justify-content:flex-end}
+.wx{flex:0 0 auto;margin:0 auto;display:flex;align-items:center;gap:16px;font-weight:800;white-space:nowrap;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 16px;box-shadow:var(--shadow)}
+.wx span{display:inline-flex;align-items:center;gap:5px;font-size:calc(17px*var(--fz));color:var(--tx)}
 .wx .wx-loc{color:var(--acc2)}
-.wx .wx-t{color:#e8590c}
-.wx .wx-h{color:#1971c2}
-.wx .wx-c{color:var(--mut)}
-@media (max-width:1100px){.wx .wx-c{display:none}}
+@media (max-width:1180px){.wx .wx-c{display:none}}
 .gear{width:46px;height:46px;border-radius:12px;border:1px solid var(--line2);background:var(--panel);color:var(--acc2);font-size:24px;cursor:pointer;line-height:1}
 .gear:hover{border-color:var(--acc);background:var(--accsoft)}
 /* 설정 패널 */
@@ -157,18 +154,18 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
         <img class="ic flag" src="../dashboard/vn.svg" alt="VN">
         <img class="ic flag kr" src="../flag-kr.png" alt="KR">
       </div>
-      <div class="sig-name">선우룡 · 사격 전문가</div>
+      <div class="sig-name">SUNWOO RYONG · SHOOTING EXPERT</div>
     </div>
-    <div class="clock" id="clock" title="설정 열기">
-      <div class="time" id="c-time">--:--:--</div>
-      <div class="date"><span id="c-date">--/--/----</span> <span class="live"><span class="dot"></span>LIVE <span id="c-upd"></span></span></div>
+    <div class="wx" id="wx">
+      <span class="wx-loc" id="wx-loc">📍 다낭</span>
+      <span class="wx-c" id="wx-c">—</span>
+      <span class="wx-t" id="wx-t">—</span>
+      <span class="wx-h" id="wx-h">—</span>
     </div>
     <div class="hend">
-      <div class="wx" id="wx">
-        <span class="wx-loc" id="wx-loc">📍 다낭</span>
-        <span class="wx-c" id="wx-c">—</span>
-        <span class="wx-t" id="wx-t">—</span>
-        <span class="wx-h" id="wx-h">—</span>
+      <div class="clock" id="clock" title="설정 열기">
+        <div class="time" id="c-time">--:--:--</div>
+        <div class="date"><span id="c-date">--/--/----</span></div>
       </div>
       <button class="gear" id="gear" title="설정">⚙</button>
     </div>
@@ -250,7 +247,7 @@ async function loadData(){
     out.push({ date, name, disc, dk:tDisc(disc), total, series, dist:hasDist?dist.map(v=>v||0):null, long10:cnum(row[48]) });
   }
   SESSIONS=out;
-  document.getElementById("c-upd").textContent="· "+new Date().toLocaleTimeString("vi-VN",{hour12:false});
+  const _u=document.getElementById("c-upd"); if(_u)_u.textContent="· "+new Date().toLocaleTimeString("vi-VN",{hour12:false});
 }
 // 훈련일정 GAS 라이브(암호문 복호화) — 실패 시 정적 schedule.json 폴백
 const GAS_PLAN="https://script.google.com/macros/s/AKfycbzHDGIi0kB7edpoF0UPOLu__X6CxEZpmjSlh8fWC8kGB27GDx4yl2lG_eFe_SpwO4SobQ/exec?api=plan";
