@@ -26,7 +26,7 @@ html,body{margin:0;padding:0;height:100%}
 body{background:linear-gradient(180deg,#eef5fc,#e3ecf7 55%) fixed,var(--bg);color:var(--tx);
   font-family:"Be Vietnam Pro","Noto Sans KR","Malgun Gothic","Segoe UI",system-ui,sans-serif;
   -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow:hidden}
-.wrap{height:100vh;display:flex;flex-direction:column;padding:12px 20px;gap:11px;max-width:1800px;margin:0 auto;position:relative}
+.wrap{height:100vh;display:flex;flex-direction:column;padding:12px 16px;gap:11px;max-width:1920px;margin:0 auto;position:relative}
 
 /* ===== 상단 한 줄 통합 바 ===== */
 header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
@@ -126,17 +126,19 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .daygroup{margin-bottom:16px}
 .daygroup-h{font-size:calc(18px*var(--fz));font-weight:800;color:var(--acc2);padding:3px 0 7px;border-bottom:2px solid var(--line2);margin-bottom:8px;font-variant-numeric:tabular-nums}
 .daygroup-h .sel{color:var(--gold2)}
-.tbl{width:100%;border-collapse:collapse;font-size:calc(19px*var(--fz))}
-.tbl th{font-size:calc(14px*var(--fz));font-weight:800;color:var(--mut);text-align:center;padding:5px 8px;border-bottom:1px solid var(--line)}
+.tbl{width:100%;border-collapse:collapse;font-size:calc(24px*var(--fz))}
+.tbl th{font-size:calc(16px*var(--fz));font-weight:800;color:var(--mut);text-align:center;padding:6px 8px;border-bottom:1px solid var(--line)}
 .tbl th.l,.tbl td.l{text-align:left}
-.tbl td{padding:9px 8px;text-align:center;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.tbl th.rd{color:#d62828}
+.tbl td{padding:12px 8px;text-align:center;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
 .tbl tr:last-child td{border-bottom:none}
 .ath{font-weight:800}
-.disc{font-size:calc(12px*var(--fz));font-weight:800;color:#fff;border-radius:5px;padding:2px 8px}
-.series{font-size:calc(16px*var(--fz));color:var(--mut);font-variant-numeric:tabular-nums}
-.total{font-weight:800;font-size:calc(21px*var(--fz))}
-.d10{color:var(--gold2);font-weight:800}
-.lng{font-weight:800;color:var(--good)}
+.disc{font-size:calc(13px*var(--fz));font-weight:800;color:#fff;border-radius:5px;padding:2px 9px}
+.series{font-size:calc(18px*var(--fz));color:var(--mut);font-variant-numeric:tabular-nums}
+.total{font-weight:800;font-size:calc(29px*var(--fz))}
+.d10{color:var(--gold2);font-weight:900}
+.dlow{color:#d62828;font-weight:900}
+.lng span{display:inline-block;min-width:32px;background:#1f9d57;color:#fff;font-weight:900;border-radius:7px;padding:2px 8px;font-size:calc(22px*var(--fz))}
 .nodata{color:var(--mut);text-align:center;padding:32px;font-size:calc(18px*var(--fz))}
 .loading{color:var(--mut);text-align:center;padding:36px}
 .err{color:var(--warn);text-align:center;padding:20px}
@@ -433,8 +435,8 @@ function slideHTML(s){
     let body="",any=false;
     for(const dt of days){ const ss=sessOn(dt).slice().sort((a,b)=>(b.total||0)-(a.total||0)); if(!ss.length)continue; any=true;
       body+=`<div class="daygroup"><div class="daygroup-h">${vnShort(dt)}${dt===SEL?' <span class="sel">●</span>':''}</div>`+
-        `<table class="tbl"><thead><tr><th class="l">${esc(L().ath)}</th><th>${esc(L().disc)}</th><th class="l">${esc(L().series)}</th><th>${esc(L().total)}</th><th>10</th><th>9</th><th>8</th><th>${esc(L().streak)}</th></tr></thead><tbody>`+
-        ss.map(x=>{const d=x.dist||[];return `<tr><td class="l ath">${esc(x.name)}</td><td><span class="disc" style="background:${DISC_COLOR[x.dk]||'#888'}">${esc(discLabel(x))}</span></td><td class="l series">${x.series.join(" ")||"—"}</td><td class="total">${fmt(x.total)}</td><td class="d10">${d[0]!=null?d[0]:"—"}</td><td>${d[1]!=null?d[1]:"—"}</td><td>${d[2]!=null?d[2]:"—"}</td><td class="lng">${x.long10!=null?x.long10:"—"}</td></tr>`;}).join("")+
+        `<table class="tbl"><thead><tr><th class="l">${esc(L().ath)}</th><th>${esc(L().disc)}</th><th class="l">${esc(L().series)}</th><th>${esc(L().total)}</th><th>10</th><th>9</th><th class="rd">8</th><th class="rd">7</th><th class="rd">6↓</th><th>${esc(L().streak)}</th></tr></thead><tbody>`+
+        ss.map(x=>{const d=x.dist||[];const hd=d.length>0;const d6=hd?d.slice(4,11).reduce((s,v)=>s+(v||0),0):null;return `<tr><td class="l ath">${esc(x.name)}</td><td><span class="disc" style="background:${DISC_COLOR[x.dk]||'#888'}">${esc(discLabel(x))}</span></td><td class="l series">${x.series.join(" ")||"—"}</td><td class="total">${fmt(x.total)}</td><td class="d10">${d[0]!=null?d[0]:"—"}</td><td>${d[1]!=null?d[1]:"—"}</td><td class="dlow">${d[2]!=null?d[2]:"—"}</td><td class="dlow">${d[3]!=null?d[3]:"—"}</td><td class="dlow">${d6!=null?d6:"—"}</td><td class="lng">${x.long10!=null?'<span>'+x.long10+'</span>':"—"}</td></tr>`;}).join("")+
         `</tbody></table></div>`;
     }
     return `<div class="card"><div class="slide-h">📊 ${esc(L().scores)} <small>${vnShort(iso(new Date(new Date(SEL+"T00:00:00").getTime()-2*864e5)))}~${vnShort(SEL)}</small></div><div class="scroller">${any?body:`<div class="nodata">${esc(L().noRec)}</div>`}</div></div>`;
