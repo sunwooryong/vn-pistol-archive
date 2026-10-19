@@ -26,7 +26,7 @@ html,body{margin:0;padding:0;height:100%}
 body{background:linear-gradient(180deg,#eef5fc,#e3ecf7 55%) fixed,var(--bg);color:var(--tx);
   font-family:"Be Vietnam Pro","Noto Sans KR","Malgun Gothic","Segoe UI",system-ui,sans-serif;
   -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow:hidden}
-.wrap{height:100vh;display:flex;flex-direction:column;padding:12px 20px;gap:11px;max-width:1800px;margin:0 auto}
+.wrap{height:100vh;display:flex;flex-direction:column;padding:12px 20px;gap:11px;max-width:1800px;margin:0 auto;position:relative}
 
 /* ===== 상단 한 줄 통합 바 ===== */
 header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
@@ -68,15 +68,25 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .seg button.on{background:var(--acc);color:#fff}
 .speed{display:flex;align-items:center;gap:7px}
 .speed span{font-size:calc(14px*var(--fz));color:var(--mut);font-weight:800;white-space:nowrap}
-.speed input{width:78px;accent-color:var(--acc)}
+.speed input{width:120px;accent-color:var(--acc)}
+.clock{cursor:pointer}
+.hend{flex:0 0 auto;display:flex;justify-content:flex-end}
+.gear{width:46px;height:46px;border-radius:12px;border:1px solid var(--line2);background:var(--panel);color:var(--acc2);font-size:24px;cursor:pointer;line-height:1}
+.gear:hover{border-color:var(--acc);background:var(--accsoft)}
+/* 설정 패널 */
+.panel{position:absolute;top:74px;left:50%;transform:translateX(-50%);z-index:60;background:var(--panel);border:1px solid var(--line2);border-radius:14px;box-shadow:0 18px 44px rgba(16,40,80,.30);padding:15px 18px;display:flex;flex-direction:column;gap:12px;min-width:min(620px,94vw)}
+.pn-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pn-lab{font-size:calc(14px*var(--fz));font-weight:800;color:var(--mut);min-width:58px}
+.pt-input{flex:1;min-width:220px;border:1px solid var(--line2);border-radius:9px;padding:10px 13px;font-size:calc(17px*var(--fz));font-weight:700;color:var(--tx);background:var(--bg2);outline:none}
+.pt-input:focus{border-color:var(--acc)}
 
 /* LED 전광판 티커 (우→좌 연속) */
-.ticker{display:flex;align-items:center;background:linear-gradient(180deg,#0a1626,#0d2038);border-radius:11px;overflow:hidden;height:52px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07),0 4px 14px rgba(10,30,60,.22)}
-.tk-ico{flex:0 0 auto;padding:0 14px;font-size:22px}
+.ticker{display:flex;align-items:center;background:#000;border-radius:11px;overflow:hidden;height:74px;box-shadow:inset 0 0 0 1px rgba(255,200,60,.18),0 4px 16px rgba(0,0,0,.35)}
+.tk-ico{flex:0 0 auto;padding:0 16px;font-size:28px}
 .tk-view{flex:1;overflow:hidden;position:relative;height:100%;display:flex;align-items:center;-webkit-mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent);mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent)}
-.tk-track{white-space:nowrap;will-change:transform;font-size:calc(23px*var(--fz));font-weight:800;color:#ffd84a;text-shadow:0 0 9px rgba(255,200,60,.55);letter-spacing:.4px}
+.tk-track{white-space:nowrap;will-change:transform;font-size:calc(40px*var(--fz));font-weight:900;color:#ffcf33;text-shadow:0 0 12px rgba(255,190,40,.7),0 0 2px rgba(255,220,120,.9);letter-spacing:.5px}
 @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.tk-empty{color:rgba(255,220,120,.45);font-weight:700;font-size:calc(17px*var(--fz))}
+.tk-empty{color:rgba(255,210,90,.55);font-weight:800;font-size:calc(26px*var(--fz))}
 .tk-input{flex:1;background:#06101c;border:1px solid rgba(255,211,77,.55);color:#ffe79a;font-size:calc(19px*var(--fz));font-weight:700;padding:9px 13px;border-radius:8px;margin:0 9px;outline:none}
 .tk-btn{flex:0 0 auto;margin:0 7px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#ffe08a;border-radius:8px;padding:8px 13px;font-size:calc(16px*var(--fz));font-weight:800;cursor:pointer}
 .tk-btn:hover{background:rgba(255,255,255,.16)}
@@ -141,19 +151,19 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
       <img class="ic flag" src="../dashboard/vn.svg" alt="VN">
       <div class="sig"><img class="ic flag kr" src="../flag-kr.png" alt="KR"><div class="name"><b>SUNWOO RYONG</b><span>EXPERT</span></div></div>
     </div>
-    <div class="clock">
+    <div class="clock" id="clock" title="설정 열기">
       <div class="time" id="c-time">--:--:--</div>
       <div class="date"><span id="c-date">--/--/----</span> <span class="live"><span class="dot"></span>LIVE <span id="c-upd"></span></span></div>
     </div>
-    <div class="tools" id="tools"></div>
+    <div class="hend"><button class="gear" id="gear" title="설정">⚙</button></div>
   </header>
+
+  <!-- 설정 패널 (시계/⚙ 클릭으로 열림) -->
+  <div class="panel" id="panel" hidden></div>
 
   <div class="ticker" id="ticker">
     <span class="tk-ico">📢</span>
     <div class="tk-view" id="tk-view"><div class="tk-track" id="tk-track"></div></div>
-    <input class="tk-input" id="tk-input" hidden>
-    <button class="tk-btn" id="tk-save" hidden>적용</button>
-    <button class="tk-btn" id="tk-edit" title="메시지 입력">✎</button>
   </div>
 
   <section id="cal"><div class="cal-grid" id="cal-grid"></div></section>
@@ -177,11 +187,12 @@ const vnShort = ds => { const [,m,d]=ds.split("-"); return `${d}/${m}`; };
 
 let LANG=localStorage.getItem("tc_lang")||"vi";
 let VIEW=localStorage.getItem("tc_view")||"all";
+let DISC_SEL=localStorage.getItem("tc_disc")||"all";   // 종목 선택: all/10m/50m
 let SPEED=parseFloat(localStorage.getItem("tc_speed")||"0.25");
 const UI={
-  ko:{plan:"일정",scores:"최근 3일",ath:"선수",disc:"종목",series:"시리즈",total:"총점",streak:"연속",am:"오전",pm:"오후",noRec:"기록 없음",speed:"속도",vAll:"전체",vSched:"일정",vScore:"점수",tkPH:"전광판 문구 입력 후 Enter…",tkSave:"적용"},
-  vi:{plan:"Lịch tập",scores:"3 ngày gần nhất",ath:"VĐV",disc:"Nội dung",series:"Loạt",total:"Tổng",streak:"Chuỗi",am:"Sáng",pm:"Chiều",noRec:"Không có dữ liệu",speed:"Tốc độ",vAll:"Tất cả",vSched:"Lịch",vScore:"Điểm",tkPH:"Nhập dòng chữ chạy rồi nhấn Enter…",tkSave:"Áp dụng"},
-  en:{plan:"Schedule",scores:"Last 3 days",ath:"Athlete",disc:"Event",series:"Series",total:"Total",streak:"Streak",am:"AM",pm:"PM",noRec:"No data",speed:"Speed",vAll:"All",vSched:"Schedule",vScore:"Scores",tkPH:"Type ticker text, press Enter…",tkSave:"Apply"}
+  ko:{plan:"일정",scores:"최근 3일",ath:"선수",disc:"종목",series:"시리즈",total:"총점",streak:"연속",am:"오전",pm:"오후",noRec:"기록 없음",speed:"속도",vAll:"전체",vSched:"일정",vScore:"점수",tkPH:"전광판 문구 입력 후 Enter…",tkSave:"적용",vMode:"보기",langLab:"언어",dateLab:"날짜"},
+  vi:{plan:"Lịch tập",scores:"3 ngày gần nhất",ath:"VĐV",disc:"Nội dung",series:"Loạt",total:"Tổng",streak:"Chuỗi",am:"Sáng",pm:"Chiều",noRec:"Không có dữ liệu",speed:"Tốc độ",vAll:"Tất cả",vSched:"Lịch",vScore:"Điểm",tkPH:"Nhập dòng chữ chạy rồi nhấn Enter…",tkSave:"Áp dụng",vMode:"Chế độ",langLab:"Ngôn ngữ",dateLab:"Ngày"},
+  en:{plan:"Schedule",scores:"Last 3 days",ath:"Athlete",disc:"Event",series:"Series",total:"Total",streak:"Streak",am:"AM",pm:"PM",noRec:"No data",speed:"Speed",vAll:"All",vSched:"Schedule",vScore:"Scores",tkPH:"Type ticker text, press Enter…",tkSave:"Apply",vMode:"View",langLab:"Language",dateLab:"Date"}
 };
 const L = () => UI[LANG]||UI.vi;
 const pick = o => o ? (LANG==="en"?(o.en||o.vi||o.ko):LANG==="vi"?(o.vi||o.ko):(o.ko||o.vi)) : "";
@@ -269,8 +280,30 @@ setInterval(tick,1000); tick();
 // ===== 툴바(상단 통합) =====
 function langSeg(){ return `<div class="seg lang">${["vi","ko","en"].map(l=>`<button data-l="${l}"${LANG===l?' class="on"':''}>${l.toUpperCase()}</button>`).join("")}</div>`; }
 function viewSeg(){ return `<div class="seg view">${[["all",L().vAll],["sched",L().vSched],["score",L().vScore]].map(([v,lab])=>`<button data-v="${v}"${VIEW===v?' class="on"':''}>${esc(lab)}</button>`).join("")}</div>`; }
+function discSeg(){ const order=(SCHED.order||Object.keys(SCHED.disc||{})); return `<div class="seg disc">${[["all",L().vAll]].concat(order.map(k=>[k,k])).map(([v,lab])=>`<button data-d="${v}"${DISC_SEL===v?' class="on"':''}>${esc(lab)}</button>`).join("")}</div>`; }
 function speedCtl(){ return `<div class="speed"><span>${esc(L().speed)}</span><input type="range" id="speed" min="0" max="3" step="0.25" value="${SPEED}"></div>`; }
-function bindTools(){
+// ===== 설정 패널(시계/⚙ 클릭으로 열림) — 날짜·보기·언어·속도·전광판 모두 =====
+let PANEL_OPEN=false;
+function applyPanel(){ const p=document.getElementById("panel"); if(p)p.hidden=!PANEL_OPEN; }
+function togglePanel(){ PANEL_OPEN=!PANEL_OPEN; applyPanel(); if(PANEL_OPEN){ const i=document.getElementById("pt-input"); if(i){ i.value=localStorage.getItem("tc_ticker")||""; i.focus(); } } }
+function renderPanel(){
+  const dayView=!document.getElementById("day").hidden;
+  let h="";
+  if(dayView){
+    h+=`<div class="pn-row"><span class="pn-lab">${esc(L().dateLab)}</span><button class="tb" id="day-back">🗓</button><button class="tb" id="day-prev">‹</button><b class="tt">${vnDate(SEL)}</b><button class="tb" id="day-next">›</button></div>`;
+    h+=`<div class="pn-row"><span class="pn-lab">${esc(L().vMode)}</span>${viewSeg()}</div>`;
+    h+=`<div class="pn-row"><span class="pn-lab">${esc(L().disc)}</span>${discSeg()}</div>`;
+    h+=`<div class="pn-row"><span class="pn-lab">${esc(L().speed)}</span>${speedCtl()}</div>`;
+  } else {
+    h+=`<div class="pn-row"><span class="pn-lab">${esc(L().dateLab)}</span><button class="tb" id="cal-prev">‹</button><b class="tt">${pad(CM+1)}/${CY}</b><button class="tb" id="cal-next">›</button><button class="tb" id="cal-today">●</button></div>`;
+  }
+  h+=`<div class="pn-row"><span class="pn-lab">${esc(L().langLab)}</span>${langSeg()}</div>`;
+  h+=`<div class="pn-row"><span class="pn-lab">📢</span><input class="pt-input" id="pt-input" placeholder="${esc(L().tkPH)}"><button class="tb" id="pt-save">${esc(L().tkSave)}</button></div>`;
+  document.getElementById("panel").innerHTML=h;
+  const i=document.getElementById("pt-input"); if(i)i.value=localStorage.getItem("tc_ticker")||"";
+  bindPanel(); applyPanel();
+}
+function bindPanel(){
   const q=id=>document.getElementById(id);
   if(q("cal-prev"))q("cal-prev").onclick=()=>{CM--;if(CM<0){CM=11;CY--;}renderCal();};
   if(q("cal-next"))q("cal-next").onclick=()=>{CM++;if(CM>11){CM=0;CY++;}renderCal();};
@@ -278,9 +311,13 @@ function bindTools(){
   if(q("day-back"))q("day-back").onclick=closeDay;
   if(q("day-prev"))q("day-prev").onclick=()=>shiftDay(-1);
   if(q("day-next"))q("day-next").onclick=()=>shiftDay(1);
-  document.querySelectorAll("#tools .lang button").forEach(b=>b.onclick=()=>setLang(b.dataset.l));
-  document.querySelectorAll("#tools .view button").forEach(b=>b.onclick=()=>setView(b.dataset.v));
+  document.querySelectorAll("#panel .lang button").forEach(b=>b.onclick=()=>setLang(b.dataset.l));
+  document.querySelectorAll("#panel .view button").forEach(b=>b.onclick=()=>setView(b.dataset.v));
+  document.querySelectorAll("#panel .disc button").forEach(b=>b.onclick=()=>setDisc(b.dataset.d));
   const sp=q("speed"); if(sp)sp.oninput=()=>{SPEED=parseFloat(sp.value);localStorage.setItem("tc_speed",SPEED);};
+  const save=()=>{ localStorage.setItem("tc_ticker",(q("pt-input").value||"").trim()); renderTicker(); PANEL_OPEN=false; applyPanel(); };
+  if(q("pt-save"))q("pt-save").onclick=save;
+  if(q("pt-input"))q("pt-input").onkeydown=e=>{ if(e.key==="Enter")save(); else if(e.key==="Escape"){PANEL_OPEN=false;applyPanel();} };
 }
 
 // ===== 달력 =====
@@ -288,8 +325,7 @@ let CY, CM, SEL=null;
 function renderCal(){
   document.getElementById("day").hidden=true; document.getElementById("cal").hidden=false;
   renderTicker();
-  document.getElementById("tools").innerHTML=`<button class="tb" id="cal-prev">‹</button><b class="tt">${pad(CM+1)}/${CY}</b><button class="tb" id="cal-next">›</button><button class="tb" id="cal-today">●</button>`+langSeg();
-  bindTools();
+  renderPanel();
   const first=new Date(CY,CM,1), startDow=first.getDay(), dim=new Date(CY,CM+1,0).getDate(), prevDim=new Date(CY,CM,0).getDate();
   const todayIso=iso(new Date());
   const g=document.getElementById("cal-grid"); g.innerHTML="";
@@ -318,13 +354,13 @@ function closeDay(){ clearInterval(slideTimer); renderCal(); }
 function shiftDay(delta){ const d=new Date(SEL+"T00:00:00"); d.setDate(d.getDate()+delta); openDay(iso(d)); }
 function buildDay(){
   document.getElementById("cal").hidden=true; document.getElementById("day").hidden=false;
-  document.getElementById("tools").innerHTML=`<button class="tb" id="day-back">🗓</button><button class="tb" id="day-prev">‹</button><b class="tt">${vnDate(SEL)}</b><button class="tb" id="day-next">›</button>`+viewSeg()+langSeg()+speedCtl();
-  bindTools();
+  renderPanel();
   renderTicker();
   const amPm=new Date().getHours()<12?"AM":"PM";
   SLIDES=[];
   if(VIEW!=="score"){
     for(const disc of (SCHED.order||Object.keys(SCHED.disc))){
+      if(DISC_SEL!=="all" && disc!==DISC_SEL) continue;
       const sc=SCHED.disc[disc] && SCHED.disc[disc][SEL]; if(!sc) continue;
       const rows=(sc.rows||[]).filter(r=>{ const h=parseInt((r.s||"").slice(0,2)); if(isNaN(h))return true; return amPm==="AM"?h<12:h>=12; });
       if(!rows.length) continue;
@@ -394,20 +430,7 @@ function renderTicker(){
   void track.offsetWidth;   // 리플로우 강제(애니메이션 재시작) — hidden 탭에서도 동작(rAF 미사용)
   track.style.animation=`ticker ${dur}s linear infinite`;
 }
-function tickerEdit(on){
-  document.getElementById("tk-view").hidden=on;
-  document.getElementById("tk-edit").hidden=on;
-  document.getElementById("tk-input").hidden=!on;
-  document.getElementById("tk-save").hidden=!on;
-  if(on){ const i=document.getElementById("tk-input"); i.value=localStorage.getItem("tc_ticker")||""; i.placeholder=L().tkPH; i.focus(); }
-}
-function tickerSave(){ localStorage.setItem("tc_ticker",(document.getElementById("tk-input").value||"").trim()); tickerEdit(false); renderTicker(); }
-function bindTicker(){
-  document.getElementById("tk-edit").onclick=()=>tickerEdit(true);
-  document.getElementById("tk-save").onclick=tickerSave;
-  document.getElementById("tk-save").textContent=L().tkSave;
-  document.getElementById("tk-input").onkeydown=e=>{ if(e.key==="Enter")tickerSave(); else if(e.key==="Escape")tickerEdit(false); };
-}
+// (티커 편집은 설정 패널의 pt-input/pt-save에서 처리)
 
 // 활성 슬라이드 자동스크롤 (시작·끝 3초 정지)
 let SST={pos:0,dir:1,pause:PAUSE};
@@ -426,13 +449,16 @@ function animScroll(){
 }
 animScroll();
 
-function setLang(l){ LANG=l; localStorage.setItem("tc_lang",l); document.documentElement.lang=(l==="ko"?"ko":l==="en"?"en":"vi"); const sv=document.getElementById("tk-save"); if(sv)sv.textContent=L().tkSave; if(document.getElementById("day").hidden) renderCal(); else { const k=CUR; buildDay(); showSlide(Math.min(k,SLIDES.length-1)); } }
+function setLang(l){ LANG=l; localStorage.setItem("tc_lang",l); document.documentElement.lang=(l==="ko"?"ko":l==="en"?"en":"vi"); if(document.getElementById("day").hidden) renderCal(); else { const k=CUR; buildDay(); showSlide(Math.min(k,SLIDES.length-1)); } }
 function setView(v){ VIEW=v; localStorage.setItem("tc_view",v); if(!document.getElementById("day").hidden) buildDay(); }
+function setDisc(d){ DISC_SEL=d; localStorage.setItem("tc_disc",d); if(!document.getElementById("day").hidden) buildDay(); }
 
 function rerenderKeep(){ if(document.getElementById("day").hidden) renderCal(); else { const k=CUR; buildDay(); showSlide(Math.min(k,SLIDES.length-1)); } }
 async function boot(){
   const n=new Date(); CY=n.getFullYear(); CM=n.getMonth();
-  bindTicker();
+  document.getElementById("clock").onclick=togglePanel;
+  document.getElementById("gear").onclick=togglePanel;
+  document.addEventListener("click",e=>{ if(!PANEL_OPEN)return; const p=document.getElementById("panel"); if(p && !p.contains(e.target) && !e.target.closest("#clock,#gear")){ PANEL_OPEN=false; applyPanel(); } });
   try{ await loadData(); }catch(e){ document.getElementById("cal-grid").innerHTML=`<div class="err" style="grid-column:1/-1">${esc(e.message)}</div>`; }
   await loadStatic();   // 즉시 기준(정적) — 라이브는 느리므로 먼저 표시
   const td=iso(new Date());
