@@ -9,7 +9,7 @@
 <title>Training Check</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&family=Noto+Sans+KR:wght@500;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#e7eef8; --bg2:#f4f8fd; --panel:#ffffff; --line:#dbe4f1; --line2:#c6d5e7;
@@ -47,9 +47,22 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
   animation:sweep 13s ease-in-out infinite}
 @keyframes sweep{0%{left:-55%}55%,100%{left:135%}}
 
-.clock{display:flex;flex-direction:column;align-items:center;line-height:1;flex:0 0 auto}
-.clock .time{font-size:calc(50px*var(--fz));font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:2px;color:#0a3a6b;text-shadow:0 1px 1px rgba(255,255,255,.65),0 2px 10px rgba(10,58,107,.22)}
-.clock .date{display:flex;align-items:center;gap:9px;margin-top:3px;font-size:calc(17px*var(--fz));font-weight:700;color:var(--mut);font-variant-numeric:tabular-nums}
+.clock{display:flex;flex-direction:column;align-items:flex-end;line-height:1;flex:0 0 auto}
+/* 네온 스플릿플랩 시계 (오륜 그라데이션 + 네온 글로우) */
+.nflaps{display:flex;align-items:center;gap:calc(5px*var(--fz))}
+.nflaps .u{position:relative;width:calc(40px*var(--fz));height:calc(58px*var(--fz));border-radius:calc(8px*var(--fz));
+  background:linear-gradient(#17233a,#0b1322);overflow:hidden;display:flex;align-items:center;justify-content:center;
+  box-shadow:inset 0 0 0 1px rgba(120,180,255,.14),0 4px 10px rgba(10,30,60,.42),0 0 16px rgba(40,160,255,.18)}
+.nflaps .u::after{content:"";position:absolute;left:3px;right:3px;top:50%;height:2px;transform:translateY(-1px);background:rgba(0,0,0,.55);box-shadow:0 1px 0 rgba(255,255,255,.06)}
+.nflaps .u.flip{animation:nflip .4s ease}
+@keyframes nflip{0%{transform:translateY(-9%);filter:brightness(1.6)}100%{transform:translateY(0);filter:brightness(1)}}
+.nflaps .u b{font-family:'Oswald','Oswald Fallback',sans-serif;font-weight:700;font-size:calc(46px*var(--fz));line-height:1;
+  background:linear-gradient(90deg,#39d0ff,#7ee0ff,#ffd77a,#8affc0,#ff8fb0,#39d0ff);background-size:300% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:nflow 9s linear infinite;
+  filter:drop-shadow(0 0 3px rgba(57,208,255,.75)) drop-shadow(0 0 9px rgba(25,150,255,.5))}
+@keyframes nflow{to{background-position:300% 0}}
+.nflaps .colon{font-family:'Oswald','Oswald Fallback',sans-serif;font-weight:700;font-size:calc(34px*var(--fz));color:#7ee0ff;text-shadow:0 0 8px #19b6ff,0 0 16px #0a84d6;padding:0 1px}
+.clock .date{display:flex;align-items:center;gap:9px;margin-top:6px;font-size:calc(16px*var(--fz));font-weight:700;color:var(--mut);font-variant-numeric:tabular-nums}
 .live{display:inline-flex;align-items:center;gap:5px;font-size:calc(13px*var(--fz));color:var(--good);font-weight:800}
 .dot{width:9px;height:9px;border-radius:50%;background:#2fbf71;box-shadow:0 0 0 0 rgba(47,191,113,.6);animation:pulse 2s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,191,113,.6)}70%{box-shadow:0 0 0 8px rgba(47,191,113,0)}100%{box-shadow:0 0 0 0 rgba(47,191,113,0)}}
@@ -152,6 +165,23 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .dots{display:flex;gap:9px;justify-content:center;align-items:center;padding-top:2px}
 .dot2{height:11px;width:11px;border-radius:50%;background:var(--line2);cursor:pointer;transition:all .2s}
 .dot2.on{background:var(--acc);width:30px;border-radius:6px}
+/* 타이머/알람 입력 */
+.tm-in{width:62px;border:1px solid var(--line2);border-radius:8px;padding:6px 8px;font-size:calc(15px*var(--fz));font-weight:700;color:var(--tx);background:var(--bg2);text-align:center}
+#al-time{width:auto;text-align:left}
+.al-tog{display:inline-flex;align-items:center;gap:5px;font-size:calc(14px*var(--fz));font-weight:800;color:var(--acc2);cursor:pointer}
+.al-tog input{width:17px;height:17px;accent-color:var(--acc)}
+.tb.q{font-size:calc(13px*var(--fz));padding:7px 10px}
+/* 타이머/알람 표시 바 */
+.tbar{position:absolute;top:84px;left:50%;transform:translateX(-50%);z-index:70;display:flex;align-items:center;gap:14px;
+  background:linear-gradient(135deg,#0a3a6b,#0b8fd6);color:#fff;border-radius:999px;padding:9px 14px 9px 22px;
+  box-shadow:0 12px 34px rgba(10,58,107,.42)}
+.tbar .tlab{font-weight:800;font-size:calc(15px*var(--fz));opacity:.92}
+.tbar .tnum{font-family:'Oswald','Oswald Fallback',sans-serif;font-weight:700;font-size:calc(42px*var(--fz));letter-spacing:1px;font-variant-numeric:tabular-nums}
+.tbar button{border:none;background:rgba(255,255,255,.22);color:#fff;border-radius:999px;width:36px;height:36px;font-size:18px;cursor:pointer;line-height:1}
+.tbar button:hover{background:rgba(255,255,255,.38)}
+.tbar.warn{background:linear-gradient(135deg,#d1194a,#ee334e);animation:tpulse .7s ease-in-out infinite}
+.tbar.done{background:linear-gradient(135deg,#d99a1f,#e23b3b);animation:tpulse .5s ease-in-out infinite}
+@keyframes tpulse{0%,100%{box-shadow:0 12px 30px rgba(238,51,78,.4)}50%{box-shadow:0 12px 46px rgba(238,51,78,.92)}}
 </style>
 </head>
 <body>
@@ -173,12 +203,15 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
     </div>
     <div class="hend">
       <div class="clock" id="clock" title="설정 열기">
-        <div class="time" id="c-time">--:--:--</div>
+        <div class="nflaps" id="c-time"></div>
         <div class="date"><span id="c-date">--/--/----</span></div>
       </div>
       <button class="gear" id="gear" title="설정">⚙</button>
     </div>
   </header>
+
+  <!-- 타이머/알람 표시 바 -->
+  <div class="tbar" id="tbar" hidden></div>
 
   <!-- 설정 패널 (시계/⚙ 클릭으로 열림) -->
   <div class="panel" id="panel" hidden></div>
@@ -212,9 +245,9 @@ let VIEW=localStorage.getItem("tc_view")||"all";
 let DISC_SEL=localStorage.getItem("tc_disc")||"all";   // 종목 선택: all/10m/50m
 let SPEED=parseFloat(localStorage.getItem("tc_speed")||"0.25");
 const UI={
-  ko:{plan:"일정",scores:"최근 3일",ath:"선수",disc:"종목",series:"시리즈",total:"총점",streak:"연속",am:"오전",pm:"오후",noRec:"기록 없음",speed:"속도",vAll:"전체",vSched:"일정",vScore:"점수",tkPH:"전광판 문구 입력 후 Enter…",tkSave:"적용",vMode:"보기",langLab:"언어",dateLab:"날짜",tkPauseLab:"시작멈춤"},
-  vi:{plan:"Lịch tập",scores:"3 ngày gần nhất",ath:"VĐV",disc:"Nội dung",series:"Loạt",total:"Tổng",streak:"Chuỗi",am:"Sáng",pm:"Chiều",noRec:"Không có dữ liệu",speed:"Tốc độ",vAll:"Tất cả",vSched:"Lịch",vScore:"Điểm",tkPH:"Nhập dòng chữ chạy rồi nhấn Enter…",tkSave:"Áp dụng",vMode:"Chế độ",langLab:"Ngôn ngữ",dateLab:"Ngày",tkPauseLab:"Dừng đầu"},
-  en:{plan:"Schedule",scores:"Last 3 days",ath:"Athlete",disc:"Event",series:"Series",total:"Total",streak:"Streak",am:"AM",pm:"PM",noRec:"No data",speed:"Speed",vAll:"All",vSched:"Schedule",vScore:"Scores",tkPH:"Type ticker text, press Enter…",tkSave:"Apply",vMode:"View",langLab:"Language",dateLab:"Date",tkPauseLab:"Start pause"}
+  ko:{plan:"일정",scores:"최근 3일",ath:"선수",disc:"종목",series:"시리즈",total:"총점",streak:"연속",am:"오전",pm:"오후",noRec:"기록 없음",speed:"속도",vAll:"전체",vSched:"일정",vScore:"점수",tkPH:"전광판 문구 입력 후 Enter…",tkSave:"적용",vMode:"보기",langLab:"언어",dateLab:"날짜",tkPauseLab:"시작멈춤",timer:"타이머",alarm:"알람",start:"시작",almTest:"테스트",min:"분",sec:"초"},
+  vi:{plan:"Lịch tập",scores:"3 ngày gần nhất",ath:"VĐV",disc:"Nội dung",series:"Loạt",total:"Tổng",streak:"Chuỗi",am:"Sáng",pm:"Chiều",noRec:"Không có dữ liệu",speed:"Tốc độ",vAll:"Tất cả",vSched:"Lịch",vScore:"Điểm",tkPH:"Nhập dòng chữ chạy rồi nhấn Enter…",tkSave:"Áp dụng",vMode:"Chế độ",langLab:"Ngôn ngữ",dateLab:"Ngày",tkPauseLab:"Dừng đầu",timer:"Hẹn giờ",alarm:"Báo thức",start:"Bắt đầu",almTest:"Thử",min:"Phút",sec:"Giây"},
+  en:{plan:"Schedule",scores:"Last 3 days",ath:"Athlete",disc:"Event",series:"Series",total:"Total",streak:"Streak",am:"AM",pm:"PM",noRec:"No data",speed:"Speed",vAll:"All",vSched:"Schedule",vScore:"Scores",tkPH:"Type ticker text, press Enter…",tkSave:"Apply",vMode:"View",langLab:"Language",dateLab:"Date",tkPauseLab:"Start pause",timer:"Timer",alarm:"Alarm",start:"Start",almTest:"Test",min:"min",sec:"sec"}
 };
 const L = () => UI[LANG]||UI.vi;
 const pick = o => o ? (LANG==="en"?(o.en||o.vi||o.ko):LANG==="vi"?(o.vi||o.ko):(o.ko||o.vi)) : "";
@@ -332,10 +365,63 @@ function renderWeather(){
 }
 const sessOn = d => SESSIONS.filter(x=>x.date===d);
 
+function buildFlaps(box){
+  box.innerHTML=[0,1,-1,2,3,-1,4,5].map(k=> k===-1?'<span class="colon">:</span>':`<div class="u" data-k="${k}"><b>0</b></div>`).join("");
+}
 function tick(){
   const n=new Date();
   document.getElementById("c-date").textContent=`${pad(n.getDate())}/${pad(n.getMonth()+1)}/${n.getFullYear()}`;
-  document.getElementById("c-time").textContent=`${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
+  const s=`${pad(n.getHours())}${pad(n.getMinutes())}${pad(n.getSeconds())}`;   // 6자리
+  const box=document.getElementById("c-time");
+  if(box){
+    if(!box.querySelector(".u")) buildFlaps(box);
+    box.querySelectorAll(".u").forEach(u=>{ const b=u.querySelector("b"), ch=s[+u.dataset.k];
+      if(b.textContent!==ch){ b.textContent=ch; u.classList.remove("flip"); void u.offsetWidth; u.classList.add("flip"); } });
+  }
+  checkTimerAlarm(n);
+}
+// ===== 타이머 · 알람 · 성당 종소리(Web Audio) =====
+let TIMER={running:false,end:0,dur:0,done:false};
+let ALARM={on:localStorage.getItem("tc_alarm_on")==="1", hhmm:localStorage.getItem("tc_alarm_t")||"", fired:""};
+let AC=null;
+function audioCtx(){ try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==="suspended")AC.resume(); }catch(e){} return AC; }
+function unlockAudio(){ audioCtx(); }
+document.addEventListener("pointerdown",unlockAudio);
+// 성당 종소리: 비조화 배음 가산합성 + 긴 감쇠
+function bellStrike(ac,t0,f0,g0){
+  const parts=[[0.5,.55,4.4],[1,1,3.6],[1.19,.5,2.5],[1.5,.42,2.1],[2,.72,2.9],[2.5,.26,1.7],[2.66,.22,1.5],[3,.36,2.1],[4,.19,1.3],[5.33,.12,1.0]];
+  const mix=ac.createGain(); mix.gain.value=g0; mix.connect(ac.destination);
+  parts.forEach(([r,a,dec])=>{ const o=ac.createOscillator(); o.type="sine"; o.frequency.value=f0*r;
+    const g=ac.createGain(); g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(a,t0+0.004); g.gain.exponentialRampToValueAtTime(0.0001,t0+dec);
+    o.connect(g).connect(mix); o.start(t0); o.stop(t0+dec+0.12); });
+}
+function playBell(n=3){ const ac=audioCtx(); if(!ac)return; const t=ac.currentTime+0.05; for(let i=0;i<n;i++) bellStrike(ac,t+i*1.5,247,0.9); }
+const fmtMMSS=s=>`${pad(Math.floor(s/60))}:${pad(s%60)}`;
+function showTimerBar(rem){
+  const bar=document.getElementById("tbar"); if(!bar)return;
+  bar.hidden=false; bar.className="tbar"+(rem<=10&&rem>0?" warn":"");
+  bar.innerHTML=`<span class="tlab">⏱ ${esc(L().timer)}</span><span class="tnum">${fmtMMSS(rem)}</span><button id="tb-stop" title="정지">■</button>`;
+  const st=document.getElementById("tb-stop"); if(st)st.onclick=stopTimer;
+}
+function flashBar(label){
+  const bar=document.getElementById("tbar"); if(!bar)return;
+  bar.hidden=false; bar.className="tbar done";
+  bar.innerHTML=`<span class="tnum">🔔 ${esc(label||"00:00")}</span><button id="tb-x" title="확인">✓</button>`;
+  const x=document.getElementById("tb-x"); if(x)x.onclick=()=>{ bar.hidden=true; bar.className="tbar"; TIMER.done=false; };
+}
+function startTimer(sec){ if(!sec||sec<=0)return; unlockAudio(); TIMER={running:true,end:Date.now()+sec*1000,dur:sec,done:false}; showTimerBar(sec); }
+function stopTimer(){ TIMER={running:false,end:0,dur:0,done:false}; const bar=document.getElementById("tbar"); if(bar){bar.hidden=true;bar.className="tbar";} }
+function checkTimerAlarm(n){
+  if(TIMER.running){
+    const rem=Math.max(0,Math.round((TIMER.end-Date.now())/1000));
+    if(rem<=0){ TIMER.running=false; TIMER.done=true; playBell(3); flashBar(fmtMMSS(TIMER.dur)); }
+    else showTimerBar(rem);
+  }
+  if(ALARM.on && ALARM.hhmm){
+    const cur=`${pad(n.getHours())}:${pad(n.getMinutes())}`;
+    if(cur===ALARM.hhmm){ if(ALARM.fired!==cur){ ALARM.fired=cur; playBell(4); flashBar("⏰ "+ALARM.hhmm); } }
+    else ALARM.fired="";
+  }
 }
 setInterval(tick,1000); tick();
 
@@ -362,6 +448,8 @@ function renderPanel(){
   h+=`<div class="pn-row"><span class="pn-lab">${esc(L().langLab)}</span>${langSeg()}</div>`;
   h+=`<div class="pn-row"><span class="pn-lab">📢</span><input class="pt-input" id="pt-input" placeholder="${esc(L().tkPH)}"><button class="tb" id="pt-save">${esc(L().tkSave)}</button></div>`;
   h+=`<div class="pn-row"><span class="pn-lab"></span><span class="pn-sub">${esc(L().speed)}</span><input type="range" id="tk-speed" min="20" max="220" step="10" value="${TK_SPEED}"><span class="pn-sub">${esc(L().tkPauseLab)}</span><input type="range" id="tk-pause" min="0" max="10" step="0.5" value="${TK_PAUSE}"></div>`;
+  h+=`<div class="pn-row"><span class="pn-lab">⏱ ${esc(L().timer)}</span><input type="number" id="tm-min" class="tm-in" min="0" max="180" placeholder="${esc(L().min)}"><span class="pn-sub">:</span><input type="number" id="tm-sec" class="tm-in" min="0" max="59" placeholder="${esc(L().sec)}"><button class="tb" id="tm-start">▶ ${esc(L().start)}</button><button class="tb" id="tm-stop">■</button><button class="tb q" data-m="1">1'</button><button class="tb q" data-m="3">3'</button><button class="tb q" data-m="5">5'</button><button class="tb q" data-m="10">10'</button></div>`;
+  h+=`<div class="pn-row"><span class="pn-lab">⏰ ${esc(L().alarm)}</span><input type="time" id="al-time" class="tm-in" value="${ALARM.hhmm}"><label class="al-tog"><input type="checkbox" id="al-on"${ALARM.on?" checked":""}> ON</label><button class="tb" id="al-test">🔔 ${esc(L().almTest)}</button></div>`;
   document.getElementById("panel").innerHTML=h;
   const i=document.getElementById("pt-input"); if(i)i.value=localStorage.getItem("tc_ticker")||"";
   bindPanel(); applyPanel();
@@ -383,6 +471,14 @@ function bindPanel(){
   if(q("pt-input"))q("pt-input").onkeydown=e=>{ if(e.key==="Enter")save(); else if(e.key==="Escape"){PANEL_OPEN=false;applyPanel();} };
   const ts=q("tk-speed"); if(ts)ts.oninput=()=>{ TK_SPEED=parseFloat(ts.value); localStorage.setItem("tc_tkspeed",TK_SPEED); renderTicker(); };
   const tp=q("tk-pause"); if(tp)tp.oninput=()=>{ TK_PAUSE=parseFloat(tp.value); localStorage.setItem("tc_tkpause",TK_PAUSE); renderTicker(); };
+  // 타이머
+  if(q("tm-start"))q("tm-start").onclick=()=>{ const m=parseInt(q("tm-min").value||"0",10)||0, s=parseInt(q("tm-sec").value||"0",10)||0; startTimer(m*60+s); PANEL_OPEN=false; applyPanel(); };
+  if(q("tm-stop"))q("tm-stop").onclick=stopTimer;
+  document.querySelectorAll("#panel .tb.q").forEach(b=>b.onclick=()=>{ startTimer(parseInt(b.dataset.m,10)*60); PANEL_OPEN=false; applyPanel(); });
+  // 알람
+  if(q("al-time"))q("al-time").onchange=()=>{ ALARM.hhmm=q("al-time").value; localStorage.setItem("tc_alarm_t",ALARM.hhmm); };
+  if(q("al-on"))q("al-on").onchange=()=>{ ALARM.on=q("al-on").checked; localStorage.setItem("tc_alarm_on",ALARM.on?"1":"0"); };
+  if(q("al-test"))q("al-test").onclick=()=>{ unlockAudio(); playBell(2); };
 }
 
 // ===== 달력 =====
