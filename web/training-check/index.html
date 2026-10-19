@@ -216,7 +216,7 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
         <div class="wx-row"><span class="wx-loc" id="wx-loc">📍 다낭</span><span class="wx-c" id="wx-c">—</span></div>
         <div class="wx-row"><span class="wx-t" id="wx-t">—</span><span class="wx-h" id="wx-h">—</span></div>
       </div>
-      <div class="clock" id="clock" title="설정 열기">
+      <div class="clock" id="clock" title="숫자를 누르면 타이머 시작/정지">
         <div class="nflaps" id="c-time"></div>
         <div class="date"><span id="c-date">--/--/----</span></div>
       </div>
@@ -393,20 +393,19 @@ function paintFlaps(box, digits){
 function tick(){
   const n=new Date();
   const box=document.getElementById("c-time"), dateEl=document.getElementById("c-date"), clk=document.getElementById("clock");
+  if(dateEl) dateEl.textContent=`${pad(n.getDate())}/${pad(n.getMonth()+1)}/${n.getFullYear()}`;   // 하단은 항상 현재 날짜
   if(TIMER.running || TIMER.done){
     let rem = TIMER.done ? 0 : Math.max(0, Math.round((TIMER.end-Date.now())/1000));
     const digits = rem>=3600 ? pad(Math.floor(rem/3600))+pad(Math.floor(rem/60)%60)+pad(rem%60)
                              : pad(Math.floor(rem/60))+pad(rem%60);
     if(box) paintFlaps(box, digits);
     if(clk){ clk.classList.add("timing"); clk.classList.toggle("warn", !TIMER.done && rem<=10); clk.classList.toggle("done", !!TIMER.done); }
-    if(dateEl) dateEl.innerHTML = TIMER.done ? `🔔 <b>${esc(L().timer)}</b>` : `⏱ ${esc(L().timer)} · ${fmtMMSS(TIMER.dur)}`;
     if(!TIMER.done && rem<=0){ TIMER.running=false; TIMER.done=true; TIMER.doneAt=Date.now(); playBell(3); }
     if(TIMER.done && Date.now()-(TIMER.doneAt||0) > 12000) stopTimer();   // 종료 12초 후 시계 복귀
   } else {
     if(clk) clk.classList.remove("timing","warn","done");
     const s=`${pad(n.getHours())}${pad(n.getMinutes())}${pad(n.getSeconds())}`;
     if(box) paintFlaps(box, s);
-    if(dateEl) dateEl.textContent=`${pad(n.getDate())}/${pad(n.getMonth()+1)}/${n.getFullYear()}`;
   }
   checkAlarms(n);
 }
@@ -437,8 +436,10 @@ function flashBar(label){
   const x=document.getElementById("tb-x"); if(x)x.onclick=()=>{ bar.hidden=true; bar.className="tbar"; };
   clearTimeout(flashBar._t); flashBar._t=setTimeout(()=>{ bar.hidden=true; bar.className="tbar"; }, 12000);
 }
-function startTimer(sec){ if(!sec||sec<=0)return; unlockAudio(); TIMER={running:true,end:Date.now()+sec*1000,dur:sec,done:false,doneAt:0}; tick(); }
+function startTimer(sec){ if(!sec||sec<=0)return; unlockAudio(); try{localStorage.setItem("tc_lastdur",sec);}catch(e){} TIMER={running:true,end:Date.now()+sec*1000,dur:sec,done:false,doneAt:0}; tick(); }
 function stopTimer(){ TIMER={running:false,end:0,dur:0,done:false,doneAt:0}; tick(); }
+// 시계 숫자 탭 = 타이머 시작/정지 토글(설정된 마지막 시간 사용, 없으면 설정패널 열기)
+function toggleTimer(){ if(TIMER.running||TIMER.done){ stopTimer(); return; } const d=parseInt(localStorage.getItem("tc_lastdur")||"0",10)||0; if(d>0) startTimer(d); else togglePanel(); }
 function checkAlarms(n){
   const cur=`${pad(n.getHours())}:${pad(n.getMinutes())}`;
   ALARMS.forEach(a=>{ if(a.on && a.hhmm===cur && ALM_FIRED[a.hhmm]!==cur){ ALM_FIRED[a.hhmm]=cur; playBell(4); flashBar("⏰ "+a.hhmm); } });
@@ -648,8 +649,8 @@ function setDisc(d){ DISC_SEL=d; localStorage.setItem("tc_disc",d); if(!document
 function rerenderKeep(){ if(document.getElementById("day").hidden) renderCal(); else { const k=CUR; buildDay(); showSlide(Math.min(k,SLIDES.length-1)); } }
 async function boot(){
   const n=new Date(); CY=n.getFullYear(); CM=n.getMonth();
-  document.getElementById("clock").onclick=togglePanel;
-  document.getElementById("gear").onclick=togglePanel;
+  document.getElementById("clock").onclick=toggleTimer;   // 시계 숫자 탭 = 타이머 시작/정지
+  document.getElementById("gear").onclick=togglePanel;    // ⚙ = 설정(타이머 시간·알람 등)
   document.addEventListener("click",e=>{ if(!PANEL_OPEN)return; const p=document.getElementById("panel"); if(p && !p.contains(e.target) && !e.target.closest("#clock,#gear")){ PANEL_OPEN=false; applyPanel(); } });
   try{ await loadData(); }catch(e){ document.getElementById("cal-grid").innerHTML=`<div class="err" style="grid-column:1/-1">${esc(e.message)}</div>`; }
   await loadStatic();   // 즉시 기준(정적) — 라이브는 느리므로 먼저 표시
