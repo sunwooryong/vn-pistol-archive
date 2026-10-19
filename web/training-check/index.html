@@ -79,9 +79,10 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .speed span{font-size:calc(14px*var(--fz));color:var(--mut);font-weight:800;white-space:nowrap}
 .speed input{width:120px;accent-color:var(--acc)}
 .clock{cursor:pointer}
-.hend{flex:1;min-width:0;display:flex;align-items:center;gap:16px;justify-content:flex-end}
-.wx{flex:0 0 auto;margin:0 auto;display:flex;align-items:center;gap:16px;font-weight:800;white-space:nowrap;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 16px;box-shadow:var(--shadow)}
-.wx span{display:inline-flex;align-items:center;gap:5px;font-size:calc(17px*var(--fz));color:var(--tx)}
+.hend{flex:1;min-width:0;display:flex;align-items:center;gap:12px;justify-content:flex-end}
+.wx{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:3px;font-weight:800;white-space:nowrap;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:7px 14px;box-shadow:var(--shadow)}
+.wx .wx-row{display:flex;align-items:center;gap:12px}
+.wx span{display:inline-flex;align-items:center;gap:5px;font-size:calc(16px*var(--fz));color:var(--tx)}
 .wx .wx-loc{color:var(--acc2)}
 @media (max-width:1180px){.wx .wx-c{display:none}}
 .gear{width:46px;height:46px;border-radius:12px;border:1px solid var(--line2);background:var(--panel);color:var(--acc2);font-size:24px;cursor:pointer;line-height:1}
@@ -147,8 +148,8 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .tbl tr:last-child td{border-bottom:none}
 .ath{font-weight:800}
 .disc{font-size:calc(13px*var(--fz));font-weight:800;color:#fff;border-radius:5px;padding:2px 9px}
-.series{font-size:calc(26px*var(--fz));color:var(--mut);font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
-.series .sv{display:inline-block;margin:0 3px;font-weight:800}
+.series{font-size:calc(26px*var(--fz));color:var(--mut);font-variant-numeric:tabular-nums;font-weight:700;white-space:normal;line-height:1.25;max-width:520px}
+.series .sv{display:inline-block;margin:1px 7px 1px 0;font-weight:800}
 .series .s-good{color:var(--good);font-weight:900}
 .series .s-bad{color:#d62828;font-weight:900}
 .series .s-blink{color:var(--good);font-weight:900;animation:blinkhi .8s ease-in-out infinite}
@@ -182,6 +183,21 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .tbar.warn{background:linear-gradient(135deg,#d1194a,#ee334e);animation:tpulse .7s ease-in-out infinite}
 .tbar.done{background:linear-gradient(135deg,#d99a1f,#e23b3b);animation:tpulse .5s ease-in-out infinite}
 @keyframes tpulse{0%,100%{box-shadow:0 12px 30px rgba(238,51,78,.4)}50%{box-shadow:0 12px 46px rgba(238,51,78,.92)}}
+/* 타이머 작동 중: 시계 자리를 카운트다운이 차지 */
+.clock.timing .nflaps .u{box-shadow:inset 0 0 0 1px rgba(120,180,255,.16),0 4px 10px rgba(10,30,60,.42),0 0 22px rgba(11,143,214,.5)}
+.clock.warn .nflaps .u{animation:glowR .7s ease-in-out infinite}
+.clock.warn .nflaps .u b{background:linear-gradient(90deg,#ff7d93,#ff2d55);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 7px rgba(238,51,78,.85))}
+.clock.done .nflaps .u{animation:glowG .5s ease-in-out infinite}
+.clock.done .nflaps .u b{background:linear-gradient(90deg,#ffe08a,#ffb01a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 8px rgba(217,154,31,.9))}
+.clock.timing .date,.clock.warn .date,.clock.done .date{color:var(--acc2);font-weight:800}
+@keyframes glowR{0%,100%{box-shadow:inset 0 0 0 1px rgba(255,140,150,.5),0 0 14px rgba(238,51,78,.5)}50%{box-shadow:inset 0 0 0 1px rgba(255,140,150,.75),0 0 28px rgba(238,51,78,.95)}}
+@keyframes glowG{0%,100%{box-shadow:inset 0 0 0 1px rgba(255,215,130,.6),0 0 16px rgba(217,154,31,.55)}50%{box-shadow:inset 0 0 0 1px rgba(255,215,130,.9),0 0 32px rgba(217,154,31,1)}}
+/* 알람 칩 목록 */
+.alm-list{display:inline-flex;flex-wrap:wrap;gap:6px;align-items:center}
+.alm-chip{display:inline-flex;align-items:center;gap:3px;background:var(--accsoft);border:1px solid var(--line2);border-radius:999px;padding:3px 5px 3px 11px;font-size:calc(15px*var(--fz));font-weight:800;color:var(--acc2);font-variant-numeric:tabular-nums}
+.alm-chip.off{opacity:.42}
+.alm-chip button{border:none;background:transparent;cursor:pointer;font-size:14px;padding:1px 3px;line-height:1}
+.alm-chip .alm-del{color:#d62828;font-weight:900}
 </style>
 </head>
 <body>
@@ -195,13 +211,11 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
       </div>
       <div class="sig-name">SUNWOO RYONG · SHOOTING EXPERT</div>
     </div>
-    <div class="wx" id="wx">
-      <span class="wx-loc" id="wx-loc">📍 다낭</span>
-      <span class="wx-c" id="wx-c">—</span>
-      <span class="wx-t" id="wx-t">—</span>
-      <span class="wx-h" id="wx-h">—</span>
-    </div>
     <div class="hend">
+      <div class="wx" id="wx">
+        <div class="wx-row"><span class="wx-loc" id="wx-loc">📍 다낭</span><span class="wx-c" id="wx-c">—</span></div>
+        <div class="wx-row"><span class="wx-t" id="wx-t">—</span><span class="wx-h" id="wx-h">—</span></div>
+      </div>
       <div class="clock" id="clock" title="설정 열기">
         <div class="nflaps" id="c-time"></div>
         <div class="date"><span id="c-date">--/--/----</span></div>
@@ -245,9 +259,9 @@ let VIEW=localStorage.getItem("tc_view")||"all";
 let DISC_SEL=localStorage.getItem("tc_disc")||"all";   // 종목 선택: all/10m/50m
 let SPEED=parseFloat(localStorage.getItem("tc_speed")||"0.25");
 const UI={
-  ko:{plan:"일정",scores:"최근 3일",ath:"선수",disc:"종목",series:"시리즈",total:"총점",streak:"연속",am:"오전",pm:"오후",noRec:"기록 없음",speed:"속도",vAll:"전체",vSched:"일정",vScore:"점수",tkPH:"전광판 문구 입력 후 Enter…",tkSave:"적용",vMode:"보기",langLab:"언어",dateLab:"날짜",tkPauseLab:"시작멈춤",timer:"타이머",alarm:"알람",start:"시작",almTest:"테스트",min:"분",sec:"초"},
-  vi:{plan:"Lịch tập",scores:"3 ngày gần nhất",ath:"VĐV",disc:"Nội dung",series:"Loạt",total:"Tổng",streak:"Chuỗi",am:"Sáng",pm:"Chiều",noRec:"Không có dữ liệu",speed:"Tốc độ",vAll:"Tất cả",vSched:"Lịch",vScore:"Điểm",tkPH:"Nhập dòng chữ chạy rồi nhấn Enter…",tkSave:"Áp dụng",vMode:"Chế độ",langLab:"Ngôn ngữ",dateLab:"Ngày",tkPauseLab:"Dừng đầu",timer:"Hẹn giờ",alarm:"Báo thức",start:"Bắt đầu",almTest:"Thử",min:"Phút",sec:"Giây"},
-  en:{plan:"Schedule",scores:"Last 3 days",ath:"Athlete",disc:"Event",series:"Series",total:"Total",streak:"Streak",am:"AM",pm:"PM",noRec:"No data",speed:"Speed",vAll:"All",vSched:"Schedule",vScore:"Scores",tkPH:"Type ticker text, press Enter…",tkSave:"Apply",vMode:"View",langLab:"Language",dateLab:"Date",tkPauseLab:"Start pause",timer:"Timer",alarm:"Alarm",start:"Start",almTest:"Test",min:"min",sec:"sec"}
+  ko:{plan:"일정",scores:"최근 3일",ath:"선수",disc:"종목",series:"시리즈",total:"총점",streak:"연속",am:"오전",pm:"오후",noRec:"기록 없음",speed:"속도",vAll:"전체",vSched:"일정",vScore:"점수",tkPH:"전광판 문구 입력 후 Enter…",tkSave:"적용",vMode:"보기",langLab:"언어",dateLab:"날짜",tkPauseLab:"시작멈춤",timer:"타이머",alarm:"알람",start:"시작",almTest:"테스트",min:"분",sec:"초",add:"추가"},
+  vi:{plan:"Lịch tập",scores:"3 ngày gần nhất",ath:"VĐV",disc:"Nội dung",series:"Loạt",total:"Tổng",streak:"Chuỗi",am:"Sáng",pm:"Chiều",noRec:"Không có dữ liệu",speed:"Tốc độ",vAll:"Tất cả",vSched:"Lịch",vScore:"Điểm",tkPH:"Nhập dòng chữ chạy rồi nhấn Enter…",tkSave:"Áp dụng",vMode:"Chế độ",langLab:"Ngôn ngữ",dateLab:"Ngày",tkPauseLab:"Dừng đầu",timer:"Hẹn giờ",alarm:"Báo thức",start:"Bắt đầu",almTest:"Thử",min:"Phút",sec:"Giây",add:"Thêm"},
+  en:{plan:"Schedule",scores:"Last 3 days",ath:"Athlete",disc:"Event",series:"Series",total:"Total",streak:"Streak",am:"AM",pm:"PM",noRec:"No data",speed:"Speed",vAll:"All",vSched:"Schedule",vScore:"Scores",tkPH:"Type ticker text, press Enter…",tkSave:"Apply",vMode:"View",langLab:"Language",dateLab:"Date",tkPauseLab:"Start pause",timer:"Timer",alarm:"Alarm",start:"Start",almTest:"Test",min:"min",sec:"sec",add:"Add"}
 };
 const L = () => UI[LANG]||UI.vi;
 const pick = o => o ? (LANG==="en"?(o.en||o.vi||o.ko):LANG==="vi"?(o.vi||o.ko):(o.ko||o.vi)) : "";
@@ -283,7 +297,7 @@ async function loadData(){
     const date=tDate(row[0]); const name=(row[1]||"").trim(); const total=num(row[7]);
     if(!date||!name||total==null) continue;
     const disc=(row[4]||"").trim();
-    const series=row.slice(8,14).map(num).filter(v=>v!=null);
+    const series=row.slice(8,18).map(num).filter(v=>v!=null&&v>=30&&v<=120);   // 최대 10개, 점수범위 가드
     const dist=[37,38,39,40,41,42,43,44,45,46,47].map(i=>cnum(row[i]));
     const hasDist=dist.some(v=>v!=null);
     out.push({ date, name, disc, dk:tDisc(disc), total, series, dist:hasDist?dist.map(v=>v||0):null, long10:cnum(row[48]) });
@@ -365,24 +379,43 @@ function renderWeather(){
 }
 const sessOn = d => SESSIONS.filter(x=>x.date===d);
 
-function buildFlaps(box){
-  box.innerHTML=[0,1,-1,2,3,-1,4,5].map(k=> k===-1?'<span class="colon">:</span>':`<div class="u" data-k="${k}"><b>0</b></div>`).join("");
+// 플랩 숫자판 렌더(자리수 가변): 2자리마다 콜론, 변경된 자리만 플립
+function paintFlaps(box, digits){
+  const want=digits.length;
+  if(box._n!==want){
+    box._n=want; let di=0; const cells=[];
+    for(let i=0;i<want;i++){ if(i>0 && i%2===0) cells.push('<span class="colon">:</span>'); cells.push(`<div class="u"><b>0</b></div>`); di++; }
+    box.innerHTML=cells.join("");
+  }
+  box.querySelectorAll(".u").forEach((u,idx)=>{ const b=u.querySelector("b"), ch=digits[idx];
+    if(b.textContent!==ch){ b.textContent=ch; u.classList.remove("flip"); void u.offsetWidth; u.classList.add("flip"); } });
 }
 function tick(){
   const n=new Date();
-  document.getElementById("c-date").textContent=`${pad(n.getDate())}/${pad(n.getMonth()+1)}/${n.getFullYear()}`;
-  const s=`${pad(n.getHours())}${pad(n.getMinutes())}${pad(n.getSeconds())}`;   // 6자리
-  const box=document.getElementById("c-time");
-  if(box){
-    if(!box.querySelector(".u")) buildFlaps(box);
-    box.querySelectorAll(".u").forEach(u=>{ const b=u.querySelector("b"), ch=s[+u.dataset.k];
-      if(b.textContent!==ch){ b.textContent=ch; u.classList.remove("flip"); void u.offsetWidth; u.classList.add("flip"); } });
+  const box=document.getElementById("c-time"), dateEl=document.getElementById("c-date"), clk=document.getElementById("clock");
+  if(TIMER.running || TIMER.done){
+    let rem = TIMER.done ? 0 : Math.max(0, Math.round((TIMER.end-Date.now())/1000));
+    const digits = rem>=3600 ? pad(Math.floor(rem/3600))+pad(Math.floor(rem/60)%60)+pad(rem%60)
+                             : pad(Math.floor(rem/60))+pad(rem%60);
+    if(box) paintFlaps(box, digits);
+    if(clk){ clk.classList.add("timing"); clk.classList.toggle("warn", !TIMER.done && rem<=10); clk.classList.toggle("done", !!TIMER.done); }
+    if(dateEl) dateEl.innerHTML = TIMER.done ? `🔔 <b>${esc(L().timer)}</b>` : `⏱ ${esc(L().timer)} · ${fmtMMSS(TIMER.dur)}`;
+    if(!TIMER.done && rem<=0){ TIMER.running=false; TIMER.done=true; TIMER.doneAt=Date.now(); playBell(3); }
+    if(TIMER.done && Date.now()-(TIMER.doneAt||0) > 12000) stopTimer();   // 종료 12초 후 시계 복귀
+  } else {
+    if(clk) clk.classList.remove("timing","warn","done");
+    const s=`${pad(n.getHours())}${pad(n.getMinutes())}${pad(n.getSeconds())}`;
+    if(box) paintFlaps(box, s);
+    if(dateEl) dateEl.textContent=`${pad(n.getDate())}/${pad(n.getMonth()+1)}/${n.getFullYear()}`;
   }
-  checkTimerAlarm(n);
+  checkAlarms(n);
 }
 // ===== 타이머 · 알람 · 성당 종소리(Web Audio) =====
-let TIMER={running:false,end:0,dur:0,done:false};
-let ALARM={on:localStorage.getItem("tc_alarm_on")==="1", hhmm:localStorage.getItem("tc_alarm_t")||"", fired:""};
+let TIMER={running:false,end:0,dur:0,done:false,doneAt:0};
+let ALARMS = (()=>{ try{ return JSON.parse(localStorage.getItem("tc_alarms"))||[]; }catch(e){ return []; } })();
+(function migrateAlarm(){ const t=localStorage.getItem("tc_alarm_t"); if(t && !ALARMS.length){ ALARMS=[{hhmm:t,on:localStorage.getItem("tc_alarm_on")==="1"}]; saveAlarms(); } })();
+let ALM_FIRED={};
+function saveAlarms(){ try{ localStorage.setItem("tc_alarms", JSON.stringify(ALARMS)); }catch(e){} }
 let AC=null;
 function audioCtx(){ try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==="suspended")AC.resume(); }catch(e){} return AC; }
 function unlockAudio(){ audioCtx(); }
@@ -397,31 +430,19 @@ function bellStrike(ac,t0,f0,g0){
 }
 function playBell(n=3){ const ac=audioCtx(); if(!ac)return; const t=ac.currentTime+0.05; for(let i=0;i<n;i++) bellStrike(ac,t+i*1.5,247,0.9); }
 const fmtMMSS=s=>`${pad(Math.floor(s/60))}:${pad(s%60)}`;
-function showTimerBar(rem){
-  const bar=document.getElementById("tbar"); if(!bar)return;
-  bar.hidden=false; bar.className="tbar"+(rem<=10&&rem>0?" warn":"");
-  bar.innerHTML=`<span class="tlab">⏱ ${esc(L().timer)}</span><span class="tnum">${fmtMMSS(rem)}</span><button id="tb-stop" title="정지">■</button>`;
-  const st=document.getElementById("tb-stop"); if(st)st.onclick=stopTimer;
-}
 function flashBar(label){
   const bar=document.getElementById("tbar"); if(!bar)return;
   bar.hidden=false; bar.className="tbar done";
-  bar.innerHTML=`<span class="tnum">🔔 ${esc(label||"00:00")}</span><button id="tb-x" title="확인">✓</button>`;
-  const x=document.getElementById("tb-x"); if(x)x.onclick=()=>{ bar.hidden=true; bar.className="tbar"; TIMER.done=false; };
+  bar.innerHTML=`<span class="tnum">🔔 ${esc(label||"")}</span><button id="tb-x" title="확인">✓</button>`;
+  const x=document.getElementById("tb-x"); if(x)x.onclick=()=>{ bar.hidden=true; bar.className="tbar"; };
+  clearTimeout(flashBar._t); flashBar._t=setTimeout(()=>{ bar.hidden=true; bar.className="tbar"; }, 12000);
 }
-function startTimer(sec){ if(!sec||sec<=0)return; unlockAudio(); TIMER={running:true,end:Date.now()+sec*1000,dur:sec,done:false}; showTimerBar(sec); }
-function stopTimer(){ TIMER={running:false,end:0,dur:0,done:false}; const bar=document.getElementById("tbar"); if(bar){bar.hidden=true;bar.className="tbar";} }
-function checkTimerAlarm(n){
-  if(TIMER.running){
-    const rem=Math.max(0,Math.round((TIMER.end-Date.now())/1000));
-    if(rem<=0){ TIMER.running=false; TIMER.done=true; playBell(3); flashBar(fmtMMSS(TIMER.dur)); }
-    else showTimerBar(rem);
-  }
-  if(ALARM.on && ALARM.hhmm){
-    const cur=`${pad(n.getHours())}:${pad(n.getMinutes())}`;
-    if(cur===ALARM.hhmm){ if(ALARM.fired!==cur){ ALARM.fired=cur; playBell(4); flashBar("⏰ "+ALARM.hhmm); } }
-    else ALARM.fired="";
-  }
+function startTimer(sec){ if(!sec||sec<=0)return; unlockAudio(); TIMER={running:true,end:Date.now()+sec*1000,dur:sec,done:false,doneAt:0}; tick(); }
+function stopTimer(){ TIMER={running:false,end:0,dur:0,done:false,doneAt:0}; tick(); }
+function checkAlarms(n){
+  const cur=`${pad(n.getHours())}:${pad(n.getMinutes())}`;
+  ALARMS.forEach(a=>{ if(a.on && a.hhmm===cur && ALM_FIRED[a.hhmm]!==cur){ ALM_FIRED[a.hhmm]=cur; playBell(4); flashBar("⏰ "+a.hhmm); } });
+  Object.keys(ALM_FIRED).forEach(k=>{ if(ALM_FIRED[k]!==cur) delete ALM_FIRED[k]; });
 }
 setInterval(tick,1000); tick();
 
@@ -449,7 +470,8 @@ function renderPanel(){
   h+=`<div class="pn-row"><span class="pn-lab">📢</span><input class="pt-input" id="pt-input" placeholder="${esc(L().tkPH)}"><button class="tb" id="pt-save">${esc(L().tkSave)}</button></div>`;
   h+=`<div class="pn-row"><span class="pn-lab"></span><span class="pn-sub">${esc(L().speed)}</span><input type="range" id="tk-speed" min="20" max="220" step="10" value="${TK_SPEED}"><span class="pn-sub">${esc(L().tkPauseLab)}</span><input type="range" id="tk-pause" min="0" max="10" step="0.5" value="${TK_PAUSE}"></div>`;
   h+=`<div class="pn-row"><span class="pn-lab">⏱ ${esc(L().timer)}</span><input type="number" id="tm-min" class="tm-in" min="0" max="180" placeholder="${esc(L().min)}"><span class="pn-sub">:</span><input type="number" id="tm-sec" class="tm-in" min="0" max="59" placeholder="${esc(L().sec)}"><button class="tb" id="tm-start">▶ ${esc(L().start)}</button><button class="tb" id="tm-stop">■</button><button class="tb q" data-m="1">1'</button><button class="tb q" data-m="3">3'</button><button class="tb q" data-m="5">5'</button><button class="tb q" data-m="10">10'</button></div>`;
-  h+=`<div class="pn-row"><span class="pn-lab">⏰ ${esc(L().alarm)}</span><input type="time" id="al-time" class="tm-in" value="${ALARM.hhmm}"><label class="al-tog"><input type="checkbox" id="al-on"${ALARM.on?" checked":""}> ON</label><button class="tb" id="al-test">🔔 ${esc(L().almTest)}</button></div>`;
+  h+=`<div class="pn-row"><span class="pn-lab">⏰ ${esc(L().alarm)}</span><input type="time" id="al-time" class="tm-in"><button class="tb" id="al-add">➕ ${esc(L().add)}</button><button class="tb" id="al-test">🔔 ${esc(L().almTest)}</button>`
+    +`<span class="alm-list">${ALARMS.map((a,i)=>`<span class="alm-chip${a.on?"":" off"}"><b>${esc(a.hhmm)}</b><button class="alm-tog" data-i="${i}" title="켜기/끄기">${a.on?"🔔":"🔕"}</button><button class="alm-del" data-i="${i}" title="삭제">✕</button></span>`).join("")||`<span class="pn-sub">—</span>`}</span></div>`;
   document.getElementById("panel").innerHTML=h;
   const i=document.getElementById("pt-input"); if(i)i.value=localStorage.getItem("tc_ticker")||"";
   bindPanel(); applyPanel();
@@ -475,9 +497,10 @@ function bindPanel(){
   if(q("tm-start"))q("tm-start").onclick=()=>{ const m=parseInt(q("tm-min").value||"0",10)||0, s=parseInt(q("tm-sec").value||"0",10)||0; startTimer(m*60+s); PANEL_OPEN=false; applyPanel(); };
   if(q("tm-stop"))q("tm-stop").onclick=stopTimer;
   document.querySelectorAll("#panel .tb.q").forEach(b=>b.onclick=()=>{ startTimer(parseInt(b.dataset.m,10)*60); PANEL_OPEN=false; applyPanel(); });
-  // 알람
-  if(q("al-time"))q("al-time").onchange=()=>{ ALARM.hhmm=q("al-time").value; localStorage.setItem("tc_alarm_t",ALARM.hhmm); };
-  if(q("al-on"))q("al-on").onchange=()=>{ ALARM.on=q("al-on").checked; localStorage.setItem("tc_alarm_on",ALARM.on?"1":"0"); };
+  // 알람(여러 개)
+  if(q("al-add"))q("al-add").onclick=()=>{ const v=q("al-time").value; if(!v)return; if(!ALARMS.some(a=>a.hhmm===v)) ALARMS.push({hhmm:v,on:true}); ALARMS.sort((a,b)=>a.hhmm.localeCompare(b.hhmm)); saveAlarms(); renderPanel(); };
+  document.querySelectorAll("#panel .alm-tog").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; if(ALARMS[i]){ALARMS[i].on=!ALARMS[i].on; saveAlarms(); renderPanel();} });
+  document.querySelectorAll("#panel .alm-del").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; ALARMS.splice(i,1); saveAlarms(); renderPanel(); });
   if(q("al-test"))q("al-test").onclick=()=>{ unlockAudio(); playBell(2); };
 }
 
