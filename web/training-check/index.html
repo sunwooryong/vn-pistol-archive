@@ -297,7 +297,7 @@ async function loadData(){
     const date=tDate(row[0]); const name=(row[1]||"").trim(); const total=num(row[7]);
     if(!date||!name||total==null) continue;
     const disc=(row[4]||"").trim();
-    const series=row.slice(8,18).map(num).filter(v=>v!=null&&v>=30&&v<=120);   // 최대 10개, 점수범위 가드
+    const series=row.slice(8,14).map(num).filter(v=>v!=null);   // S1~S6(8~13열)만. 14열 이후는 시간/평균/결과 등 다른 데이터
     const dist=[37,38,39,40,41,42,43,44,45,46,47].map(i=>cnum(row[i]));
     const hasDist=dist.some(v=>v!=null);
     out.push({ date, name, disc, dk:tDisc(disc), total, series, dist:hasDist?dist.map(v=>v||0):null, long10:cnum(row[48]) });
