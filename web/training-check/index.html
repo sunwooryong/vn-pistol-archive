@@ -198,6 +198,7 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .alm-chip.off{opacity:.42}
 .alm-chip button{border:none;background:transparent;cursor:pointer;font-size:14px;padding:1px 3px;line-height:1}
 .alm-chip .alm-del{color:#d62828;font-weight:900}
+.alm-chip .alm-tm{font-style:normal;background:var(--acc);color:#fff;border-radius:7px;padding:1px 6px;font-size:calc(12px*var(--fz));font-weight:900}
 </style>
 </head>
 <body>
@@ -480,7 +481,9 @@ function stopTimer(){ TIMER={running:false,end:0,dur:0,done:false,doneAt:0}; tic
 function toggleTimer(){ if(TIMER.running||TIMER.done){ stopTimer(); return; } const d=parseInt(localStorage.getItem("tc_lastdur")||"0",10)||0; if(d>0) startTimer(d); else togglePanel(); }
 function checkAlarms(n){
   const cur=`${pad(n.getHours())}:${pad(n.getMinutes())}`;
-  ALARMS.forEach(a=>{ if(a.on && a.hhmm===cur && ALM_FIRED[a.hhmm]!==cur){ ALM_FIRED[a.hhmm]=cur; playBell(4); flashBar("⏰ "+a.hhmm); } });
+  ALARMS.forEach(a=>{ if(a.on && a.hhmm===cur && ALM_FIRED[a.hhmm]!==cur){ ALM_FIRED[a.hhmm]=cur; playBell(4);
+    if(a.tsec>0){ flashBar("⏰ "+a.hhmm+" → ⏱"); setTimeout(()=>startTimer(a.tsec), 1600); }   // 알람 종 후 타이머 자동 시작
+    else flashBar("⏰ "+a.hhmm); } });
   Object.keys(ALM_FIRED).forEach(k=>{ if(ALM_FIRED[k]!==cur) delete ALM_FIRED[k]; });
 }
 setInterval(tick,1000); tick();
@@ -509,8 +512,8 @@ function renderPanel(){
   h+=`<div class="pn-row"><span class="pn-lab">📢</span><input class="pt-input" id="pt-input" placeholder="${esc(L().tkPH)}"><button class="tb" id="pt-save">${esc(L().tkSave)}</button></div>`;
   h+=`<div class="pn-row"><span class="pn-lab"></span><span class="pn-sub">${esc(L().speed)}</span><input type="range" id="tk-speed" min="20" max="220" step="10" value="${TK_SPEED}"><span class="pn-sub">${esc(L().tkPauseLab)}</span><input type="range" id="tk-pause" min="0" max="10" step="0.5" value="${TK_PAUSE}"></div>`;
   h+=`<div class="pn-row"><span class="pn-lab">⏱ ${esc(L().timer)}</span><input type="number" id="tm-min" class="tm-in" min="0" max="180" placeholder="${esc(L().min)}"><span class="pn-sub">:</span><input type="number" id="tm-sec" class="tm-in" min="0" max="59" placeholder="${esc(L().sec)}"><button class="tb" id="tm-start">▶ ${esc(L().start)}</button><button class="tb" id="tm-stop">■</button><button class="tb q" data-m="1">1'</button><button class="tb q" data-m="3">3'</button><button class="tb q" data-m="5">5'</button><button class="tb q" data-m="10">10'</button></div>`;
-  h+=`<div class="pn-row"><span class="pn-lab">⏰ ${esc(L().alarm)}</span><input type="time" id="al-time" class="tm-in"><button class="tb" id="al-add">➕ ${esc(L().add)}</button><button class="tb" id="al-test">🔔 ${esc(L().almTest)}</button>`
-    +`<span class="alm-list">${ALARMS.map((a,i)=>`<span class="alm-chip${a.on?"":" off"}"><b>${esc(a.hhmm)}</b><button class="alm-tog" data-i="${i}" title="켜기/끄기">${a.on?"🔔":"🔕"}</button><button class="alm-del" data-i="${i}" title="삭제">✕</button></span>`).join("")||`<span class="pn-sub">—</span>`}</span></div>`;
+  h+=`<div class="pn-row"><span class="pn-lab">⏰ ${esc(L().alarm)}</span><input type="time" id="al-time" class="tm-in"><input type="number" id="al-dur" class="tm-in" min="0" max="180" placeholder="⏱${esc(L().min)}" title="알람 시 자동 시작할 타이머(분) · 선택"><button class="tb" id="al-add">➕ ${esc(L().add)}</button><button class="tb" id="al-test">🔔 ${esc(L().almTest)}</button>`
+    +`<span class="alm-list">${ALARMS.map((a,i)=>`<span class="alm-chip${a.on?"":" off"}"><b>${esc(a.hhmm)}</b>${a.tsec>0?`<i class="alm-tm">⏱${Math.round(a.tsec/60)}′</i>`:""}<button class="alm-tog" data-i="${i}" title="켜기/끄기">${a.on?"🔔":"🔕"}</button><button class="alm-del" data-i="${i}" title="삭제">✕</button></span>`).join("")||`<span class="pn-sub">—</span>`}</span></div>`;
   document.getElementById("panel").innerHTML=h;
   const i=document.getElementById("pt-input"); if(i)i.value=localStorage.getItem("tc_ticker")||"";
   bindPanel(); applyPanel();
@@ -537,7 +540,8 @@ function bindPanel(){
   if(q("tm-stop"))q("tm-stop").onclick=stopTimer;
   document.querySelectorAll("#panel .tb.q").forEach(b=>b.onclick=()=>{ startTimer(parseInt(b.dataset.m,10)*60); PANEL_OPEN=false; applyPanel(); });
   // 알람(여러 개)
-  if(q("al-add"))q("al-add").onclick=()=>{ const v=q("al-time").value; if(!v)return; if(!ALARMS.some(a=>a.hhmm===v)) ALARMS.push({hhmm:v,on:true}); ALARMS.sort((a,b)=>a.hhmm.localeCompare(b.hhmm)); saveAlarms(); renderPanel(); };
+  if(q("al-add"))q("al-add").onclick=()=>{ const v=q("al-time").value; if(!v)return; const tmin=parseInt(q("al-dur").value||"0",10)||0; const tsec=tmin*60;
+    const ex=ALARMS.find(a=>a.hhmm===v); if(ex){ ex.tsec=tsec; ex.on=true; } else ALARMS.push({hhmm:v,on:true,tsec}); ALARMS.sort((a,b)=>a.hhmm.localeCompare(b.hhmm)); saveAlarms(); renderPanel(); };
   document.querySelectorAll("#panel .alm-tog").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; if(ALARMS[i]){ALARMS[i].on=!ALARMS[i].on; saveAlarms(); renderPanel();} });
   document.querySelectorAll("#panel .alm-del").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; ALARMS.splice(i,1); saveAlarms(); renderPanel(); });
   if(q("al-test"))q("al-test").onclick=()=>{ unlockAudio(); playBell(2); };
