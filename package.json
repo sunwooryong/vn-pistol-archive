@@ -10,7 +10,8 @@
     "load:data": "node load-db.js --data-only",
     "update": "node etl.js --fetch && node load-db.js --data-only",
     "lookup": "node lookup.js",
-    "classify": "node test-classify.js"
+    "classify": "node test-classify.js",
+    "test": "node --test test/*.test.js"
   },
   "dependencies": {
     "pg": "^8.13.0"
