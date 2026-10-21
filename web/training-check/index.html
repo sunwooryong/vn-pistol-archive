@@ -6,6 +6,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://docs.google.com https://*.googleusercontent.com https://script.google.com https://script.googleusercontent.com https://api.open-meteo.com https://air-quality-api.open-meteo.com https://ipwho.is">
 <title>Training Check</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -300,10 +302,14 @@ function tDisc(s){ s=(s||"").toLowerCase(); if(/50m|50 m/.test(s))return"pistol_
 const discLabel = s => s.dk==='air'?'10m':s.dk==='pistol_50'?'50m':s.dk==='rapid'?'속사':s.dk==='sport'?'스포츠':s.dk==='standard'?'표준':(s.disc||'·');
 
 let SESSIONS=[], SCHED={disc:{},order:["10m","50m"]};
+let LAST_CSV="";
 async function loadData(){
   const r=await fetch(CSV(PRACTICE),{cache:"no-store"});
   if(!r.ok) throw new Error("load "+r.status);
-  const rows=parseCSV(await r.text());
+  const text=await r.text();
+  if(text===LAST_CSV && SESSIONS.length) return false;   // 변경 없음 → 재파싱/재렌더 생략(성능)
+  LAST_CSV=text;
+  const rows=parseCSV(text);
   // 헤더명 기반 파서(열 추가/이동 내성). TCParse 미로드 시 구 인덱스 방식 폴백.
   SESSIONS = (window.TCParse&&TCParse.buildSessions) ? TCParse.buildSessions(rows) : rows.slice(4).map(row=>{
     if(row.length<8) return null; const date=tDate(row[0]),name=(row[1]||"").trim(),total=num(row[7]); if(!date||!name||total==null)return null;
@@ -311,6 +317,7 @@ async function loadData(){
     return { date,name,disc,dk:tDisc(disc),total,series,dist:hasDist?dist.map(v=>v||0):null,long10:cnum(row[48]) };
   }).filter(Boolean);
   const _u=document.getElementById("c-upd"); if(_u)_u.textContent="· "+new Date().toLocaleTimeString("vi-VN",{hour12:false});
+  return true;
 }
 // 훈련일정 GAS 라이브(암호문 복호화) — 실패 시 정적 schedule.json 폴백
 const GAS_PLAN="https://script.google.com/macros/s/AKfycbzHDGIi0kB7edpoF0UPOLu__X6CxEZpmjSlh8fWC8kGB27GDx4yl2lG_eFe_SpwO4SobQ/exec?api=plan";
@@ -716,7 +723,7 @@ async function boot(){
 boot();
 setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
 let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(renderTicker,300); });
-setInterval(async()=>{ try{ await loadData(); rerenderKeep(); }catch(e){} }, 60000);              // 점수(빠름)
+setInterval(async()=>{ try{ if(await loadData()) rerenderKeep(); }catch(e){} }, 60000);            // 점수(빠름) — 변경 시에만 재렌더
 setInterval(()=>{ loadLiveSchedule().then(ok=>{ if(ok) rerenderKeep(); }); }, 600000);            // 일정(느림·10분)
 </script>
 </body>
