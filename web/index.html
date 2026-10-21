@@ -7,7 +7,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#0f1216">
   <link rel="apple-touch-icon" href="icon.svg">
-  <link rel="stylesheet" href="style.css?v=109">
+  <link rel="stylesheet" href="style.css?v=110">
 </head>
 <body>
   <!-- 로그인 게이트 (로그인 전까지 표시) -->
@@ -15,6 +15,7 @@
 
   <!-- 앱 (로그인 후 표시) -->
   <div id="app-root" hidden>
+    <a href="#main" class="skip-link">본문으로 건너뛰기</a>
     <header>
       <div class="hwrap">
         <div class="htop">
@@ -29,7 +30,7 @@
       <div id="info-pop" hidden></div>
     </header>
 
-    <nav class="tabs">
+    <nav class="tabs" aria-label="주요 메뉴">
       <button class="tab on" data-tab="home">홈</button>
       <button class="tab" data-tab="me" hidden>내 정보</button>
       <button class="tab" data-tab="athlete">선수</button>
@@ -45,7 +46,7 @@
       <button class="tab" data-tab="admin" hidden>관리</button>
     </nav>
 
-    <main>
+    <main id="main">
       <section id="view-home" class="view"></section>
       <section id="view-me" class="view" hidden></section>
 
@@ -117,13 +118,13 @@
     <span style="font-size:12px;line-height:1;opacity:.9">→</span>
   </a>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-  <script src="i18n.js?v=109"></script>
-  <script src="config.js?v=109"></script>
-  <script src="data.js?v=109"></script>
-  <script src="analytics.js?v=109"></script>
-  <script src="favorites.js?v=109"></script>
-  <script src="predict.js?v=109"></script>
-  <script src="app.js?v=109"></script>
-  <script src="auth.js?v=109"></script>
+  <script src="i18n.js?v=110"></script>
+  <script src="config.js?v=110"></script>
+  <script src="data.js?v=110"></script>
+  <script src="analytics.js?v=110"></script>
+  <script src="favorites.js?v=110"></script>
+  <script src="predict.js?v=110"></script>
+  <script src="app.js?v=110"></script>
+  <script src="auth.js?v=110"></script>
 </body>
 </html>

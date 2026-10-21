@@ -181,3 +181,19 @@ GitHub Pages 에 배포한다. 노트북·서버 없이 폰에서 상시 접속 
 - 경기 날짜(match_date) 채움: **4,465 / 4,465**
 
 전체 리포트는 `npm run etl` 후 `build/qa-report.txt` 참조.
+
+## 보안 모델 (Threat Model)
+
+- **공개 키 분리**: 클라이언트에 노출되는 `publishable`(anon) 키는 **읽기 전용**이며 Supabase RLS `public_read` 정책으로 `SELECT` 만 허용된다. 쓰기용 `DATABASE_URL`(Postgres 비밀번호)은 저장소·클라이언트 어디에도 포함하지 않는다(`.env` 는 gitignore). CI 는 커밋된 비밀을 쓰지 않는다.
+- **예측사격 암호화 범위**: 예측 데이터의 `ENC:`(XOR+base64)는 **기밀성이 아니라 가벼운 난독화**가 목적이다. 키 기본값이 클라이언트에 존재하므로 암호학적 비밀로 간주하지 않는다. 민감 개인정보가 아닌 훈련 점수에 한해 사용한다.
+- **CSP**: `web/training-check/` 는 `Content-Security-Policy`(meta)로 `default-src 'self'` + 실제 사용하는 API 호스트만 `connect-src` 허용(구글시트/GAS/open-meteo/air-quality/ipwho). `object-src 'none'`, `base-uri 'self'`, `referrer=strict-origin-when-cross-origin`.
+- **사용자 이메일**: 식별·귀속 용도로만 사용하며 제3자 서비스(헤더/URL/페이로드)로 전송하지 않는다.
+- **자격증명 파일**: `.env`, `.env.example` 등 자격증명 파일의 내용은 공유·업로드하지 않는다.
+
+## 테스트
+
+```bash
+npm test     # 훈련기록 파서 회귀 테스트(헤더기반 열 해석·시리즈 10개·디코이 제외·열삽입 내성)
+```
+
+파서는 시트의 **헤더 이름**으로 열을 찾으므로 시트에 열이 추가/이동돼도 깨지지 않는다(회귀 테스트로 보장).

@@ -1229,3 +1229,29 @@ table.gm-tab { width: 100%; border-collapse: collapse; font-size: 13px; }
 .gm-so { font-size: 10px; color: var(--mut); font-weight: 600; }
 .gm-st { width: 56px; text-align: right; font-size: 11.5px; color: var(--mut); }
 .gm-tab tr.win .gm-st { color: var(--gold); font-weight: 800; }
+
+/* ===== 접근성(a11y) ===== */
+/* 키보드 포커스 표시 — 명확한 포커스 링 */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
+[tabindex]:focus-visible, .tab:focus-visible {
+  outline: 3px solid var(--acc);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+/* 건너뛰기 링크 — 탭 시에만 노출 */
+.skip-link {
+  position: absolute; left: 8px; top: -48px; z-index: 200;
+  background: var(--acc); color: #fff; font-weight: 800;
+  padding: 8px 14px; border-radius: 8px; text-decoration: none;
+  transition: top .15s;
+}
+.skip-link:focus { top: 8px; }
+/* 모션 민감 사용자: 애니메이션·전환 최소화 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

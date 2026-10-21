@@ -11,7 +11,8 @@
     "update": "node etl.js --fetch && node load-db.js --data-only",
     "lookup": "node lookup.js",
     "classify": "node test-classify.js",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "bump": "node bump-version.js"
   },
   "dependencies": {
     "pg": "^8.13.0"
