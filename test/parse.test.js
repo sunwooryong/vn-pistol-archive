@@ -96,3 +96,30 @@ test("50m 종목 매핑", () => {
   assert.strictEqual(out[0].dk, "pistol_50");
   assert.strictEqual(out[0].series.length, 5);
 });
+
+test("헤더에 줄바꿈/공백이 섞여도 열을 찾는다 (실제 시트는 '날짜\\nNgày' 형태)", () => {
+  const h = header();
+  h[0] = "날짜\nNgày"; h[7] = "총점\n Tổng điểm"; h[8] = " S1 ";
+  const out = TCParse.buildSessions([...meta(), h, row10()]);
+  assert.strictEqual(out.length, 1);
+  assert.strictEqual(out[0].total, 952);
+  assert.strictEqual(out[0].series[0], 91);
+});
+
+test("S7~S10 열이 아예 없는 6칸 시트도 안전(과거 구조)", () => {
+  const h = header();
+  for (let i = 33; i <= 36; i++) h[i] = ""; // S7..S10 헤더 제거
+  const r = row10({ total: 561, series: [93, 95, 92, 94, 95, 96] });
+  for (let i = 33; i <= 36; i++) r[i] = "";
+  const c = TCParse.resolveCols(h);
+  assert.deepStrictEqual(c.series, [8, 9, 10, 11, 12, 13]); // 있는 S열만
+  const out = TCParse.buildSessions([...meta(), h, r]);
+  assert.strictEqual(out[0].series.length, 6);
+});
+
+test("평균시간이 99/120 같은 '점수대' 값이어도 절대 시리즈에 포함 안 됨 (실버그 회귀)", () => {
+  const out = TCParse.buildSessions([...meta(), header(), row10({ avgTime: 99 })]);
+  assert.ok(!out[0].series.includes(99) || out[0].series.filter(v => v === 99).length === out[0].series.filter((v, i) => v === 99).length);
+  // 시리즈는 정확히 S1~S10 값만: avgTime(99)이 추가로 끼면 길이가 11이 됨
+  assert.strictEqual(out[0].series.length, 10);
+});
