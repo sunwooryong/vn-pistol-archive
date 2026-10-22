@@ -87,6 +87,19 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .wx span{display:inline-flex;align-items:center;gap:5px;font-size:calc(16px*var(--fz));color:var(--tx)}
 .wx .wx-loc{color:var(--acc2)}
 @media (max-width:1180px){.wx .wx-c{display:none}}
+/* 세계 랭킹·기록 세로 롤러 (국기와 날씨 사이) */
+.wr{flex:0 1 auto;width:clamp(230px,24vw,380px);height:62px;overflow:hidden;position:relative;
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 24%,#000 76%,transparent);mask-image:linear-gradient(180deg,transparent,#000 24%,#000 76%,transparent)}
+.wr-track{display:flex;flex-direction:column;will-change:transform}
+.wr-item{height:62px;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:0 10px;box-sizing:border-box}
+.wr-l1{display:flex;align-items:center;gap:8px;font-size:calc(18px*var(--fz));font-weight:800;color:var(--acc2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wr-l1 .wr-rk{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;min-width:23px;height:23px;border-radius:50%;background:var(--acc);color:#fff;font-size:calc(12px*var(--fz));font-weight:900}
+.wr-l1 .wr-rk.g{background:linear-gradient(135deg,#d99a1f,#b47c12)}
+.wr-l2{display:flex;align-items:center;gap:9px;font-size:calc(14px*var(--fz));color:var(--mut);font-variant-numeric:tabular-nums;white-space:nowrap}
+.wr-l2 .wr-ser{letter-spacing:.5px}
+.wr-l2 .wr-tot{font-size:calc(19px*var(--fz));font-weight:900;color:var(--gold2)}
+.wr-empty{height:62px;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:calc(13px*var(--fz));font-weight:700;opacity:.7}
+.wr-ta{flex:1;min-width:260px;min-height:92px;border:1px solid var(--line2);border-radius:9px;padding:8px 10px;font-size:calc(13px*var(--fz));font-family:inherit;line-height:1.5;color:var(--tx);background:var(--bg2);resize:vertical}
 .gear{width:46px;height:46px;border-radius:12px;border:1px solid var(--line2);background:var(--panel);color:var(--acc2);font-size:24px;cursor:pointer;line-height:1}
 .gear:hover{border-color:var(--acc);background:var(--accsoft)}
 /* 설정 패널 */
@@ -224,6 +237,7 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
       </div>
       <div class="sig-name">SUNWOO RYONG · SHOOTING EXPERT</div>
     </div>
+    <div class="wr" id="wr" aria-label="세계 랭킹·기록" title="세계 랭킹·기록"></div>
     <div class="hend">
       <div class="wx" id="wx" role="group" aria-label="날씨 · 현재/체감 온도 · 미세먼지">
         <div class="wx-row"><span class="wx-loc" id="wx-loc">📍 다낭</span><span class="wx-c" id="wx-c">—</span></div>
@@ -274,9 +288,9 @@ let DISC_SEL=localStorage.getItem("tc_disc")||"all";   // 종목 선택: all/10m
 let HALF_SEL=localStorage.getItem("tc_half")||"auto";  // 시간대: auto/am/pm/all
 let SPEED=parseFloat(localStorage.getItem("tc_speed")||"0.25");
 const UI={
-  ko:{plan:"일정",scores:"최근 3일",ath:"선수",disc:"종목",series:"시리즈",total:"총점",streak:"연속",am:"오전",pm:"오후",noRec:"기록 없음",speed:"속도",vAll:"전체",vSched:"일정",vScore:"점수",tkPH:"전광판 문구 입력 후 Enter…",tkSave:"적용",vMode:"보기",langLab:"언어",dateLab:"날짜",tkPauseLab:"시작멈춤",timer:"타이머",alarm:"알람",start:"시작",almTest:"테스트",min:"분",sec:"초",add:"추가",halfLab:"시간대",hAuto:"자동",allDay:"전체"},
-  vi:{plan:"Lịch tập",scores:"3 ngày gần nhất",ath:"VĐV",disc:"Nội dung",series:"Loạt",total:"Tổng",streak:"Chuỗi",am:"Sáng",pm:"Chiều",noRec:"Không có dữ liệu",speed:"Tốc độ",vAll:"Tất cả",vSched:"Lịch",vScore:"Điểm",tkPH:"Nhập dòng chữ chạy rồi nhấn Enter…",tkSave:"Áp dụng",vMode:"Chế độ",langLab:"Ngôn ngữ",dateLab:"Ngày",tkPauseLab:"Dừng đầu",timer:"Hẹn giờ",alarm:"Báo thức",start:"Bắt đầu",almTest:"Thử",min:"Phút",sec:"Giây",add:"Thêm",halfLab:"Buổi",hAuto:"Tự động",allDay:"Cả ngày"},
-  en:{plan:"Schedule",scores:"Last 3 days",ath:"Athlete",disc:"Event",series:"Series",total:"Total",streak:"Streak",am:"AM",pm:"PM",noRec:"No data",speed:"Speed",vAll:"All",vSched:"Schedule",vScore:"Scores",tkPH:"Type ticker text, press Enter…",tkSave:"Apply",vMode:"View",langLab:"Language",dateLab:"Date",tkPauseLab:"Start pause",timer:"Timer",alarm:"Alarm",start:"Start",almTest:"Test",min:"min",sec:"sec",add:"Add",halfLab:"Time",hAuto:"Auto",allDay:"All"}
+  ko:{plan:"일정",scores:"최근 3일",ath:"선수",disc:"종목",series:"시리즈",total:"총점",streak:"연속",am:"오전",pm:"오후",noRec:"기록 없음",speed:"속도",vAll:"전체",vSched:"일정",vScore:"점수",tkPH:"전광판 문구 입력 후 Enter…",tkSave:"적용",vMode:"보기",langLab:"언어",dateLab:"날짜",tkPauseLab:"시작멈춤",timer:"타이머",alarm:"알람",start:"시작",almTest:"테스트",min:"분",sec:"초",add:"추가",halfLab:"시간대",hAuto:"자동",allDay:"전체",wrLab:"세계랭킹",wrRank:"랭킹",wrEmpty:"세계랭킹 미입력 (⚙에서 입력)",wrPH:"# 10m 공기권총 남자\nWR | 이름 | 589 | 97 98 ...\nJWR | 이름 | 585\n1 | 이름 | 588\n2 | 이름 | 586"},
+  vi:{plan:"Lịch tập",scores:"3 ngày gần nhất",ath:"VĐV",disc:"Nội dung",series:"Loạt",total:"Tổng",streak:"Chuỗi",am:"Sáng",pm:"Chiều",noRec:"Không có dữ liệu",speed:"Tốc độ",vAll:"Tất cả",vSched:"Lịch",vScore:"Điểm",tkPH:"Nhập dòng chữ chạy rồi nhấn Enter…",tkSave:"Áp dụng",vMode:"Chế độ",langLab:"Ngôn ngữ",dateLab:"Ngày",tkPauseLab:"Dừng đầu",timer:"Hẹn giờ",alarm:"Báo thức",start:"Bắt đầu",almTest:"Thử",min:"Phút",sec:"Giây",add:"Thêm",halfLab:"Buổi",hAuto:"Tự động",allDay:"Cả ngày",wrLab:"Xếp hạng TG",wrRank:"Hạng",wrEmpty:"Chưa nhập (⚙ để nhập)",wrPH:"# 10m súng ngắn hơi nam\nWR | Tên | 589 | 97 98 ...\nJWR | Tên | 585\n1 | Tên | 588\n2 | Tên | 586"},
+  en:{plan:"Schedule",scores:"Last 3 days",ath:"Athlete",disc:"Event",series:"Series",total:"Total",streak:"Streak",am:"AM",pm:"PM",noRec:"No data",speed:"Speed",vAll:"All",vSched:"Schedule",vScore:"Scores",tkPH:"Type ticker text, press Enter…",tkSave:"Apply",vMode:"View",langLab:"Language",dateLab:"Date",tkPauseLab:"Start pause",timer:"Timer",alarm:"Alarm",start:"Start",almTest:"Test",min:"min",sec:"sec",add:"Add",halfLab:"Time",hAuto:"Auto",allDay:"All",wrLab:"World Rank",wrRank:"Rank",wrEmpty:"No data (enter in ⚙)",wrPH:"# 10m Air Pistol Men\nWR | Name | 589 | 97 98 ...\nJWR | Name | 585\n1 | Name | 588\n2 | Name | 586"}
 };
 const L = () => UI[LANG]||UI.vi;
 const pick = o => o ? (LANG==="en"?(o.en||o.vi||o.ko):LANG==="vi"?(o.vi||o.ko):(o.ko||o.vi)) : "";
@@ -407,6 +421,76 @@ function renderWeather(){
     else { ae.innerHTML="😷 "+WX_DATA.pm25+" <b>"+(AIR_TXT[LANG]||AIR_TXT.vi)[lv]+"</b>"; ae.style.color=AIR_COLOR[lv]; }
   }
 }
+// ===== 서명 폭 맞춤: 오륜기~국기 끝 가로폭에 한 줄로 =====
+function fitSig(){
+  const f=document.querySelector(".flags"), s=document.querySelector(".sig-name");
+  if(!f||!s) return;
+  const W=f.getBoundingClientRect().width; if(!W) return;
+  s.style.whiteSpace="nowrap"; s.style.display="inline-block"; s.style.letterSpacing="0px"; s.style.fontSize="";
+  let t=s.scrollWidth; const chars=(s.textContent||"").length;
+  if(t>W){ const base=parseFloat(getComputedStyle(s).fontSize)||12.5; s.style.fontSize=(base*W/t).toFixed(2)+"px"; t=s.scrollWidth; }
+  const extra=W-s.scrollWidth;
+  s.style.letterSpacing=(chars>1 && extra>0)?(extra/(chars-1)).toFixed(2)+"px":"0px";
+  s.style.width=W+"px";
+}
+
+// ===== 세계 랭킹·기록 세로 롤러 =====
+let WR_TEXT=localStorage.getItem("tc_wr_text")||"";
+function parseWR(text){
+  const events={}, order=[]; let cur=null;
+  const ensure=n=>{ if(!events[n]){events[n]={wr:null,jwr:null,ranks:[]};order.push(n);} return events[n]; };
+  (text||"").split(/\r?\n/).forEach(line=>{
+    const t=line.trim(); if(!t) return;
+    if(/^[#@]/.test(t)){ cur=t.replace(/^[#@]\s*/,"").trim(); if(cur)ensure(cur); return; }
+    if(!cur){ cur="기본"; ensure(cur); }
+    const p=t.split("|").map(x=>x.trim()); const head=(p[0]||"").toUpperCase();
+    const rec={name:p[1]||"",total:p[2]||"",series:p[3]||""};
+    if(head==="WR"||head==="세계신") ensure(cur).wr=rec;
+    else if(head==="JWR"||head==="JR"||head==="주니어신") ensure(cur).jwr=rec;
+    else if(/^\d+$/.test(head)) ensure(cur).ranks.push({name:p[1]||"",total:p[2]||"",series:p[3]||""});
+  });
+  return {events,order};
+}
+let WR=parseWR(WR_TEXT);
+let WR_SEL=localStorage.getItem("tc_wr_sel")||(WR.order[0]||"");
+let WR_SEC=parseFloat(localStorage.getItem("tc_wr_sec")||"4");
+let WR_SHOW={rank:localStorage.getItem("tc_wr_rank")!=="0", wr:localStorage.getItem("tc_wr_wr")!=="0", jwr:localStorage.getItem("tc_wr_jwr")!=="0"};
+function buildWRItems(){
+  const ev=WR.events[WR_SEL]; if(!ev) return [];
+  const out=[];
+  if(WR_SHOW.wr && ev.wr && ev.wr.name) out.push({kind:"wr",...ev.wr});
+  if(WR_SHOW.jwr && ev.jwr && ev.jwr.name) out.push({kind:"jwr",...ev.jwr});
+  if(WR_SHOW.rank) (ev.ranks||[]).slice(0,8).forEach((r,i)=>{ if(r.name) out.push({kind:"rank",rank:i+1,...r}); });
+  return out;
+}
+function wrItemHTML(it){
+  const badge = it.kind==="wr"?`<span class="wr-rk g">WR</span>`
+             : it.kind==="jwr"?`<span class="wr-rk g">JR</span>`
+             : `<span class="wr-rk">${it.rank}</span>`;
+  const ser = it.series?`<span class="wr-ser">${esc(it.series)}</span>`:"";
+  const tot = it.total?`<span class="wr-tot">${esc(it.total)}</span>`:"";
+  return `<div class="wr-item"><div class="wr-l1">${badge}<b>${esc(it.name||"")}</b></div><div class="wr-l2">${ser}${tot}</div></div>`;
+}
+let wrTimer=null, WR_I=0;
+function renderWR(){
+  const box=document.getElementById("wr"); if(!box) return;
+  clearInterval(wrTimer);
+  const items=buildWRItems();
+  if(!items.length){ box.innerHTML=`<div class="wr-empty">${esc(L().wrEmpty)}</div>`; return; }
+  const list=items.length>1?items.concat([items[0]]):items;
+  box.innerHTML=`<div class="wr-track" id="wr-track">${list.map(wrItemHTML).join("")}</div>`;
+  const track=document.getElementById("wr-track");
+  WR_I=0; track.style.transition="none"; track.style.transform="translateY(0)";
+  if(items.length<2) return;
+  const h=track.children[0].getBoundingClientRect().height||62;
+  wrTimer=setInterval(()=>{
+    WR_I++;
+    track.style.transition="transform .55s cubic-bezier(.4,0,.2,1)";
+    track.style.transform=`translateY(${-WR_I*h}px)`;
+    if(WR_I>=items.length){ setTimeout(()=>{ track.style.transition="none"; WR_I=0; track.style.transform="translateY(0)"; }, 560); }
+  }, Math.max(1,WR_SEC)*1000);
+}
+
 const sessOn = d => SESSIONS.filter(x=>x.date===d);
 
 // 플랩 숫자판 렌더(자리수 가변): 2자리마다 콜론, 변경된 자리만 플립
@@ -529,6 +613,14 @@ function renderPanel(){
   h+=`<div class="pn-row"><span class="pn-lab">⏱ ${esc(L().timer)}</span><input type="number" id="tm-min" class="tm-in" min="0" max="180" placeholder="${esc(L().min)}"><span class="pn-sub">:</span><input type="number" id="tm-sec" class="tm-in" min="0" max="59" placeholder="${esc(L().sec)}"><button class="tb" id="tm-start">▶ ${esc(L().start)}</button><button class="tb" id="tm-stop">■</button><button class="tb q" data-m="1">1'</button><button class="tb q" data-m="3">3'</button><button class="tb q" data-m="5">5'</button><button class="tb q" data-m="10">10'</button></div>`;
   h+=`<div class="pn-row"><span class="pn-lab">⏰ ${esc(L().alarm)}</span><input type="time" id="al-time" class="tm-in"><input type="number" id="al-dur" class="tm-in" min="0" max="180" placeholder="⏱${esc(L().min)}" title="알람 시 자동 시작할 타이머(분) · 선택"><button class="tb" id="al-add">➕ ${esc(L().add)}</button><button class="tb" id="al-test">🔔 ${esc(L().almTest)}</button>`
     +`<span class="alm-list">${ALARMS.map((a,i)=>`<span class="alm-chip${a.on?"":" off"}"><b>${esc(a.hhmm)}</b>${a.tsec>0?`<i class="alm-tm">⏱${Math.round(a.tsec/60)}′</i>`:""}<button class="alm-tog" data-i="${i}" title="켜기/끄기">${a.on?"🔔":"🔕"}</button><button class="alm-del" data-i="${i}" title="삭제">✕</button></span>`).join("")||`<span class="pn-sub">—</span>`}</span></div>`;
+  // 🌍 세계 랭킹·기록
+  h+=`<div class="pn-row"><span class="pn-lab">🌍 ${esc(L().wrLab)}</span>`
+    +`<select id="wr-ev" class="tm-in" style="width:auto">${WR.order.map(e=>`<option${e===WR_SEL?" selected":""}>${esc(e)}</option>`).join("")||`<option value="">—</option>`}</select>`
+    +`<span class="pn-sub">${esc(L().speed)}</span><input type="range" id="wr-sec" min="1" max="12" step="1" value="${WR_SEC}"><span class="pn-sub">${WR_SEC}s</span>`
+    +`<label class="al-tog"><input type="checkbox" id="wr-rank"${WR_SHOW.rank?" checked":""}> ${esc(L().wrRank)}</label>`
+    +`<label class="al-tog"><input type="checkbox" id="wr-wr"${WR_SHOW.wr?" checked":""}> WR</label>`
+    +`<label class="al-tog"><input type="checkbox" id="wr-jwr"${WR_SHOW.jwr?" checked":""}> JR</label></div>`;
+  h+=`<div class="pn-row"><span class="pn-lab"></span><textarea id="wr-text" class="wr-ta" placeholder="${esc(L().wrPH)}">${esc(WR_TEXT)}</textarea><button class="tb" id="wr-save">${esc(L().tkSave)}</button></div>`;
   document.getElementById("panel").innerHTML=h;
   const i=document.getElementById("pt-input"); if(i)i.value=localStorage.getItem("tc_ticker")||"";
   bindPanel(); applyPanel();
@@ -561,6 +653,11 @@ function bindPanel(){
   document.querySelectorAll("#panel .alm-tog").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; if(ALARMS[i]){ALARMS[i].on=!ALARMS[i].on; saveAlarms(); renderPanel();} });
   document.querySelectorAll("#panel .alm-del").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; ALARMS.splice(i,1); saveAlarms(); renderPanel(); });
   if(q("al-test"))q("al-test").onclick=()=>{ unlockAudio(); playBell(2); };
+  // 🌍 세계 랭킹·기록
+  if(q("wr-ev"))q("wr-ev").onchange=()=>{ WR_SEL=q("wr-ev").value; localStorage.setItem("tc_wr_sel",WR_SEL); renderWR(); };
+  if(q("wr-sec"))q("wr-sec").oninput=()=>{ WR_SEC=parseFloat(q("wr-sec").value); localStorage.setItem("tc_wr_sec",WR_SEC); renderPanel(); renderWR(); };
+  [["wr-rank","rank","tc_wr_rank"],["wr-wr","wr","tc_wr_wr"],["wr-jwr","jwr","tc_wr_jwr"]].forEach(([id,k,ls])=>{ if(q(id))q(id).onchange=()=>{ WR_SHOW[k]=q(id).checked; localStorage.setItem(ls,q(id).checked?"1":"0"); renderWR(); }; });
+  if(q("wr-save"))q("wr-save").onclick=()=>{ WR_TEXT=q("wr-text").value; localStorage.setItem("tc_wr_text",WR_TEXT); WR=parseWR(WR_TEXT); if(!WR.events[WR_SEL]) WR_SEL=WR.order[0]||""; localStorage.setItem("tc_wr_sel",WR_SEL); renderPanel(); renderWR(); };
 }
 
 // ===== 달력 =====
@@ -700,7 +797,7 @@ function animScroll(){
 }
 animScroll();
 
-function setLang(l){ LANG=l; localStorage.setItem("tc_lang",l); document.documentElement.lang=(l==="ko"?"ko":l==="en"?"en":"vi"); renderWeather(); if(document.getElementById("day").hidden) renderCal(); else { const k=CUR; buildDay(); showSlide(Math.min(k,SLIDES.length-1)); } }
+function setLang(l){ LANG=l; localStorage.setItem("tc_lang",l); document.documentElement.lang=(l==="ko"?"ko":l==="en"?"en":"vi"); renderWeather(); renderWR(); if(document.getElementById("day").hidden) renderCal(); else { const k=CUR; buildDay(); showSlide(Math.min(k,SLIDES.length-1)); } }
 function setView(v){ VIEW=v; localStorage.setItem("tc_view",v); if(!document.getElementById("day").hidden) buildDay(); }
 function setDisc(d){ DISC_SEL=d; localStorage.setItem("tc_disc",d); if(!document.getElementById("day").hidden) buildDay(); }
 function setHalf(h){ HALF_SEL=h; localStorage.setItem("tc_half",h); if(!document.getElementById("day").hidden) buildDay(); renderPanel(); }
@@ -719,10 +816,13 @@ async function boot(){
   if(sessOn(td).length || schedHas(td)) openDay(td); else renderCal();
   loadLiveSchedule().then(ok=>{ if(ok) rerenderKeep(); });   // 라이브 일정(느림) 도착 시 교체
   loadWeather();   // 현재 사격장 위치 + 실시간 날씨
+  renderWR();      // 세계 랭킹·기록 롤러
+  fitSig();        // 서명 폭 맞춤
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fitSig);
 }
 boot();
 setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
-let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(renderTicker,300); });
+let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(()=>{ renderTicker(); fitSig(); renderWR(); },300); });
 setInterval(async()=>{ try{ if(await loadData()) rerenderKeep(); }catch(e){} }, 60000);            // 점수(빠름) — 변경 시에만 재렌더
 setInterval(()=>{ loadLiveSchedule().then(ok=>{ if(ok) rerenderKeep(); }); }, 600000);            // 일정(느림·10분)
 </script>
