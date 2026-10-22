@@ -32,7 +32,7 @@ body{background:linear-gradient(180deg,#eef5fc,#e3ecf7 55%) fixed,var(--bg);colo
 
 /* ===== 상단 한 줄 통합 바 ===== */
 header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
-.brand{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:3px;flex:1;min-width:0;overflow:hidden;padding:5px 10px;border-radius:12px}
+.brand{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:3px;flex:0 0 auto;min-width:0;overflow:hidden;padding:5px 10px;border-radius:12px}
 .flags{display:flex;align-items:center;gap:12px}
 .ic{height:46px;width:auto;display:block}
 .flag{height:46px;border-radius:5px;box-shadow:0 2px 7px rgba(0,0,0,.22);border:1.5px solid rgba(255,255,255,.75)}
@@ -86,14 +86,14 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .speed span{font-size:calc(14px*var(--fz));color:var(--mut);font-weight:800;white-space:nowrap}
 .speed input{width:120px;accent-color:var(--acc)}
 .clock{cursor:pointer}
-.hend{flex:1;min-width:0;display:flex;align-items:center;gap:12px;justify-content:flex-end}
+.hend{flex:0 0 auto;min-width:0;display:flex;align-items:center;gap:12px;justify-content:flex-end}
 .wx{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:3px;font-weight:800;white-space:nowrap;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:7px 14px;box-shadow:var(--shadow)}
 .wx .wx-row{display:flex;align-items:center;gap:12px}
 .wx span{display:inline-flex;align-items:center;gap:5px;font-size:calc(16px*var(--fz));color:var(--tx)}
 .wx .wx-loc{color:var(--acc2)}
 @media (max-width:1180px){.wx .wx-c{display:none}}
 /* 단훈 안내 배너 (국기~시계 사이, 우→좌). VI 입력→KO/EN 자동번역 */
-.dt{flex:1 1 auto;min-width:0;display:flex;align-items:center;height:62px;overflow:hidden;padding:0 8px}
+.dt{flex:1 1 0;min-width:0;display:flex;align-items:center;height:62px;overflow:hidden;padding:0 14px}
 .dt-view{flex:1 1 auto;min-width:0;overflow:hidden;position:relative;
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
 .dt-track{display:inline-flex;align-items:center;white-space:nowrap;will-change:transform}
@@ -530,13 +530,13 @@ let dtKf=null;
 function renderDT(){
   const box=document.getElementById("dt"); if(!box) return;
   const d=dtGet();
-  if(!d || !(d.vi||d.ko||d.en)){ box.innerHTML=`<div class="dt-empty">${esc(L().dtEmpty)}</div>`; return; }
-  const parts=[];
-  if(d.vi)parts.push(`<span class="dt-e"><i>🇻🇳</i>${esc(d.vi)}</span>`);
-  if(d.ko)parts.push(`<span class="dt-e k"><i>🇰🇷</i>${esc(d.ko)}</span>`);
-  if(d.en)parts.push(`<span class="dt-e"><i>🇬🇧</i>${esc(d.en)}</span>`);
+  if(!d || !(d.vi||d.ko||d.en)){ box.innerHTML=""; return; }
+  const txt = d[LANG] || d.vi || d.ko || d.en || "";   // 선택 언어만 출력
+  if(!txt){ box.innerHTML=""; return; }
+  const flag = LANG==="ko"?"🇰🇷":LANG==="en"?"🇬🇧":"🇻🇳";
   const sep=`<span class="dt-sep">•</span>`;
-  const copy=`<span class="dt-copy">${parts.join(sep)+sep}</span>`;
+  const entry=`<span class="dt-e${LANG==="ko"?" k":""}"><i>${flag}</i>${esc(txt)}</span>`;
+  const copy=`<span class="dt-copy">${entry+sep}</span>`;
   box.innerHTML=`<div class="dt-view"><div class="dt-track" id="dt-track">${copy}${copy}</div></div>`;
   const track=document.getElementById("dt-track"), first=track.querySelector(".dt-copy"), w=first?first.getBoundingClientRect().width:0;
   if(!dtKf){ dtKf=document.createElement("style"); dtKf.id="dt-kf"; document.head.appendChild(dtKf); }
@@ -857,7 +857,7 @@ function animScroll(){
 }
 animScroll();
 
-function setLang(l){ LANG=l; localStorage.setItem("tc_lang",l); document.documentElement.lang=(l==="ko"?"ko":l==="en"?"en":"vi"); renderWeather(); renderWR(); if(document.getElementById("day").hidden) renderCal(); else { const k=CUR; buildDay(); showSlide(Math.min(k,SLIDES.length-1)); } }
+function setLang(l){ LANG=l; localStorage.setItem("tc_lang",l); document.documentElement.lang=(l==="ko"?"ko":l==="en"?"en":"vi"); renderWeather(); renderWR(); renderDT(); if(document.getElementById("day").hidden) renderCal(); else { const k=CUR; buildDay(); showSlide(Math.min(k,SLIDES.length-1)); } }
 function setView(v){ VIEW=v; localStorage.setItem("tc_view",v); if(!document.getElementById("day").hidden) buildDay(); }
 function setDisc(d){ DISC_SEL=d; localStorage.setItem("tc_disc",d); if(!document.getElementById("day").hidden) buildDay(); }
 function setHalf(h){ HALF_SEL=h; localStorage.setItem("tc_half",h); if(!document.getElementById("day").hidden) buildDay(); renderPanel(); }
