@@ -65,6 +65,11 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 @keyframes nflow{to{background-position:300% 0}}
 .nflaps .colon{font-family:'Oswald','Oswald Fallback',sans-serif;font-weight:700;font-size:calc(34px*var(--fz));color:#7ee0ff;text-shadow:0 0 8px #19b6ff,0 0 16px #0a84d6;padding:0 1px}
 .clock .date{display:flex;align-items:center;gap:9px;margin-top:6px;font-size:calc(16px*var(--fz));font-weight:700;color:var(--mut);font-variant-numeric:tabular-nums}
+/* 시계 하단 한 줄: 날짜 · 날씨 · 현재/체감 · 습도 · 미세먼지 (줄바꿈 없음) */
+.cstrip{display:flex;align-items:center;gap:11px;margin-top:6px;white-space:nowrap;justify-content:flex-end;font-size:calc(16px*var(--fz));font-weight:700;color:var(--mut);font-variant-numeric:tabular-nums}
+.cstrip .cdiv{color:var(--line2)}
+.cstrip .wx-loc{color:var(--acc2);font-weight:800}
+.cstrip span{display:inline-flex;align-items:center;gap:5px}
 .live{display:inline-flex;align-items:center;gap:5px;font-size:calc(13px*var(--fz));color:var(--good);font-weight:800}
 .dot{width:9px;height:9px;border-radius:50%;background:#2fbf71;box-shadow:0 0 0 0 rgba(47,191,113,.6);animation:pulse 2s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,191,113,.6)}70%{box-shadow:0 0 0 8px rgba(47,191,113,0)}100%{box-shadow:0 0 0 0 rgba(47,191,113,0)}}
@@ -98,6 +103,13 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .wr-l2{display:flex;align-items:center;gap:9px;font-size:calc(14px*var(--fz));color:var(--mut);font-variant-numeric:tabular-nums;white-space:nowrap}
 .wr-l2 .wr-ser{letter-spacing:.5px}
 .wr-l2 .wr-tot{font-size:calc(19px*var(--fz));font-weight:900;color:var(--gold2)}
+.wr-l1 .wr-rk.m1{background:linear-gradient(135deg,#e8c24a,#b47c12)}
+.wr-l1 .wr-rk.m2{background:linear-gradient(135deg,#cdd3db,#8a97a7)}
+.wr-l1 .wr-rk.m3{background:linear-gradient(135deg,#d99a5a,#9c5a2a)}
+.wr-l2 .wr-noc{font-weight:900;color:var(--acc2)}
+.wr-l2 .wr-unit{font-size:.72em;opacity:.6;font-weight:700}
+.wr-title b{color:var(--gold2)}
+.wr-title .wr-src{font-weight:800;color:var(--mut);font-size:calc(12px*var(--fz))}
 .wr-empty{height:62px;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:calc(13px*var(--fz));font-weight:700;opacity:.7}
 .wr-ta{flex:1;min-width:260px;min-height:92px;border:1px solid var(--line2);border-radius:9px;padding:8px 10px;font-size:calc(13px*var(--fz));font-family:inherit;line-height:1.5;color:var(--tx);background:var(--bg2);resize:vertical}
 .gear{width:46px;height:46px;border-radius:12px;border:1px solid var(--line2);background:var(--panel);color:var(--acc2);font-size:24px;cursor:pointer;line-height:1}
@@ -239,13 +251,17 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
     </div>
     <div class="wr" id="wr" aria-label="세계 랭킹·기록" title="세계 랭킹·기록"></div>
     <div class="hend">
-      <div class="wx" id="wx" role="group" aria-label="날씨 · 현재/체감 온도 · 미세먼지">
-        <div class="wx-row"><span class="wx-loc" id="wx-loc">📍 다낭</span><span class="wx-c" id="wx-c">—</span></div>
-        <div class="wx-row"><span class="wx-t" id="wx-t" title="현재/체감">—</span><span class="wx-h" id="wx-h">—</span><span class="wx-air" id="wx-air" title="미세먼지 PM2.5">😷 —</span></div>
-      </div>
       <div class="clock" id="clock" role="button" tabindex="0" aria-label="시계 — 누르면 타이머 시작/정지" title="숫자를 누르면 타이머 시작/정지">
         <div class="nflaps" id="c-time" aria-live="off"></div>
-        <div class="date"><span id="c-date">--/--/----</span></div>
+        <div class="cstrip" id="wx" aria-label="날짜 · 날씨 · 현재/체감 · 미세먼지">
+          <span id="c-date">--/--/----</span>
+          <span class="cdiv">·</span>
+          <span class="wx-loc" id="wx-loc">📍 다낭</span>
+          <span class="wx-c" id="wx-c">—</span>
+          <span class="wx-t" id="wx-t" title="현재/체감">—</span>
+          <span class="wx-h" id="wx-h">—</span>
+          <span class="wx-air" id="wx-air" title="미세먼지 PM2.5">😷 —</span>
+        </div>
       </div>
       <button class="gear" id="gear" title="설정" aria-label="설정 열기(타이머·알람·언어·일정)">⚙</button>
     </div>
@@ -434,42 +450,31 @@ function fitSig(){
   s.style.width=W+"px";
 }
 
-// ===== 세계 랭킹·기록 세로 롤러 =====
-let WR_TEXT=localStorage.getItem("tc_wr_text")||"";
-function parseWR(text){
-  const events={}, order=[]; let cur=null;
-  const ensure=n=>{ if(!events[n]){events[n]={wr:null,jwr:null,ranks:[]};order.push(n);} return events[n]; };
-  (text||"").split(/\r?\n/).forEach(line=>{
-    const t=line.trim(); if(!t) return;
-    if(/^[#@]/.test(t)){ cur=t.replace(/^[#@]\s*/,"").trim(); if(cur)ensure(cur); return; }
-    if(!cur){ cur="기본"; ensure(cur); }
-    const p=t.split("|").map(x=>x.trim()); const head=(p[0]||"").toUpperCase();
-    const rec={name:p[1]||"",total:p[2]||"",series:p[3]||""};
-    if(head==="WR"||head==="세계신") ensure(cur).wr=rec;
-    else if(head==="JWR"||head==="JR"||head==="주니어신") ensure(cur).jwr=rec;
-    else if(/^\d+$/.test(head)) ensure(cur).ranks.push({name:p[1]||"",total:p[2]||"",series:p[3]||""});
-  });
-  return {events,order};
-}
-let WR=parseWR(WR_TEXT);
-let WR_SEL=localStorage.getItem("tc_wr_sel")||(WR.order[0]||"");
+// ===== 세계 랭킹(ISSF 월간 자동 수집 worldrank.json) 세로 롤러 =====
+let WR_DATA={events:[],version:""};
+let WR_SEL=localStorage.getItem("tc_wr_sel")||"";
 let WR_SEC=parseFloat(localStorage.getItem("tc_wr_sec")||"4");
-let WR_SHOW={rank:localStorage.getItem("tc_wr_rank")!=="0", wr:localStorage.getItem("tc_wr_wr")!=="0", jwr:localStorage.getItem("tc_wr_jwr")!=="0"};
+function wrEvent(){ return WR_DATA.events.find(e=>e.code===WR_SEL)||WR_DATA.events[0]||null; }
+function wrLabelOf(e){ return (e&&e.label)?(e.label[LANG]||e.label.vi||e.label.en||e.code):(e?e.code:""); }
+async function loadWorldRank(){
+  try{ const j=await fetch("worldrank.json?"+Date.now(),{cache:"no-store"}).then(r=>r.json()); if(j&&Array.isArray(j.events)) WR_DATA=j; }catch(e){}
+  if(!WR_SEL || !WR_DATA.events.some(e=>e.code===WR_SEL)) WR_SEL=(WR_DATA.events[0]||{}).code||"";
+  if(!document.getElementById("panel").hidden) renderPanel();
+  renderWR();
+}
 function buildWRItems(){
-  const ev=WR.events[WR_SEL]; if(!ev) return [];
-  const out=[];
-  if(WR_SHOW.wr && ev.wr && ev.wr.name) out.push({kind:"wr",...ev.wr});
-  if(WR_SHOW.jwr && ev.jwr && ev.jwr.name) out.push({kind:"jwr",...ev.jwr});
-  if(WR_SHOW.rank) (ev.ranks||[]).slice(0,8).forEach((r,i)=>{ if(r.name) out.push({kind:"rank",rank:i+1,...r}); });
-  return out;
+  const ev=wrEvent(); if(!ev) return [];
+  const items=[{kind:"title",label:wrLabelOf(ev),ver:WR_DATA.version}];
+  (ev.ranks||[]).slice(0,8).forEach(r=>items.push({kind:"rank",rank:r.rank,name:r.name,noc:r.noc,points:r.points}));
+  return items.length>1?items:[];
 }
 function wrItemHTML(it){
-  const badge = it.kind==="wr"?`<span class="wr-rk g">WR</span>`
-             : it.kind==="jwr"?`<span class="wr-rk g">JR</span>`
-             : `<span class="wr-rk">${it.rank}</span>`;
-  const ser = it.series?`<span class="wr-ser">${esc(it.series)}</span>`:"";
-  const tot = it.total?`<span class="wr-tot">${esc(it.total)}</span>`:"";
-  return `<div class="wr-item"><div class="wr-l1">${badge}<b>${esc(it.name||"")}</b></div><div class="wr-l2">${ser}${tot}</div></div>`;
+  if(it.kind==="title")
+    return `<div class="wr-item wr-title"><div class="wr-l1"><span class="wr-rk g">🌍</span><b>${esc(it.label||"")}</b></div><div class="wr-l2"><span class="wr-src">ISSF · ${esc(it.ver||"")}</span></div></div>`;
+  const m=it.rank<=3?` m${it.rank}`:"";
+  const pts=(it.points!=null&&it.points!=="")?`<span class="wr-tot">${esc(String(it.points))}</span><span class="wr-unit">pts</span>`:"";
+  const noc=it.noc?`<span class="wr-noc">${esc(it.noc)}</span>`:"";
+  return `<div class="wr-item"><div class="wr-l1"><span class="wr-rk${m}">${it.rank}</span><b>${esc(it.name||"")}</b></div><div class="wr-l2">${noc}${pts}</div></div>`;
 }
 let wrTimer=null, WR_I=0;
 function renderWR(){
@@ -477,11 +482,10 @@ function renderWR(){
   clearInterval(wrTimer);
   const items=buildWRItems();
   if(!items.length){ box.innerHTML=`<div class="wr-empty">${esc(L().wrEmpty)}</div>`; return; }
-  const list=items.length>1?items.concat([items[0]]):items;
+  const list=items.concat([items[0]]);
   box.innerHTML=`<div class="wr-track" id="wr-track">${list.map(wrItemHTML).join("")}</div>`;
   const track=document.getElementById("wr-track");
   WR_I=0; track.style.transition="none"; track.style.transform="translateY(0)";
-  if(items.length<2) return;
   const h=track.children[0].getBoundingClientRect().height||62;
   wrTimer=setInterval(()=>{
     WR_I++;
@@ -613,14 +617,11 @@ function renderPanel(){
   h+=`<div class="pn-row"><span class="pn-lab">⏱ ${esc(L().timer)}</span><input type="number" id="tm-min" class="tm-in" min="0" max="180" placeholder="${esc(L().min)}"><span class="pn-sub">:</span><input type="number" id="tm-sec" class="tm-in" min="0" max="59" placeholder="${esc(L().sec)}"><button class="tb" id="tm-start">▶ ${esc(L().start)}</button><button class="tb" id="tm-stop">■</button><button class="tb q" data-m="1">1'</button><button class="tb q" data-m="3">3'</button><button class="tb q" data-m="5">5'</button><button class="tb q" data-m="10">10'</button></div>`;
   h+=`<div class="pn-row"><span class="pn-lab">⏰ ${esc(L().alarm)}</span><input type="time" id="al-time" class="tm-in"><input type="number" id="al-dur" class="tm-in" min="0" max="180" placeholder="⏱${esc(L().min)}" title="알람 시 자동 시작할 타이머(분) · 선택"><button class="tb" id="al-add">➕ ${esc(L().add)}</button><button class="tb" id="al-test">🔔 ${esc(L().almTest)}</button>`
     +`<span class="alm-list">${ALARMS.map((a,i)=>`<span class="alm-chip${a.on?"":" off"}"><b>${esc(a.hhmm)}</b>${a.tsec>0?`<i class="alm-tm">⏱${Math.round(a.tsec/60)}′</i>`:""}<button class="alm-tog" data-i="${i}" title="켜기/끄기">${a.on?"🔔":"🔕"}</button><button class="alm-del" data-i="${i}" title="삭제">✕</button></span>`).join("")||`<span class="pn-sub">—</span>`}</span></div>`;
-  // 🌍 세계 랭킹·기록
+  // 🌍 세계 랭킹(ISSF 자동) — 코치는 종목만 선택
   h+=`<div class="pn-row"><span class="pn-lab">🌍 ${esc(L().wrLab)}</span>`
-    +`<select id="wr-ev" class="tm-in" style="width:auto">${WR.order.map(e=>`<option${e===WR_SEL?" selected":""}>${esc(e)}</option>`).join("")||`<option value="">—</option>`}</select>`
+    +`<select id="wr-ev" class="tm-in" style="width:auto;max-width:230px">${WR_DATA.events.map(e=>`<option value="${esc(e.code)}"${e.code===WR_SEL?" selected":""}>${esc(wrLabelOf(e))}</option>`).join("")||`<option value="">${esc(L().wrEmpty)}</option>`}</select>`
     +`<span class="pn-sub">${esc(L().speed)}</span><input type="range" id="wr-sec" min="1" max="12" step="1" value="${WR_SEC}"><span class="pn-sub">${WR_SEC}s</span>`
-    +`<label class="al-tog"><input type="checkbox" id="wr-rank"${WR_SHOW.rank?" checked":""}> ${esc(L().wrRank)}</label>`
-    +`<label class="al-tog"><input type="checkbox" id="wr-wr"${WR_SHOW.wr?" checked":""}> WR</label>`
-    +`<label class="al-tog"><input type="checkbox" id="wr-jwr"${WR_SHOW.jwr?" checked":""}> JR</label></div>`;
-  h+=`<div class="pn-row"><span class="pn-lab"></span><textarea id="wr-text" class="wr-ta" placeholder="${esc(L().wrPH)}">${esc(WR_TEXT)}</textarea><button class="tb" id="wr-save">${esc(L().tkSave)}</button></div>`;
+    +`<span class="pn-sub">${WR_DATA.version?("ISSF "+esc(WR_DATA.version)):""}</span></div>`;
   document.getElementById("panel").innerHTML=h;
   const i=document.getElementById("pt-input"); if(i)i.value=localStorage.getItem("tc_ticker")||"";
   bindPanel(); applyPanel();
@@ -653,11 +654,9 @@ function bindPanel(){
   document.querySelectorAll("#panel .alm-tog").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; if(ALARMS[i]){ALARMS[i].on=!ALARMS[i].on; saveAlarms(); renderPanel();} });
   document.querySelectorAll("#panel .alm-del").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; ALARMS.splice(i,1); saveAlarms(); renderPanel(); });
   if(q("al-test"))q("al-test").onclick=()=>{ unlockAudio(); playBell(2); };
-  // 🌍 세계 랭킹·기록
+  // 🌍 세계 랭킹(ISSF 자동) — 종목 선택 + 속도만
   if(q("wr-ev"))q("wr-ev").onchange=()=>{ WR_SEL=q("wr-ev").value; localStorage.setItem("tc_wr_sel",WR_SEL); renderWR(); };
   if(q("wr-sec"))q("wr-sec").oninput=()=>{ WR_SEC=parseFloat(q("wr-sec").value); localStorage.setItem("tc_wr_sec",WR_SEC); renderPanel(); renderWR(); };
-  [["wr-rank","rank","tc_wr_rank"],["wr-wr","wr","tc_wr_wr"],["wr-jwr","jwr","tc_wr_jwr"]].forEach(([id,k,ls])=>{ if(q(id))q(id).onchange=()=>{ WR_SHOW[k]=q(id).checked; localStorage.setItem(ls,q(id).checked?"1":"0"); renderWR(); }; });
-  if(q("wr-save"))q("wr-save").onclick=()=>{ WR_TEXT=q("wr-text").value; localStorage.setItem("tc_wr_text",WR_TEXT); WR=parseWR(WR_TEXT); if(!WR.events[WR_SEL]) WR_SEL=WR.order[0]||""; localStorage.setItem("tc_wr_sel",WR_SEL); renderPanel(); renderWR(); };
 }
 
 // ===== 달력 =====
@@ -816,13 +815,14 @@ async function boot(){
   if(sessOn(td).length || schedHas(td)) openDay(td); else renderCal();
   loadLiveSchedule().then(ok=>{ if(ok) rerenderKeep(); });   // 라이브 일정(느림) 도착 시 교체
   loadWeather();   // 현재 사격장 위치 + 실시간 날씨
-  renderWR();      // 세계 랭킹·기록 롤러
+  loadWorldRank(); // 세계 랭킹(ISSF worldrank.json) 자동 로드 + 롤러
   fitSig();        // 서명 폭 맞춤
   if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fitSig);
 }
 boot();
 setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
 let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(()=>{ renderTicker(); fitSig(); renderWR(); },300); });
+setInterval(loadWorldRank, 6*3600*1000);   // 세계랭킹 월간 갱신 반영(6시간마다 재조회)
 setInterval(async()=>{ try{ if(await loadData()) rerenderKeep(); }catch(e){} }, 60000);            // 점수(빠름) — 변경 시에만 재렌더
 setInterval(()=>{ loadLiveSchedule().then(ok=>{ if(ok) rerenderKeep(); }); }, 600000);            // 일정(느림·10분)
 </script>
