@@ -132,6 +132,8 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .wr-empty{display:flex;align-items:center;color:var(--mut);font-size:calc(13px*var(--fz));font-weight:700;opacity:.7;padding:0 10px}
 .gear{width:46px;height:46px;border-radius:12px;border:1px solid var(--line2);background:var(--panel);color:var(--acc2);font-size:24px;cursor:pointer;line-height:1}
 .gear:hover{border-color:var(--acc);background:var(--accsoft)}
+.hbtns{display:flex;flex-direction:column;gap:6px;flex:0 0 auto}
+.gear.sm{width:38px;height:38px;font-size:19px}
 /* 설정 패널 */
 .panel{position:absolute;top:74px;left:50%;transform:translateX(-50%);z-index:60;background:var(--panel);border:1px solid var(--line2);border-radius:14px;box-shadow:0 18px 44px rgba(16,40,80,.30);padding:15px 18px;display:flex;flex-direction:column;gap:12px;min-width:min(620px,94vw)}
 .pn-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -174,6 +176,7 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .slide.active{opacity:1;pointer-events:auto}
 .card{height:100%;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 22px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:0}
 .slide-h{font-size:calc(17px*var(--fz));font-weight:800;margin-bottom:4px;display:flex;align-items:baseline;gap:9px}
+.slide-h .fb{color:var(--gold2);font-weight:800}
 .slide-h small{font-size:calc(17px*var(--fz));color:var(--mut);font-weight:700;font-variant-numeric:tabular-nums}
 .scroller{flex:1;overflow:hidden;min-height:0}
 .routine{font-size:calc(19px*var(--fz));font-weight:800;color:var(--gold2);background:var(--accsoft);border-radius:9px;padding:10px 15px;margin-bottom:12px}
@@ -282,8 +285,10 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
           <span class="wx-air" id="wx-air" title="미세먼지 PM2.5">😷 —</span>
         </div>
       </div>
-      <button class="gear" id="cal-btn" title="달력" aria-label="달력 열기">📅</button>
-      <button class="gear" id="gear" title="설정" aria-label="설정 열기(타이머·알람·언어·일정)">⚙</button>
+      <div class="hbtns">
+        <button class="gear sm" id="cal-btn" title="달력" aria-label="달력 열기">📅</button>
+        <button class="gear sm" id="gear" title="설정" aria-label="설정 열기(타이머·알람·언어·일정)">⚙</button>
+      </div>
     </div>
   </header>
 
@@ -403,6 +408,7 @@ async function loadLiveSchedule(){
 }
 async function loadStatic(){ if(SCHED._live)return; try{ const r=await fetch("schedule.json",{cache:"no-store"}); const j=r.ok?await r.json():null; if(j&&j.disc&&!SCHED._live)SCHED=j; }catch(e){} }
 const schedHas = d => Object.values(SCHED.disc||{}).some(m=>m&&m[d]);
+function latestSchedDate(){ let best=null; for(const dk in (SCHED.disc||{})){ for(const dt in SCHED.disc[dk]){ if(!best||dt>best) best=dt; } } return best; }
 function routineOf(d){ for(const k of (SCHED.order||Object.keys(SCHED.disc))){ const sc=SCHED.disc[k]&&SCHED.disc[k][d]; if(sc&&sc.routine&&pick(sc.routine))return pick(sc.routine); } return ""; }
 
 // ===== 현재 사격장 위치 + 실시간 날씨 (IP 위치 → Open-Meteo) =====
@@ -477,6 +483,7 @@ function fitSig(){
 let WR_DATA={events:[],version:""};
 let WR_SEL=localStorage.getItem("tc_wr_sel")||"";
 let WR_SPD=parseFloat(localStorage.getItem("tc_wr_spd")||"45");   // px/초(천천히)
+let WR_SHOW={rank:localStorage.getItem("tc_wr_rank")!=="0", rec:localStorage.getItem("tc_wr_rec")!=="0", comp:localStorage.getItem("tc_wr_comp")!=="0"};
 function wrEvent(){ return WR_DATA.events.find(e=>e.code===WR_SEL)||WR_DATA.events[0]||null; }
 function wrLabelOf(e){ return (e&&e.label)?(e.label[LANG]||e.label.vi||e.label.en||e.code):(e?e.code:""); }
 async function loadWorldRank(){
@@ -487,22 +494,24 @@ async function loadWorldRank(){
 }
 function wrEntriesHTML(ev){
   const out=[];
-  (ev.ranks||[]).slice(0,8).forEach(r=>{
+  if(WR_SHOW.rank) (ev.ranks||[]).slice(0,8).forEach(r=>{
     const m=r.rank<=3?` m${r.rank}`:"";
     const pts=(r.points!=null&&r.points!=="")?`<b class="wr-pt">${esc(String(r.points))}</b><span class="wr-pt-u">pts</span>`:"";
     const noc=r.noc?` <i>${esc(r.noc)}</i>`:"";
-    out.push(`<span class="wr-e"><span class="wr-rk${m}">${r.rank}</span>${esc(r.name||"")}${noc} ${pts}</span>`);
+    out.push(`<span class="wr-e"><span class="wr-rk g">${esc(L().wrRank)}</span><span class="wr-rk${m}">${r.rank}</span>${esc(r.name||"")}${noc} ${pts}</span>`);
   });
   const rec=ev.records||{}, rline=(lab,o)=> o?`<span class="wr-e wr-rec"><span class="wr-rk g">${esc(lab)}</span>${esc(o.name||"")} <i>${esc(o.noc||"")}</i> <b class="wr-pt">${esc(o.score||"")}</b></span>`:"";
-  if(rec.qwr) out.push(rline(L().wrWR, rec.qwr));
-  if(rec.wr) out.push(rline(L().wrWR+"·F", rec.wr));
-  if(rec.qwrj) out.push(rline(L().wrJWR, rec.qwrj));
-  if(rec.wrj) out.push(rline(L().wrJWR+"·F", rec.wrj));
+  if(WR_SHOW.rec){
+    if(rec.qwr) out.push(rline(L().wrWR, rec.qwr));
+    if(rec.wr) out.push(rline(L().wrWR+"·F", rec.wr));
+    if(rec.qwrj) out.push(rline(L().wrJWR, rec.qwrj));
+    if(rec.wrj) out.push(rline(L().wrJWR+"·F", rec.wrj));
+  }
   // C: 대회 예선 1~8위(시리즈+총점)
   const comp=ev.comp;
-  if(comp && comp.top && comp.top.length){
+  if(WR_SHOW.comp && comp && comp.top && comp.top.length){
     const clab=comp.label?(comp.label[LANG]||comp.label.vi||comp.label.en):"";
-    out.push(`<span class="wr-e wr-comp"><span class="wr-rk g">🏆 ${esc(clab)}</span></span>`);
+    out.push(`<span class="wr-e wr-comp"><span class="wr-rk g">🏆 ${esc(clab)} ${esc(L().vSched==="일정"?"예선":"Qual")}</span></span>`);
     comp.top.slice(0,8).forEach(c=>{
       const m=c.rank<=3?` m${c.rank}`:"";
       const ser=(c.series&&c.series.length)?`<span class="wr-ser">${esc(c.series.join(" "))}</span>`:"";
@@ -672,7 +681,11 @@ function renderPanel(){
   // 🌍 세계 랭킹(ISSF 자동) — 코치는 종목만 선택
   h+=`<div class="pn-row"><span class="pn-lab">🌍 ${esc(L().wrLab)}</span>`
     +`<select id="wr-ev" class="tm-in" style="width:auto;max-width:230px">${WR_DATA.events.map(e=>`<option value="${esc(e.code)}"${e.code===WR_SEL?" selected":""}>${esc(wrLabelOf(e))}</option>`).join("")||`<option value="">${esc(L().wrEmpty)}</option>`}</select>`
-    +`<span class="pn-sub">${esc(L().speed)}</span><input type="range" id="wr-spd" min="20" max="120" step="5" value="${WR_SPD}"><span class="pn-sub">${WR_SPD}px/s</span>`
+    +`<span class="pn-sub">${esc(L().speed)}</span><input type="range" id="wr-spd" min="20" max="120" step="5" value="${WR_SPD}"><span class="pn-sub">${WR_SPD}px/s</span></div>`;
+  h+=`<div class="pn-row"><span class="pn-lab"></span>`
+    +`<label class="al-tog"><input type="checkbox" id="wr-s-rank"${WR_SHOW.rank?" checked":""}> ${esc(L().wrRank)}</label>`
+    +`<label class="al-tog"><input type="checkbox" id="wr-s-rec"${WR_SHOW.rec?" checked":""}> ${esc(L().wrWR)}/${esc(L().wrJWR)}</label>`
+    +`<label class="al-tog"><input type="checkbox" id="wr-s-comp"${WR_SHOW.comp?" checked":""}> 🏆 ${esc((WR_DATA.events.find(e=>e.code===WR_SEL)||{}).comp?.label?.[LANG]||"대회")}</label>`
     +`<span class="pn-sub">${WR_DATA.version?("ISSF "+esc(WR_DATA.version)):""}</span></div>`;
   document.getElementById("panel").innerHTML=h;
   const i=document.getElementById("pt-input"); if(i)i.value=localStorage.getItem("tc_ticker")||"";
@@ -716,6 +729,7 @@ function bindPanel(){
   // 🌍 세계 랭킹(ISSF 자동) — 종목 선택 + 속도만
   if(q("wr-ev"))q("wr-ev").onchange=()=>{ WR_SEL=q("wr-ev").value; localStorage.setItem("tc_wr_sel",WR_SEL); renderWR(); };
   if(q("wr-spd"))q("wr-spd").oninput=()=>{ WR_SPD=parseFloat(q("wr-spd").value); localStorage.setItem("tc_wr_spd",WR_SPD); renderPanel(); renderWR(); };
+  [["wr-s-rank","rank","tc_wr_rank"],["wr-s-rec","rec","tc_wr_rec"],["wr-s-comp","comp","tc_wr_comp"]].forEach(([id,k,ls])=>{ if(q(id))q(id).onchange=()=>{ WR_SHOW[k]=q(id).checked; localStorage.setItem(ls,q(id).checked?"1":"0"); renderWR(); }; });
 }
 
 // ===== 달력 =====
@@ -755,17 +769,21 @@ function buildDay(){
   renderPanel();
   renderTicker();
   const half = HALF_SEL==="auto" ? (new Date().getHours()<12?"am":"pm") : HALF_SEL;
+  // 선택일에 일정이 없으면 가장 최근 일정일로 폴백(TV에 최신 훈련계획 표시)
+  const schedDate = schedHas(SEL) ? SEL : latestSchedDate();
+  const schedFallback = schedDate && schedDate!==SEL;
+  const effHalf = schedFallback ? "all" : half;   // 폴백(과거 일정)은 종일 표시
   SLIDES=[];
-  if(VIEW!=="score"){
+  if(VIEW!=="score" && schedDate){
     for(const disc of (SCHED.order||Object.keys(SCHED.disc))){
       if(DISC_SEL!=="all" && disc!==DISC_SEL) continue;
-      const sc=SCHED.disc[disc] && SCHED.disc[disc][SEL]; if(!sc) continue;
-      const rows=(sc.rows||[]).filter(r=>{ if(half==="all")return true; const h=parseInt((r.s||"").slice(0,2)); if(isNaN(h))return true; return half==="am"?h<12:h>=12; });
+      const sc=SCHED.disc[disc] && SCHED.disc[disc][schedDate]; if(!sc) continue;
+      const rows=(sc.rows||[]).filter(r=>{ if(effHalf==="all")return true; const h=parseInt((r.s||"").slice(0,2)); if(isNaN(h))return true; return effHalf==="am"?h<12:h>=12; });
       if(!rows.length) continue;
-      SLIDES.push({type:"sched",disc,routine:sc.routine,rows,half});
+      SLIDES.push({type:"sched",disc,routine:sc.routine,rows,half:effHalf,schedDate,fallback:schedFallback});
     }
   }
-  if(VIEW!=="score" && !SLIDES.some(s=>s.type==="sched")) SLIDES.push({type:"noplan"});   // 일정 미입력 안내
+  if(VIEW!=="score" && !SLIDES.some(s=>s.type==="sched")) SLIDES.push({type:"noplan"});   // 전체 일정 데이터 없음
   if(VIEW!=="sched") SLIDES.push({type:"scores"});
   if(!SLIDES.length) SLIDES.push({type:"scores"});
   renderSlides(); showSlide(0); restartTimer();
@@ -790,7 +808,8 @@ function slideHTML(s){
   }
   const half=s.half==="all"?L().allDay:(s.half==="am"?L().am:L().pm);
   const rows=s.rows.map(r=>`<div class="sched-row"><span class="t">${esc(r.s)}${r.e&&r.e!==r.s?"~"+esc(r.e):""}</span><span>${pick(r.ev)?`<span class="ev">${esc(pick(r.ev))}</span>`:""}${esc(pick(r.tr))}${pick(r.sh)?` <span class="shots">${esc(pick(r.sh))}</span>`:""}${pick(r.fc)?`<span class="foc"> · ${esc(pick(r.fc))}</span>`:""}</span></div>`).join("");
-  return `<div class="card"><div class="slide-h">📋 ${esc(s.disc)} · ${esc(L().plan)} <small>(${esc(half)})</small></div><div class="scroller">${rows}</div></div>`;
+  const fb=s.fallback?` <small class="fb">📅 ${esc(vnShort(s.schedDate))}</small>`:"";
+  return `<div class="card"><div class="slide-h">📋 ${esc(s.disc)} · ${esc(L().plan)} <small>(${esc(half)})</small>${fb}</div><div class="scroller">${rows}</div></div>`;
 }
 function renderSlides(){
   const box=document.getElementById("slides");
@@ -859,9 +878,8 @@ function animScroll(){
   const max=el.scrollHeight-el.clientHeight;
   if(max<=4){ el.scrollTop=0; return; }
   if(SST.pause>0){ SST.pause--; return; }
-  SST.pos+=SST.dir*SPEED;
-  if(SST.pos>=max){ SST.pos=max; SST.dir=-1; SST.pause=PAUSE; }
-  else if(SST.pos<=0){ SST.pos=0; SST.dir=1; SST.pause=PAUSE; }
+  SST.pos+=SPEED;
+  if(SST.pos>=max){ SST.pos=0; SST.pause=PAUSE; }   // 아래→위 한 방향 연속(끝 도달 시 처음으로, 반대방향 없음)
   el.scrollTop=SST.pos;
 }
 animScroll();
