@@ -92,26 +92,29 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .wx span{display:inline-flex;align-items:center;gap:5px;font-size:calc(16px*var(--fz));color:var(--tx)}
 .wx .wx-loc{color:var(--acc2)}
 @media (max-width:1180px){.wx .wx-c{display:none}}
-/* 세계 랭킹·기록 세로 롤러 (국기와 날씨 사이) */
-.wr{flex:0 1 auto;width:clamp(230px,24vw,380px);height:62px;overflow:hidden;position:relative;
-  -webkit-mask-image:linear-gradient(180deg,transparent,#000 24%,#000 76%,transparent);mask-image:linear-gradient(180deg,transparent,#000 24%,#000 76%,transparent)}
-.wr-track{display:flex;flex-direction:column;will-change:transform}
-.wr-item{height:62px;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:0 10px;box-sizing:border-box}
-.wr-l1{display:flex;align-items:center;gap:8px;font-size:calc(18px*var(--fz));font-weight:800;color:var(--acc2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.wr-l1 .wr-rk{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;min-width:23px;height:23px;border-radius:50%;background:var(--acc);color:#fff;font-size:calc(12px*var(--fz));font-weight:900}
-.wr-l1 .wr-rk.g{background:linear-gradient(135deg,#d99a1f,#b47c12)}
-.wr-l2{display:flex;align-items:center;gap:9px;font-size:calc(14px*var(--fz));color:var(--mut);font-variant-numeric:tabular-nums;white-space:nowrap}
-.wr-l2 .wr-ser{letter-spacing:.5px}
-.wr-l2 .wr-tot{font-size:calc(19px*var(--fz));font-weight:900;color:var(--gold2)}
-.wr-l1 .wr-rk.m1{background:linear-gradient(135deg,#e8c24a,#b47c12)}
-.wr-l1 .wr-rk.m2{background:linear-gradient(135deg,#cdd3db,#8a97a7)}
-.wr-l1 .wr-rk.m3{background:linear-gradient(135deg,#d99a5a,#9c5a2a)}
-.wr-l2 .wr-noc{font-weight:900;color:var(--acc2)}
-.wr-l2 .wr-unit{font-size:.72em;opacity:.6;font-weight:700}
-.wr-title b{color:var(--gold2)}
-.wr-title .wr-src{font-weight:800;color:var(--mut);font-size:calc(12px*var(--fz))}
-.wr-empty{height:62px;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:calc(13px*var(--fz));font-weight:700;opacity:.7}
-.wr-ta{flex:1;min-width:260px;min-height:92px;border:1px solid var(--line2);border-radius:9px;padding:8px 10px;font-size:calc(13px*var(--fz));font-family:inherit;line-height:1.5;color:var(--tx);background:var(--bg2);resize:vertical}
+/* 세계 랭킹·기록 가로 전광판 (우→좌). 종목 라벨은 좌측 고정 */
+.wr{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:12px;height:62px;overflow:hidden}
+.wr-fixed{flex:0 0 auto;display:flex;align-items:center;gap:7px;white-space:nowrap;
+  font-size:calc(17px*var(--fz));font-weight:900;color:var(--gold2);
+  background:var(--accsoft);border:1px solid var(--line2);border-radius:10px;padding:7px 12px}
+.wr-fixed .wr-glb{font-size:calc(18px*var(--fz))}
+.wr-fixed small{font-weight:700;color:var(--mut);font-size:calc(11px*var(--fz))}
+.wr-mview{flex:1 1 auto;min-width:0;overflow:hidden;position:relative;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 3%,#000 96%,transparent);mask-image:linear-gradient(90deg,transparent,#000 3%,#000 96%,transparent)}
+.wr-mtrack{display:inline-flex;align-items:center;white-space:nowrap;will-change:transform}
+.wr-copy{display:inline-flex;align-items:center}
+.wr-e{display:inline-flex;align-items:center;gap:7px;padding:0 20px;font-size:calc(18px*var(--fz));font-weight:800;color:var(--acc2);white-space:nowrap}
+.wr-e .wr-rk{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;border-radius:50%;background:var(--acc);color:#fff;font-size:calc(12px*var(--fz));font-weight:900}
+.wr-e .wr-rk.g{min-width:auto;height:auto;border-radius:7px;padding:2px 8px;background:linear-gradient(135deg,#d99a1f,#b47c12);font-size:calc(13px*var(--fz))}
+.wr-e .wr-rk.m1{background:linear-gradient(135deg,#e8c24a,#b47c12)}
+.wr-e .wr-rk.m2{background:linear-gradient(135deg,#cdd3db,#8a97a7)}
+.wr-e .wr-rk.m3{background:linear-gradient(135deg,#d99a5a,#9c5a2a)}
+.wr-e i{font-style:normal;font-weight:900;color:var(--mut);font-size:.82em}
+.wr-e .wr-pt{color:var(--gold2);font-weight:900;font-variant-numeric:tabular-nums}
+.wr-e .wr-pt-u{font-size:.68em;opacity:.55;font-weight:700}
+.wr-e.wr-rec{color:#9a6a10}
+.wr-sep{color:var(--line2);padding:0 2px;font-size:calc(13px*var(--fz))}
+.wr-empty{display:flex;align-items:center;color:var(--mut);font-size:calc(13px*var(--fz));font-weight:700;opacity:.7;padding:0 10px}
 .gear{width:46px;height:46px;border-radius:12px;border:1px solid var(--line2);background:var(--panel);color:var(--acc2);font-size:24px;cursor:pointer;line-height:1}
 .gear:hover{border-color:var(--acc);background:var(--accsoft)}
 /* 설정 패널 */
@@ -181,6 +184,7 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .series .s-bad{color:#d62828;font-weight:900}
 .series .s-blink{color:var(--good);font-weight:900;animation:blinkhi .8s ease-in-out infinite}
 .total{font-weight:800;font-size:calc(29px*var(--fz))}
+.total .tot-raw{display:block;font-size:calc(12px*var(--fz));font-weight:700;color:var(--mut);margin-top:1px}
 .d10{color:var(--gold2);font-weight:900}
 .dlow{color:#d62828;font-weight:900}
 .lng span{display:inline-block;min-width:32px;background:#1f9d57;color:#fff;font-weight:900;border-radius:7px;padding:2px 8px;font-size:calc(22px*var(--fz))}
@@ -263,6 +267,7 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
           <span class="wx-air" id="wx-air" title="미세먼지 PM2.5">😷 —</span>
         </div>
       </div>
+      <button class="gear" id="cal-btn" title="달력" aria-label="달력 열기">📅</button>
       <button class="gear" id="gear" title="설정" aria-label="설정 열기(타이머·알람·언어·일정)">⚙</button>
     </div>
   </header>
@@ -304,9 +309,9 @@ let DISC_SEL=localStorage.getItem("tc_disc")||"all";   // 종목 선택: all/10m
 let HALF_SEL=localStorage.getItem("tc_half")||"auto";  // 시간대: auto/am/pm/all
 let SPEED=parseFloat(localStorage.getItem("tc_speed")||"0.25");
 const UI={
-  ko:{plan:"일정",scores:"최근 3일",ath:"선수",disc:"종목",series:"시리즈",total:"총점",streak:"연속",am:"오전",pm:"오후",noRec:"기록 없음",speed:"속도",vAll:"전체",vSched:"일정",vScore:"점수",tkPH:"전광판 문구 입력 후 Enter…",tkSave:"적용",vMode:"보기",langLab:"언어",dateLab:"날짜",tkPauseLab:"시작멈춤",timer:"타이머",alarm:"알람",start:"시작",almTest:"테스트",min:"분",sec:"초",add:"추가",halfLab:"시간대",hAuto:"자동",allDay:"전체",wrLab:"세계랭킹",wrRank:"랭킹",wrEmpty:"세계랭킹 미입력 (⚙에서 입력)",wrPH:"# 10m 공기권총 남자\nWR | 이름 | 589 | 97 98 ...\nJWR | 이름 | 585\n1 | 이름 | 588\n2 | 이름 | 586"},
-  vi:{plan:"Lịch tập",scores:"3 ngày gần nhất",ath:"VĐV",disc:"Nội dung",series:"Loạt",total:"Tổng",streak:"Chuỗi",am:"Sáng",pm:"Chiều",noRec:"Không có dữ liệu",speed:"Tốc độ",vAll:"Tất cả",vSched:"Lịch",vScore:"Điểm",tkPH:"Nhập dòng chữ chạy rồi nhấn Enter…",tkSave:"Áp dụng",vMode:"Chế độ",langLab:"Ngôn ngữ",dateLab:"Ngày",tkPauseLab:"Dừng đầu",timer:"Hẹn giờ",alarm:"Báo thức",start:"Bắt đầu",almTest:"Thử",min:"Phút",sec:"Giây",add:"Thêm",halfLab:"Buổi",hAuto:"Tự động",allDay:"Cả ngày",wrLab:"Xếp hạng TG",wrRank:"Hạng",wrEmpty:"Chưa nhập (⚙ để nhập)",wrPH:"# 10m súng ngắn hơi nam\nWR | Tên | 589 | 97 98 ...\nJWR | Tên | 585\n1 | Tên | 588\n2 | Tên | 586"},
-  en:{plan:"Schedule",scores:"Last 3 days",ath:"Athlete",disc:"Event",series:"Series",total:"Total",streak:"Streak",am:"AM",pm:"PM",noRec:"No data",speed:"Speed",vAll:"All",vSched:"Schedule",vScore:"Scores",tkPH:"Type ticker text, press Enter…",tkSave:"Apply",vMode:"View",langLab:"Language",dateLab:"Date",tkPauseLab:"Start pause",timer:"Timer",alarm:"Alarm",start:"Start",almTest:"Test",min:"min",sec:"sec",add:"Add",halfLab:"Time",hAuto:"Auto",allDay:"All",wrLab:"World Rank",wrRank:"Rank",wrEmpty:"No data (enter in ⚙)",wrPH:"# 10m Air Pistol Men\nWR | Name | 589 | 97 98 ...\nJWR | Name | 585\n1 | Name | 588\n2 | Name | 586"}
+  ko:{plan:"일정",scores:"최근 3일",ath:"선수",disc:"종목",series:"시리즈",total:"총점",conv60:"60발환산",streak:"연속",am:"오전",pm:"오후",noRec:"기록 없음",speed:"속도",vAll:"전체",vSched:"일정",vScore:"점수",tkPH:"전광판 문구 입력 후 Enter…",tkSave:"적용",vMode:"보기",langLab:"언어",dateLab:"날짜",tkPauseLab:"시작멈춤",timer:"타이머",alarm:"알람",start:"시작",almTest:"테스트",min:"분",sec:"초",add:"추가",halfLab:"시간대",hAuto:"자동",allDay:"전체",wrLab:"세계랭킹",wrRank:"랭킹",wrEmpty:"세계랭킹 로딩 중…",wrWR:"세계신",wrJWR:"주니어신"},
+  vi:{plan:"Lịch tập",scores:"3 ngày gần nhất",ath:"VĐV",disc:"Nội dung",series:"Loạt",total:"Tổng",conv60:"Quy đổi 60",streak:"Chuỗi",am:"Sáng",pm:"Chiều",noRec:"Không có dữ liệu",speed:"Tốc độ",vAll:"Tất cả",vSched:"Lịch",vScore:"Điểm",tkPH:"Nhập dòng chữ chạy rồi nhấn Enter…",tkSave:"Áp dụng",vMode:"Chế độ",langLab:"Ngôn ngữ",dateLab:"Ngày",tkPauseLab:"Dừng đầu",timer:"Hẹn giờ",alarm:"Báo thức",start:"Bắt đầu",almTest:"Thử",min:"Phút",sec:"Giây",add:"Thêm",halfLab:"Buổi",hAuto:"Tự động",allDay:"Cả ngày",wrLab:"Xếp hạng TG",wrRank:"Hạng",wrEmpty:"Đang tải…",wrWR:"KLTG",wrJWR:"KL Trẻ"},
+  en:{plan:"Schedule",scores:"Last 3 days",ath:"Athlete",disc:"Event",series:"Series",total:"Total",conv60:"60-shot",streak:"Streak",am:"AM",pm:"PM",noRec:"No data",speed:"Speed",vAll:"All",vSched:"Schedule",vScore:"Scores",tkPH:"Type ticker text, press Enter…",tkSave:"Apply",vMode:"View",langLab:"Language",dateLab:"Date",tkPauseLab:"Start pause",timer:"Timer",alarm:"Alarm",start:"Start",almTest:"Test",min:"min",sec:"sec",add:"Add",halfLab:"Time",hAuto:"Auto",allDay:"All",wrLab:"World Rank",wrRank:"Rank",wrEmpty:"Loading…",wrWR:"WR",wrJWR:"Jr WR"}
 };
 const L = () => UI[LANG]||UI.vi;
 const pick = o => o ? (LANG==="en"?(o.en||o.vi||o.ko):LANG==="vi"?(o.vi||o.ko):(o.ko||o.vi)) : "";
@@ -450,10 +455,10 @@ function fitSig(){
   s.style.width=W+"px";
 }
 
-// ===== 세계 랭킹(ISSF 월간 자동 수집 worldrank.json) 세로 롤러 =====
+// ===== 세계 랭킹·기록(ISSF 자동) 가로 전광판(우→좌), 종목 라벨 고정 =====
 let WR_DATA={events:[],version:""};
 let WR_SEL=localStorage.getItem("tc_wr_sel")||"";
-let WR_SEC=parseFloat(localStorage.getItem("tc_wr_sec")||"4");
+let WR_SPD=parseFloat(localStorage.getItem("tc_wr_spd")||"45");   // px/초(천천히)
 function wrEvent(){ return WR_DATA.events.find(e=>e.code===WR_SEL)||WR_DATA.events[0]||null; }
 function wrLabelOf(e){ return (e&&e.label)?(e.label[LANG]||e.label.vi||e.label.en||e.code):(e?e.code:""); }
 async function loadWorldRank(){
@@ -462,37 +467,41 @@ async function loadWorldRank(){
   if(!document.getElementById("panel").hidden) renderPanel();
   renderWR();
 }
-function buildWRItems(){
-  const ev=wrEvent(); if(!ev) return [];
-  const items=[{kind:"title",label:wrLabelOf(ev),ver:WR_DATA.version}];
-  (ev.ranks||[]).slice(0,8).forEach(r=>items.push({kind:"rank",rank:r.rank,name:r.name,noc:r.noc,points:r.points}));
-  return items.length>1?items:[];
+function wrEntriesHTML(ev){
+  const out=[];
+  (ev.ranks||[]).slice(0,8).forEach(r=>{
+    const m=r.rank<=3?` m${r.rank}`:"";
+    const pts=(r.points!=null&&r.points!=="")?`<b class="wr-pt">${esc(String(r.points))}</b><span class="wr-pt-u">pts</span>`:"";
+    const noc=r.noc?` <i>${esc(r.noc)}</i>`:"";
+    out.push(`<span class="wr-e"><span class="wr-rk${m}">${r.rank}</span>${esc(r.name||"")}${noc} ${pts}</span>`);
+  });
+  const rec=ev.records||{}, rline=(lab,o)=> o?`<span class="wr-e wr-rec"><span class="wr-rk g">${esc(lab)}</span>${esc(o.name||"")} <i>${esc(o.noc||"")}</i> <b class="wr-pt">${esc(o.score||"")}</b></span>`:"";
+  if(rec.qwr) out.push(rline(L().wrWR, rec.qwr));
+  if(rec.wr) out.push(rline(L().wrWR+"·F", rec.wr));
+  if(rec.qwrj) out.push(rline(L().wrJWR, rec.qwrj));
+  if(rec.wrj) out.push(rline(L().wrJWR+"·F", rec.wrj));
+  return out;
 }
-function wrItemHTML(it){
-  if(it.kind==="title")
-    return `<div class="wr-item wr-title"><div class="wr-l1"><span class="wr-rk g">🌍</span><b>${esc(it.label||"")}</b></div><div class="wr-l2"><span class="wr-src">ISSF · ${esc(it.ver||"")}</span></div></div>`;
-  const m=it.rank<=3?` m${it.rank}`:"";
-  const pts=(it.points!=null&&it.points!=="")?`<span class="wr-tot">${esc(String(it.points))}</span><span class="wr-unit">pts</span>`:"";
-  const noc=it.noc?`<span class="wr-noc">${esc(it.noc)}</span>`:"";
-  return `<div class="wr-item"><div class="wr-l1"><span class="wr-rk${m}">${it.rank}</span><b>${esc(it.name||"")}</b></div><div class="wr-l2">${noc}${pts}</div></div>`;
-}
-let wrTimer=null, WR_I=0;
+let wrKf=null;
 function renderWR(){
   const box=document.getElementById("wr"); if(!box) return;
-  clearInterval(wrTimer);
-  const items=buildWRItems();
-  if(!items.length){ box.innerHTML=`<div class="wr-empty">${esc(L().wrEmpty)}</div>`; return; }
-  const list=items.concat([items[0]]);
-  box.innerHTML=`<div class="wr-track" id="wr-track">${list.map(wrItemHTML).join("")}</div>`;
-  const track=document.getElementById("wr-track");
-  WR_I=0; track.style.transition="none"; track.style.transform="translateY(0)";
-  const h=track.children[0].getBoundingClientRect().height||62;
-  wrTimer=setInterval(()=>{
-    WR_I++;
-    track.style.transition="transform .55s cubic-bezier(.4,0,.2,1)";
-    track.style.transform=`translateY(${-WR_I*h}px)`;
-    if(WR_I>=items.length){ setTimeout(()=>{ track.style.transition="none"; WR_I=0; track.style.transform="translateY(0)"; }, 560); }
-  }, Math.max(1,WR_SEC)*1000);
+  const ev=wrEvent();
+  if(!ev){ box.innerHTML=`<div class="wr-empty">${esc(L().wrEmpty)}</div>`; return; }
+  const entries=wrEntriesHTML(ev);
+  const sep=`<span class="wr-sep">◆</span>`;
+  const fixed=`<div class="wr-fixed"><span class="wr-glb">🌍</span>${esc(wrLabelOf(ev))}<small>ISSF ${esc(WR_DATA.version||"")}</small></div>`;
+  if(!entries.length){ box.innerHTML=fixed+`<div class="wr-mview"><div class="wr-empty">${esc(L().wrEmpty)}</div></div>`; return; }
+  const copy=`<span class="wr-copy">${entries.join(sep)+sep}</span>`;
+  box.innerHTML=fixed+`<div class="wr-mview"><div class="wr-mtrack" id="wr-mtrack">${copy}${copy}</div></div>`;
+  const track=document.getElementById("wr-mtrack");
+  const first=track.querySelector(".wr-copy");
+  const w=first?first.getBoundingClientRect().width:0;
+  if(!wrKf){ wrKf=document.createElement("style"); wrKf.id="wr-kf"; document.head.appendChild(wrKf); }
+  if(w<=1){ track.style.animation="none"; return; }
+  const dur=w/Math.max(10,WR_SPD);
+  wrKf.textContent=`@keyframes wrmarq{from{transform:translateX(0)}to{transform:translateX(-${w}px)}}`;
+  track.style.animation="none"; void track.offsetWidth;   // 재시작(숨겨진 창에서도 동작)
+  track.style.animation=`wrmarq ${dur}s linear infinite`;
 }
 
 const sessOn = d => SESSIONS.filter(x=>x.date===d);
@@ -620,7 +629,7 @@ function renderPanel(){
   // 🌍 세계 랭킹(ISSF 자동) — 코치는 종목만 선택
   h+=`<div class="pn-row"><span class="pn-lab">🌍 ${esc(L().wrLab)}</span>`
     +`<select id="wr-ev" class="tm-in" style="width:auto;max-width:230px">${WR_DATA.events.map(e=>`<option value="${esc(e.code)}"${e.code===WR_SEL?" selected":""}>${esc(wrLabelOf(e))}</option>`).join("")||`<option value="">${esc(L().wrEmpty)}</option>`}</select>`
-    +`<span class="pn-sub">${esc(L().speed)}</span><input type="range" id="wr-sec" min="1" max="12" step="1" value="${WR_SEC}"><span class="pn-sub">${WR_SEC}s</span>`
+    +`<span class="pn-sub">${esc(L().speed)}</span><input type="range" id="wr-spd" min="20" max="120" step="5" value="${WR_SPD}"><span class="pn-sub">${WR_SPD}px/s</span>`
     +`<span class="pn-sub">${WR_DATA.version?("ISSF "+esc(WR_DATA.version)):""}</span></div>`;
   document.getElementById("panel").innerHTML=h;
   const i=document.getElementById("pt-input"); if(i)i.value=localStorage.getItem("tc_ticker")||"";
@@ -656,7 +665,7 @@ function bindPanel(){
   if(q("al-test"))q("al-test").onclick=()=>{ unlockAudio(); playBell(2); };
   // 🌍 세계 랭킹(ISSF 자동) — 종목 선택 + 속도만
   if(q("wr-ev"))q("wr-ev").onchange=()=>{ WR_SEL=q("wr-ev").value; localStorage.setItem("tc_wr_sel",WR_SEL); renderWR(); };
-  if(q("wr-sec"))q("wr-sec").oninput=()=>{ WR_SEC=parseFloat(q("wr-sec").value); localStorage.setItem("tc_wr_sec",WR_SEC); renderPanel(); renderWR(); };
+  if(q("wr-spd"))q("wr-spd").oninput=()=>{ WR_SPD=parseFloat(q("wr-spd").value); localStorage.setItem("tc_wr_spd",WR_SPD); renderPanel(); renderWR(); };
 }
 
 // ===== 달력 =====
@@ -714,13 +723,13 @@ function slideHTML(s){
   if(s.type==="scores"){
     const days=[0,1,2].map(k=>{const x=new Date(SEL+"T00:00:00");x.setDate(x.getDate()-k);return iso(x);});
     let body="",any=false;
-    for(const dt of days){ const ss=sessOn(dt).slice().sort((a,b)=>(b.total||0)-(a.total||0)); if(!ss.length)continue; any=true;
+    for(const dt of days){ const ss=sessOn(dt).slice().sort((a,b)=>conv60(b)-conv60(a)); if(!ss.length)continue; any=true;
       body+=`<div class="daygroup"><div class="daygroup-h">${vnShort(dt)}${dt===SEL?' <span class="sel">●</span>':''}</div>`+
-        `<table class="tbl"><thead><tr><th class="l">${esc(L().ath)}</th><th>${esc(L().disc)}</th><th class="l">${esc(L().series)}</th><th>${esc(L().total)}</th><th>10</th><th>9</th><th class="rd">8</th><th class="rd">7</th><th class="rd">6↓</th><th>${esc(L().streak)}</th></tr></thead><tbody>`+
+        `<table class="tbl"><thead><tr><th class="l">${esc(L().ath)}</th><th>${esc(L().disc)}</th><th class="l">${esc(L().series)}</th><th>${esc(L().conv60)}</th><th>10</th><th>9</th><th class="rd">8</th><th class="rd">7</th><th class="rd">6↓</th><th>${esc(L().streak)}</th></tr></thead><tbody>`+
         ss.map(x=>{const d=x.dist||[];const hd=d.length>0;const d6=hd?d.slice(4,11).reduce((s,v)=>s+(v||0),0):null;
           const serHTML=x.series.length?x.series.map(v=>{let c="";if(v>=99)c="s-blink";else if(v>=96)c="s-good";else if(v<=94)c="s-bad";return `<span class="sv ${c}">${v}</span>`;}).join(""):"—";
           const lngHTML=x.long10!=null?`<span class="${x.long10>=10?'blink10':''}">${x.long10}</span>`:"—";
-          return `<tr><td class="l ath">${esc(x.name)}</td><td><span class="disc" style="background:${DISC_COLOR[x.dk]||'#888'}">${esc(discLabel(x))}</span></td><td class="l series">${serHTML}</td><td class="total">${fmt(x.total)}</td><td class="d10">${d[0]!=null?d[0]:"—"}</td><td>${d[1]!=null?d[1]:"—"}</td><td class="dlow">${d[2]!=null?d[2]:"—"}</td><td class="dlow">${d[3]!=null?d[3]:"—"}</td><td class="dlow">${d6!=null?d6:"—"}</td><td class="lng">${lngHTML}</td></tr>`;}).join("")+
+          return `<tr><td class="l ath">${esc(x.name)}</td><td><span class="disc" style="background:${DISC_COLOR[x.dk]||'#888'}">${esc(discLabel(x))}</span></td><td class="l series">${serHTML}</td><td class="total">${fmt(conv60(x))}<span class="tot-raw">${fmt(x.total)}·${x.series.length*10||"?"}발</span></td><td class="d10">${d[0]!=null?d[0]:"—"}</td><td>${d[1]!=null?d[1]:"—"}</td><td class="dlow">${d[2]!=null?d[2]:"—"}</td><td class="dlow">${d[3]!=null?d[3]:"—"}</td><td class="dlow">${d6!=null?d6:"—"}</td><td class="lng">${lngHTML}</td></tr>`;}).join("")+
         `</tbody></table></div>`;
     }
     return `<div class="card"><div class="slide-h">📊 ${esc(L().scores)} <small>${vnShort(iso(new Date(new Date(SEL+"T00:00:00").getTime()-2*864e5)))}~${vnShort(SEL)}</small></div><div class="scroller">${any?body:`<div class="nodata">${esc(L().noRec)}</div>`}</div></div>`;
@@ -746,6 +755,8 @@ function showSlide(i){
 }
 function restartTimer(){ clearInterval(slideTimer); if(SLIDES.length>1) slideTimer=setInterval(()=>showSlide(CUR+1), SLIDE_MS); }
 const fmt = v => Number.isInteger(v)?v:(Math.round(v*10)/10);
+// 60발 환산 평균: 세션 발수(시리즈수×10)가 달라도 공정 비교. 발수 모르면 총점 그대로.
+function conv60(x){ const shots=(x.series&&x.series.length)?x.series.length*10:0; return shots>0?Math.round(x.total/shots*60*10)/10:x.total; }
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 // LED 전광판 티커: 수동 입력(localStorage) 우선, 없으면 당일 routine. 우→좌 연속 스크롤.
 let TK_SPEED=parseFloat(localStorage.getItem("tc_tkspeed")||"60");   // px/초 (조절 가능)
@@ -808,6 +819,7 @@ async function boot(){
   _clk.onclick=toggleTimer;   // 시계 숫자 탭 = 타이머 시작/정지
   _clk.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); toggleTimer(); } };
   document.getElementById("gear").onclick=togglePanel;    // ⚙ = 설정(타이머 시간·알람 등)
+  const _calb=document.getElementById("cal-btn"); if(_calb)_calb.onclick=()=>{ clearInterval(slideTimer); renderCal(); };   // 📅 = 달력
   document.addEventListener("click",e=>{ if(!PANEL_OPEN)return; const p=document.getElementById("panel"); if(p && !p.contains(e.target) && !e.target.closest("#clock,#gear")){ PANEL_OPEN=false; applyPanel(); } });
   try{ await loadData(); }catch(e){ document.getElementById("cal-grid").innerHTML=`<div class="err" style="grid-column:1/-1">${esc(e.message)}</div>`; }
   await loadStatic();   // 즉시 기준(정적) — 라이브는 느리므로 먼저 표시

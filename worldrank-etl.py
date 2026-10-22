@@ -7,6 +7,7 @@ import os, re, json, io, datetime, subprocess, tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'web', 'training-check', 'worldrank.json')
 PAGE = 'https://www.issf-sports.org/competitions/worldranking'
+RECORDS_PAGE = 'https://www.issf-sports.org/competitions/records'
 UA = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -56,6 +57,32 @@ def latest_xlsx_url():
     return url, links[-1][1]
 
 
+def parse_records(html):
+    """ISSF 기록 페이지 → {종목제목(en): {WR/QWR/WRJ/QWRJ: {score,name,noc}}}. 개인기록만(팀 제외)."""
+    recs = {}
+    parts = re.split(r'<h2[^>]*>(.*?)</h2>', html)
+    for k in range(1, len(parts), 2):
+        title = re.sub(r'<[^>]+>', '', parts[k]).strip()
+        content = parts[k + 1] if k + 1 < len(parts) else ''
+        out = {}
+        for chunk in content.split('<div class="grid')[1:]:
+            mt = re.search(r'<div>([A-Z]{2,5})</div>', chunk)
+            if not mt:
+                continue
+            typ = mt.group(1)
+            if typ not in ('WR', 'QWR', 'WRJ', 'QWRJ') or typ in out:
+                continue
+            ms = re.search(r'text-center">([\d.]+)<', chunk)
+            mn = re.search(r'<a[^>]*>([^<]+)</a>', chunk)   # 개인(팀은 <a> 없음→제외)
+            mnoc = re.search(r'alt="([A-Z]{3})"', chunk)
+            if not (ms and mn):
+                continue
+            out[typ] = {'score': ms.group(1), 'name': mn.group(1).strip(), 'noc': mnoc.group(1) if mnoc else ''}
+        if out:
+            recs[title] = out
+    return recs
+
+
 def build():
     import openpyxl
     url, datestr = latest_xlsx_url()
@@ -90,12 +117,31 @@ def build():
             pass
         events.setdefault(ev, []).append({'rank': rank, 'name': name, 'noc': noc, 'points': pts})
 
+    # 세계/주니어 기록(실패해도 랭킹은 진행)
+    records = {}
+    try:
+        records = parse_records(fetch(RECORDS_PAGE))
+    except Exception as e:
+        print('  (records fetch failed:', e, ')')
+
     codes = [c for c in ORDER if c in events] + [c for c in events if c not in ORDER]
-    out_events = [{
-        'code': code,
-        'label': LABELS.get(code, {'ko': code, 'vi': code, 'en': code}),
-        'ranks': sorted(events[code], key=lambda x: x['rank'])[:TOPN],
-    } for code in codes]
+    out_events = []
+    for code in codes:
+        lab = LABELS.get(code, {'ko': code, 'vi': code, 'en': code})
+        en = lab['en']
+        sr = records.get(en, {})          # 시니어: WR(결선)·QWR(본선)
+        jr = records.get(en + ' Junior', {})  # 주니어: WRJ·QWRJ
+        rec = {}
+        if sr.get('QWR'): rec['qwr'] = sr['QWR']
+        if sr.get('WR'): rec['wr'] = sr['WR']
+        if jr.get('QWRJ'): rec['qwrj'] = jr['QWRJ']
+        if jr.get('WRJ'): rec['wrj'] = jr['WRJ']
+        out_events.append({
+            'code': code,
+            'label': lab,
+            'ranks': sorted(events[code], key=lambda x: x['rank'])[:TOPN],
+            'records': rec,
+        })
 
     ver = f'{datestr[:4]}.{datestr[4:6]}.{datestr[6:8]}'
     out = {
