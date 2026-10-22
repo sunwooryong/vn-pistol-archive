@@ -92,8 +92,9 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .wx span{display:inline-flex;align-items:center;gap:5px;font-size:calc(16px*var(--fz));color:var(--tx)}
 .wx .wx-loc{color:var(--acc2)}
 @media (max-width:1180px){.wx .wx-c{display:none}}
-/* 세계 랭킹·기록 가로 전광판 (우→좌). 종목 라벨은 좌측 고정 */
-.wr{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:12px;height:62px;overflow:hidden}
+/* 세계 랭킹·기록 하단 가로 전광판 (우→좌, 전체폭). 종목 라벨은 좌측 고정 */
+.wr{flex:0 0 auto;width:100%;display:flex;align-items:center;gap:14px;height:56px;overflow:hidden;
+  border-top:2px solid var(--line2);padding-top:8px}
 .wr-fixed{flex:0 0 auto;display:flex;align-items:center;gap:7px;white-space:nowrap;
   font-size:calc(17px*var(--fz));font-weight:900;color:var(--gold2);
   background:var(--accsoft);border:1px solid var(--line2);border-radius:10px;padding:7px 12px}
@@ -253,7 +254,6 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
       </div>
       <div class="sig-name">SUNWOO RYONG · SHOOTING EXPERT</div>
     </div>
-    <div class="wr" id="wr" aria-label="세계 랭킹·기록" title="세계 랭킹·기록"></div>
     <div class="hend">
       <div class="clock" id="clock" role="button" tabindex="0" aria-label="시계 — 누르면 타이머 시작/정지" title="숫자를 누르면 타이머 시작/정지">
         <div class="nflaps" id="c-time" aria-live="off"></div>
@@ -289,6 +289,9 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
     <div class="slides" id="slides"></div>
     <div class="dots" id="dots"></div>
   </section>
+
+  <!-- 세계 랭킹·기록 하단 전광판(우→좌). 종목 라벨 좌측 고정 -->
+  <div class="wr" id="wr" aria-label="세계 랭킹·기록" title="세계 랭킹·기록"></div>
 </div>
 
 <script src="parse.js?v=2"></script>
