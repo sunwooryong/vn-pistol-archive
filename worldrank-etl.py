@@ -31,6 +31,58 @@ LABELS = {
 }
 ORDER = ['APM', 'APW', 'RFPM', 'SPW', 'ARM', 'ARW', 'R3PM', 'R3PW', 'TRM', 'TRW', 'SKM', 'SKW']
 
+# C: 대회별 예선 1~8위(시리즈+총점). 기준 대회(최신 주요대회) — 갱신 시 여기만 수정.
+COMP = {
+    'id': '3275',
+    'label': {'ko': '2025 세계선수권', 'vi': 'GĐ Thế giới 2025', 'en': '2025 World Champ'},
+}
+COMP_EVENTS = ['APM', 'APW']   # 10m 권총(6시리즈+총점 깔끔). 25m은 채점구조가 달라 제외
+
+
+def comp_links(comp_id):
+    # 대회 결과 색인에서 종목별 '예선 개인' 결과 상세 URL 추출(남/녀 해시 다름 → 구성 대신 스크랩)
+    try:
+        html = fetch('https://www.issf-sports.org/competitions/%s/results' % comp_id)
+    except Exception:
+        return {}
+    out = {}
+    for hx in set(re.findall(r'/competitions/%s/results/([0-9a-f]{20,})' % comp_id, html)):
+        try:
+            parts = bytes.fromhex(hx).decode('latin1').split(';')
+        except Exception:
+            continue
+        if len(parts) >= 7 and parts[5] == 'Q' and parts[6] == 'I':
+            code = parts[3]
+            out[code] = 'https://www.issf-sports.org/competitions/%s/results/%s' % (comp_id, hx)
+    return out
+
+
+def parse_comp(html, topn=8):
+    out = []
+    for tr in re.findall(r'<tr[^>]*>(.*?)</tr>', html, re.S):
+        if '/athletes/' not in tr:
+            continue
+        tds = re.findall(r'<td[^>]*>(.*?)</td>', tr, re.S)
+        if not tds:
+            continue
+        rtxt = re.sub(r'<[^>]+>', '', tds[0]).strip()
+        if not rtxt.isdigit():
+            continue
+        rank = int(rtxt)
+        if rank < 1 or rank > topn:
+            continue
+        mn = re.search(r'<a[^>]*>([^<]+)</a>', tr)
+        if not mn:
+            continue
+        name = mn.group(1).replace('\xa0', ' ').replace('&nbsp;', ' ').strip()
+        mnoc = re.search(r'</a></td>\s*<td[^>]*>([A-Z]{3})</td>', tr)
+        noc = mnoc.group(1) if mnoc else ''
+        ser = [int(x) for x in re.findall(r'align="center">\s*(\d+)\s*</td>', tr)][:6]
+        mt = re.search(r'align="right">\s*(\d+(?:\.\d+)?)\s*-\s*\d+x', tr)
+        total = mt.group(1) if mt else ''
+        out.append({'rank': rank, 'name': name, 'noc': noc, 'series': ser, 'total': total})
+    return sorted(out, key=lambda x: x['rank'])[:topn]
+
 
 def fetch(url, binary=False):
     # urllib은 ISSF CDN에서 차단(404)되므로 curl 사용(Win10+/Git-Bash 기본 제공)
@@ -124,6 +176,9 @@ def build():
     except Exception as e:
         print('  (records fetch failed:', e, ')')
 
+    # 대회 예선 결과 링크(종목별)
+    clinks = comp_links(COMP['id'])
+
     codes = [c for c in ORDER if c in events] + [c for c in events if c not in ORDER]
     out_events = []
     for code in codes:
@@ -136,12 +191,21 @@ def build():
         if sr.get('WR'): rec['wr'] = sr['WR']
         if jr.get('QWRJ'): rec['qwrj'] = jr['QWRJ']
         if jr.get('WRJ'): rec['wrj'] = jr['WRJ']
-        out_events.append({
+        ev = {
             'code': code,
             'label': lab,
             'ranks': sorted(events[code], key=lambda x: x['rank'])[:TOPN],
             'records': rec,
-        })
+        }
+        # C: 대회 예선 1~8위(시리즈+총점) — 권총 종목만
+        if code in COMP_EVENTS and clinks.get(code):
+            try:
+                top = parse_comp(fetch(clinks[code]))
+                if top:
+                    ev['comp'] = {'label': COMP['label'], 'top': top}
+            except Exception as e:
+                print('  (comp %s failed: %s)' % (code, e))
+        out_events.append(ev)
 
     ver = f'{datestr[:4]}.{datestr[4:6]}.{datestr[6:8]}'
     out = {
