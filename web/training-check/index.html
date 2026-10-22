@@ -97,6 +97,7 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .dt-view{flex:1 1 auto;min-width:0;overflow:hidden;position:relative;
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
 .dt-track{display:inline-flex;align-items:center;white-space:nowrap;will-change:transform}
+.mq-u{display:inline-flex;align-items:center;white-space:nowrap}
 .dt-copy{display:inline-flex;align-items:center}
 .dt-e{display:inline-flex;align-items:center;gap:8px;padding:0 24px;font-size:calc(20px*var(--fz));font-weight:800;color:var(--acc2);white-space:nowrap}
 .dt-e i{font-style:normal;font-size:1.05em}
@@ -520,17 +521,8 @@ function renderWR(){
   const sep=`<span class="wr-sep">◆</span>`;
   const fixed=`<div class="wr-fixed"><span class="wr-glb">🌍</span>${esc(wrLabelOf(ev))}<small>ISSF ${esc(WR_DATA.version||"")}</small></div>`;
   if(!entries.length){ box.innerHTML=fixed+`<div class="wr-mview"><div class="wr-empty">${esc(L().wrEmpty)}</div></div>`; return; }
-  const copy=`<span class="wr-copy">${entries.join(sep)+sep}</span>`;
-  box.innerHTML=fixed+`<div class="wr-mview"><div class="wr-mtrack" id="wr-mtrack">${copy}${copy}</div></div>`;
-  const track=document.getElementById("wr-mtrack");
-  const first=track.querySelector(".wr-copy");
-  const w=first?first.getBoundingClientRect().width:0;
-  if(!wrKf){ wrKf=document.createElement("style"); wrKf.id="wr-kf"; document.head.appendChild(wrKf); }
-  if(w<=1){ track.style.animation="none"; return; }
-  const dur=w/Math.max(10,WR_SPD);
-  wrKf.textContent=`@keyframes wrmarq{from{transform:translateX(0)}to{transform:translateX(-${w}px)}}`;
-  track.style.animation="none"; void track.offsetWidth;   // 재시작(숨겨진 창에서도 동작)
-  track.style.animation=`wrmarq ${dur}s linear infinite`;
+  box.innerHTML=fixed+`<div class="wr-mview"><div class="wr-mtrack" id="wr-mtrack"></div></div>`;
+  fillMarquee(box.querySelector(".wr-mview"), document.getElementById("wr-mtrack"), entries.join(sep)+sep, "wr-kf", "wrmarq", WR_SPD);
 }
 
 // ===== 단훈 안내 배너: VI 입력 → GAS LanguageApp 번역(KO/EN) → 우→좌 =====
@@ -550,14 +542,8 @@ function renderDT(){
   const flag = LANG==="ko"?"🇰🇷":LANG==="en"?"🇬🇧":"🇻🇳";
   const sep=`<span class="dt-sep">•</span>`;
   const entry=`<span class="dt-e${LANG==="ko"?" k":""}"><i>${flag}</i>${esc(txt)}</span>`;
-  const copy=`<span class="dt-copy">${entry+sep}</span>`;
-  box.innerHTML=`<div class="dt-view"><div class="dt-track" id="dt-track">${copy}${copy}</div></div>`;
-  const track=document.getElementById("dt-track"), first=track.querySelector(".dt-copy"), w=first?first.getBoundingClientRect().width:0;
-  if(!dtKf){ dtKf=document.createElement("style"); dtKf.id="dt-kf"; document.head.appendChild(dtKf); }
-  if(w<=1){ track.style.animation="none"; return; }
-  const dur=w/45;   // 45px/초(천천히)
-  dtKf.textContent=`@keyframes dtmarq{from{transform:translateX(0)}to{transform:translateX(-${w}px)}}`;
-  track.style.animation="none"; void track.offsetWidth; track.style.animation=`dtmarq ${dur}s linear infinite`;
+  box.innerHTML=`<div class="dt-view"><div class="dt-track" id="dt-track"></div></div>`;
+  fillMarquee(box.querySelector(".dt-view"), document.getElementById("dt-track"), entry+sep, "dt-kf", "dtmarq", 45);
 }
 
 const sessOn = d => SESSIONS.filter(x=>x.date===d);
@@ -826,6 +812,23 @@ const fmt = v => Number.isInteger(v)?v:(Math.round(v*10)/10);
 // 60발 환산 평균: 세션 발수(시리즈수×10)가 달라도 공정 비교. 발수 모르면 총점 그대로.
 function conv60(x){ const shots=(x.series&&x.series.length)?x.series.length*10:0; return shots>0?Math.round(x.total/shots*60*10)/10:x.total; }
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+// 공용 가로 전광판: inner(한 벌)을 뷰포트 채울 만큼 반복 후 2배 → 여백 없이 끝→처음 끊김없는 무한 루프
+function fillMarquee(view, track, inner, kfId, kfName, speed){
+  if(!view||!track) return;
+  track.style.animation="none";
+  const unit=`<span class="mq-u">${inner}</span>`;
+  track.innerHTML=unit;
+  const uw=track.firstChild?track.firstChild.getBoundingClientRect().width:0;
+  const vw=view.getBoundingClientRect().width||0;
+  if(uw<=1){ track.style.animation="none"; return; }
+  const k=Math.max(1, Math.ceil(vw/uw)+1);   // 뷰포트를 채우는 반복수
+  track.innerHTML=unit.repeat(k*2);           // 2배 → 이음새 없는 루프
+  const blockW=uw*k;
+  let kf=document.getElementById(kfId); if(!kf){ kf=document.createElement("style"); kf.id=kfId; document.head.appendChild(kf); }
+  kf.textContent=`@keyframes ${kfName}{from{transform:translateX(0)}to{transform:translateX(-${blockW}px)}}`;
+  void track.offsetWidth;
+  track.style.animation=`${kfName} ${(blockW/Math.max(10,speed)).toFixed(2)}s linear infinite`;
+}
 // LED 전광판 티커: 수동 입력(localStorage) 우선, 없으면 당일 routine. 우→좌 연속 스크롤.
 let TK_SPEED=parseFloat(localStorage.getItem("tc_tkspeed")||"60");   // px/초 (조절 가능)
 let TK_PAUSE=parseFloat(localStorage.getItem("tc_tkpause")||"3");    // 시작 멈춤(초, 조절 가능)
@@ -841,20 +844,8 @@ function renderTicker(){
   track.style.animation="none";
   if(!text){ track.innerHTML=`<span class="tk-empty">${esc(L().tkPH)}</span>`; return; }
   const seg=esc(text)+"    •    ";
-  track.innerHTML=`<span id="tk-seg">${esc(text)}</span>`;
-  const segEl=document.getElementById("tk-seg");
-  const TW=segEl?segEl.getBoundingClientRect().width:300;
-  const VW=view.getBoundingClientRect().width||900;
-  const dist=Math.max(0, TW-VW+40);
-  let kf=document.getElementById("tk-kf"); if(!kf){ kf=document.createElement("style"); kf.id="tk-kf"; document.head.appendChild(kf); }
-  if(dist<=1){ kf.textContent="@keyframes tkrun{from,to{transform:translateX(0)}}"; return; }   // 짧으면 정지
-  const scrollT=dist/Math.max(TK_SPEED,5);
-  const dur=TK_PAUSE+scrollT+1.2;                        // 시작멈춤 + 스크롤 + 끝여운
-  const holdPct=(TK_PAUSE/dur*100).toFixed(2);
-  const endPct=((TK_PAUSE+scrollT)/dur*100).toFixed(2);
-  kf.textContent=`@keyframes tkrun{0%,${holdPct}%{transform:translateX(0)}${endPct}%,100%{transform:translateX(-${dist}px)}}`;
-  void track.offsetWidth;   // 리플로우 강제(재시작) — hidden 탭에서도 동작
-  track.style.animation=`tkrun ${dur}s linear infinite`;
+  const inner=`${esc(text)}<span class="tk-gap">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>`;
+  fillMarquee(view, track, inner, "tk-kf", "tkrun", TK_SPEED);
 }
 // (티커 편집은 설정 패널의 pt-input/pt-save에서 처리)
 
