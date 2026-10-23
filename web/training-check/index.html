@@ -409,6 +409,12 @@ async function loadLiveSchedule(){
 async function loadStatic(){ if(SCHED._live)return; try{ const r=await fetch("schedule.json",{cache:"no-store"}); const j=r.ok?await r.json():null; if(j&&j.disc&&!SCHED._live)SCHED=j; }catch(e){} }
 const schedHas = d => Object.values(SCHED.disc||{}).some(m=>m&&m[d]);
 function latestSchedDate(){ let best=null; for(const dk in (SCHED.disc||{})){ for(const dt in SCHED.disc[dk]){ if(!best||dt>best) best=dt; } } return best; }
+// 주간 반복 루틴: 해당 날짜가 없으면 같은 요일의 최신 일정일을 반환(오늘 요일에 맞는 루틴)
+function weekdaySchedDate(sel){
+  const wd=new Date(sel+"T00:00:00").getDay(); let best=null;
+  for(const dk in (SCHED.disc||{})){ for(const dt in SCHED.disc[dk]){ if(new Date(dt+"T00:00:00").getDay()===wd){ if(!best||dt>best) best=dt; } } }
+  return best;
+}
 function routineOf(d){ for(const k of (SCHED.order||Object.keys(SCHED.disc))){ const sc=SCHED.disc[k]&&SCHED.disc[k][d]; if(sc&&sc.routine&&pick(sc.routine))return pick(sc.routine); } return ""; }
 
 // ===== 현재 사격장 위치 + 실시간 날씨 (IP 위치 → Open-Meteo) =====
@@ -769,9 +775,10 @@ function buildDay(){
   renderPanel();
   renderTicker();
   const half = HALF_SEL==="auto" ? (new Date().getHours()<12?"am":"pm") : HALF_SEL;
-  const schedDate = schedHas(SEL) ? SEL : null;   // 선택일 일정만(폴백 없음)
-  const schedFallback = false;
-  const effHalf = half;
+  // 당일 일정이 없으면 '같은 요일'의 최신 루틴을 오늘 일정으로 표시(주간 반복 루틴)
+  const schedDate = schedHas(SEL) ? SEL : weekdaySchedDate(SEL);
+  const schedFallback = schedDate && schedDate!==SEL;
+  const effHalf = schedFallback ? "all" : half;   // 요일 매핑은 종일 표시
   SLIDES=[];
   if(VIEW!=="score" && schedDate){
     for(const disc of (SCHED.order||Object.keys(SCHED.disc))){
@@ -807,7 +814,7 @@ function slideHTML(s){
   }
   const half=s.half==="all"?L().allDay:(s.half==="am"?L().am:L().pm);
   const rows=s.rows.map(r=>`<div class="sched-row"><span class="t">${esc(r.s)}${r.e&&r.e!==r.s?"~"+esc(r.e):""}</span><span>${pick(r.ev)?`<span class="ev">${esc(pick(r.ev))}</span>`:""}${esc(pick(r.tr))}${pick(r.sh)?` <span class="shots">${esc(pick(r.sh))}</span>`:""}${pick(r.fc)?`<span class="foc"> · ${esc(pick(r.fc))}</span>`:""}</span></div>`).join("");
-  const fb=s.fallback?` <small class="fb">📅 ${esc(vnShort(s.schedDate))}</small>`:"";
+  const fb=s.fallback?` <small class="fb">${esc((WD[LANG]||WD.vi)[new Date(SEL+"T00:00:00").getDay()])} ${esc(L().plan)}</small>`:"";
   return `<div class="card"><div class="slide-h">📋 ${esc(s.disc)} · ${esc(L().plan)} <small>(${esc(half)})</small>${fb}</div><div class="scroller">${rows}</div></div>`;
 }
 function renderSlides(){
