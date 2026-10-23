@@ -769,10 +769,9 @@ function buildDay(){
   renderPanel();
   renderTicker();
   const half = HALF_SEL==="auto" ? (new Date().getHours()<12?"am":"pm") : HALF_SEL;
-  // 선택일에 일정이 없으면 가장 최근 일정일로 폴백(TV에 최신 훈련계획 표시)
-  const schedDate = schedHas(SEL) ? SEL : latestSchedDate();
-  const schedFallback = schedDate && schedDate!==SEL;
-  const effHalf = schedFallback ? "all" : half;   // 폴백(과거 일정)은 종일 표시
+  const schedDate = schedHas(SEL) ? SEL : null;   // 선택일 일정만(폴백 없음)
+  const schedFallback = false;
+  const effHalf = half;
   SLIDES=[];
   if(VIEW!=="score" && schedDate){
     for(const disc of (SCHED.order||Object.keys(SCHED.disc))){
@@ -790,7 +789,7 @@ function buildDay(){
 }
 function slideHTML(s){
   if(s.type==="noplan"){
-    return `<div class="card"><div class="slide-h">📋 ${esc(L().plan)}</div><div class="scroller"><div class="nodata">${esc(L().noPlan)}</div></div></div>`;
+    return `<div class="card"><div class="slide-h">📋 ${esc(L().plan)} <small class="fb">${esc(vnDate(SEL))}</small></div><div class="scroller"><div class="nodata"><div style="font-size:1.5em;font-weight:900;color:var(--acc2);margin-bottom:8px">📅 ${esc(vnDate(SEL))}</div>${esc(L().noPlan)}</div></div></div>`;
   }
   if(s.type==="scores"){
     const days=[0,1,2].map(k=>{const x=new Date(SEL+"T00:00:00");x.setDate(x.getDate()-k);return iso(x);});
