@@ -919,6 +919,13 @@ boot();
 setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
 let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(()=>{ renderTicker(); fitSig(); renderWR(); renderDT(); },300); });
 setInterval(loadWorldRank, 6*3600*1000);   // 세계랭킹 월간 갱신 반영(6시간마다 재조회)
+// 키오스크 자동 갱신: 새 배포(BUILD 변경) 감지 시 캐시 무시하고 새로고침 → TV가 옛 버전에 갇히지 않음
+const BUILD="20261024a";
+setInterval(async()=>{ try{
+  const t=await fetch("index.html?x="+Date.now(),{cache:"no-store"}).then(r=>r.text());
+  const m=t.match(/const BUILD="([^"]+)"/);
+  if(m && m[1] && m[1]!==BUILD) location.replace(location.pathname+"?v="+Date.now());
+}catch(e){} }, 15*60*1000);   // 15분마다 확인
 setInterval(async()=>{ try{ if(await loadData()) rerenderKeep(); }catch(e){} }, 60000);            // 점수(빠름) — 변경 시에만 재렌더
 setInterval(()=>{ loadLiveSchedule().then(ok=>{ if(ok) rerenderKeep(); }); }, 600000);            // 일정(느림·10분)
 </script>
