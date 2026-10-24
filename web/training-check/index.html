@@ -324,6 +324,7 @@ const CSV = s => `https://docs.google.com/spreadsheets/d/${s.id}/export?format=c
 const DISC_COLOR = { air:"#0081C8", pistol_50:"#00a651", rapid:"#ee334e", sport:"#d99a1f", standard:"#8e44ad", "":"#8b98a8" };
 const WD={vi:["CN","T2","T3","T4","T5","T6","T7"],ko:["일","월","화","수","목","금","토"],en:["Su","Mo","Tu","We","Th","Fr","Sa"]};
 const SLIDE_MS = 15000, PAUSE = 180;   // 끝/시작 3초 정지 (60fps*3)
+const PASS_CAP_MS = 50000;   // 한 슬라이드 스크롤 한 바퀴 상한(내용 길면 속도 자동 가속)
 const pad = n => String(n).padStart(2,"0");
 const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const vnDate = ds => { const [y,m,d]=ds.split("-"); return `${d}/${m}/${y}`; };
@@ -841,7 +842,24 @@ function showSlide(i){
   SST={pos:0,dir:1,pause:PAUSE};
   const el=activeScroller(); if(el)el.scrollTop=0;
 }
-function restartTimer(){ clearInterval(slideTimer); if(SLIDES.length>1) slideTimer=setInterval(()=>showSlide(CUR+1), SLIDE_MS); }
+// 스크롤 한 바퀴 계산: 기본속도(SPEED)로의 프레임수. 단, PASS_CAP_MS를 넘으면 그 시간에 맞춰 가속.
+// → 긴 내용(3일치 기록)도 상한시간 안에 바닥까지 한 번 훑고, 짧으면 기본속도 유지.
+function scrollPass(el){
+  const max=el?el.scrollHeight-el.clientHeight:0;
+  if(!el||SPEED<=0||max<=4) return {max:Math.max(max,0),frames:0,speed:(SPEED>0?SPEED:0.25)};
+  const capFrames=PASS_CAP_MS/1000*60;
+  const frames=Math.min(max/SPEED, capFrames);
+  return {max,frames,speed:max/frames};
+}
+// 슬라이드 체류시간: 스크롤이 바닥까지 한 번 훑는 시간만큼 머문 뒤 다음 슬라이드로(짧으면 기본 15초).
+// → 훈련기록(오늘·어제·그제)이 끝까지 보인 뒤 일정으로 넘어감.
+function slideDwellMs(){
+  const p=scrollPass(activeScroller());
+  if(p.frames<=0) return SLIDE_MS;
+  const ms=(PAUSE + p.frames)/60*1000 + 1600;   // 시작정지 + 바닥까지 스크롤(60fps) + 1.6초 여유
+  return Math.max(SLIDE_MS, Math.round(ms));
+}
+function restartTimer(){ clearTimeout(slideTimer); if(SLIDES.length>1) slideTimer=setTimeout(()=>{ showSlide(CUR+1); restartTimer(); }, slideDwellMs()); }
 const fmt = v => Number.isInteger(v)?v:(Math.round(v*10)/10);
 // 60발 환산 평균: 세션 발수(시리즈수×10)가 달라도 공정 비교. 발수 모르면 총점 그대로.
 function conv60(x){ const shots=(x.series&&x.series.length)?x.series.length*10:0; return shots>0?Math.round(x.total/shots*60*10)/10:x.total; }
@@ -890,11 +908,11 @@ function animScroll(){
   requestAnimationFrame(animScroll);
   if(SPEED<=0||document.getElementById("day").hidden) return;
   const el=activeScroller(); if(!el) return;
-  const max=el.scrollHeight-el.clientHeight;
-  if(max<=4){ el.scrollTop=0; return; }
+  const p=scrollPass(el);
+  if(p.max<=4){ el.scrollTop=0; return; }
   if(SST.pause>0){ SST.pause--; return; }
-  SST.pos+=SPEED;
-  if(SST.pos>=max){ SST.pos=0; SST.pause=PAUSE; }   // 아래→위 한 방향 연속(끝 도달 시 처음으로, 반대방향 없음)
+  SST.pos+=p.speed;   // 내용이 길면 자동 가속(상한시간 내 한 바퀴)
+  if(SST.pos>=p.max){ SST.pos=0; SST.pause=PAUSE; }   // 아래→위 한 방향 연속(끝 도달 시 처음으로, 반대방향 없음)
   el.scrollTop=SST.pos;
 }
 animScroll();
@@ -929,7 +947,7 @@ setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
 let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(()=>{ renderTicker(); fitSig(); renderWR(); renderDT(); },300); });
 setInterval(loadWorldRank, 6*3600*1000);   // 세계랭킹 월간 갱신 반영(6시간마다 재조회)
 // 키오스크 자동 갱신: 새 배포(BUILD 변경) 감지 시 캐시 무시하고 새로고침 → TV가 옛 버전에 갇히지 않음
-const BUILD="20261024d";
+const BUILD="20261024f";
 setInterval(async()=>{ try{
   const t=await fetch("index.html?x="+Date.now(),{cache:"no-store"}).then(r=>r.text());
   const m=t.match(/const BUILD="([^"]+)"/);
