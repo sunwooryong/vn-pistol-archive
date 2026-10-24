@@ -49,7 +49,7 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
   animation:sweep 13s ease-in-out infinite}
 @keyframes sweep{0%{left:-55%}55%,100%{left:135%}}
 
-.clock{display:flex;flex-direction:column;align-items:flex-end;line-height:1;flex:0 0 auto}
+.clock{display:flex;flex-direction:column;align-items:flex-end;line-height:1;flex:0 0 auto;position:relative;padding-bottom:calc(23px*var(--fz))}
 /* 네온 스플릿플랩 시계 (오륜 그라데이션 + 네온 글로우) */
 .nflaps{display:flex;align-items:center;gap:calc(5px*var(--fz))}
 .nflaps .u{position:relative;width:calc(40px*var(--fz));height:calc(58px*var(--fz));border-radius:calc(8px*var(--fz));
@@ -66,7 +66,7 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .nflaps .colon{font-family:'Oswald','Oswald Fallback',sans-serif;font-weight:700;font-size:calc(34px*var(--fz));color:#7ee0ff;text-shadow:0 0 8px #19b6ff,0 0 16px #0a84d6;padding:0 1px}
 .clock .date{display:flex;align-items:center;gap:9px;margin-top:6px;font-size:calc(16px*var(--fz));font-weight:700;color:var(--mut);font-variant-numeric:tabular-nums}
 /* 시계 하단 한 줄: 날짜 · 날씨 · 현재/체감 · 습도 · 미세먼지 (줄바꿈 없음) */
-.cstrip{display:flex;align-items:center;gap:11px;margin-top:6px;white-space:nowrap;justify-content:flex-end;font-size:calc(16px*var(--fz));font-weight:700;color:var(--mut);font-variant-numeric:tabular-nums}
+.cstrip{display:flex;align-items:center;gap:11px;position:absolute;right:0;bottom:0;white-space:nowrap;justify-content:flex-end;font-size:calc(16px*var(--fz));font-weight:700;color:var(--mut);font-variant-numeric:tabular-nums;pointer-events:none}
 .cstrip .cdiv{color:var(--line2)}
 .cstrip .wx-loc{color:var(--acc2);font-weight:800}
 .cstrip span{display:inline-flex;align-items:center;gap:5px}
@@ -929,7 +929,7 @@ setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
 let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(()=>{ renderTicker(); fitSig(); renderWR(); renderDT(); },300); });
 setInterval(loadWorldRank, 6*3600*1000);   // 세계랭킹 월간 갱신 반영(6시간마다 재조회)
 // 키오스크 자동 갱신: 새 배포(BUILD 변경) 감지 시 캐시 무시하고 새로고침 → TV가 옛 버전에 갇히지 않음
-const BUILD="20261024c";
+const BUILD="20261024d";
 setInterval(async()=>{ try{
   const t=await fetch("index.html?x="+Date.now(),{cache:"no-store"}).then(r=>r.text());
   const m=t.match(/const BUILD="([^"]+)"/);
