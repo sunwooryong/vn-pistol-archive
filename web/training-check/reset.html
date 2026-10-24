@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>초기화 · Training Check</title>
+<style>
+  html,body{height:100%;margin:0}
+  body{display:flex;align-items:center;justify-content:center;background:#0b1220;color:#e8f0ff;
+    font-family:'Segoe UI',system-ui,sans-serif;text-align:center;padding:24px}
+  .box{max-width:560px}
+  h1{font-size:1.4em;margin:0 0 14px}
+  p{color:#9fb3d1;line-height:1.5;margin:8px 0}
+  .st{margin-top:18px;font-size:1.05em;font-weight:800;color:#7ee0ff;min-height:1.4em}
+  .ok{color:#8ae69b}
+  code{background:#16233c;padding:2px 7px;border-radius:6px;color:#cfe0ff}
+  a{color:#7ee0ff}
+</style>
+</head>
+<body>
+  <div class="box">
+    <h1>🧹 Training Check 초기화</h1>
+    <p>옛 캐시·서비스워커를 모두 지우고 최신 화면으로 다시 엽니다.<br>잠시만 기다려 주세요.</p>
+    <div class="st" id="st">정리 중…</div>
+    <p style="margin-top:20px;font-size:.9em">자동으로 넘어가지 않으면 여기를 누르세요 →
+      <a id="go" href="./?fresh=1">훈련 화면 열기</a></p>
+  </div>
+<script>
+(async function(){
+  var st=document.getElementById('st');
+  var target="./?fresh="+Date.now();
+  document.getElementById('go').href=target;
+  var killed=0, cachesCleared=0;
+  try{
+    if('serviceWorker' in navigator){
+      var regs=await navigator.serviceWorker.getRegistrations();
+      for(var i=0;i<regs.length;i++){ try{ await regs[i].unregister(); killed++; }catch(e){} }
+    }
+  }catch(e){}
+  try{
+    if(window.caches){
+      var keys=await caches.keys();
+      for(var j=0;j<keys.length;j++){ try{ await caches.delete(keys[j]); cachesCleared++; }catch(e){} }
+    }
+  }catch(e){}
+  try{ sessionStorage.removeItem('tc_swclean'); }catch(e){}
+  st.className='st ok';
+  st.textContent='완료! (서비스워커 '+killed+'개, 캐시 '+cachesCleared+'개 삭제) — 이동 중…';
+  // 깨끗한 상태로 훈련 화면 열기(캐시버스트)
+  setTimeout(function(){ location.replace(target); }, 900);
+})();
+</script>
+</body>
+</html>
