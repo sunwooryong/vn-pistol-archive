@@ -317,8 +317,21 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 <script src="parse.js?v=2"></script>
 <script>
 // 캐시 정체 방지: training-check는 오프라인 불필요 → 서비스워커/캐시 제거(네트워크 최신만 사용)
-if('serviceWorker' in navigator){ try{ navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister())); }catch(e){} }
-if(window.caches){ try{ caches.keys().then(ks=>ks.forEach(k=>caches.delete(k))); }catch(e){} }
+// ★ 옛 서비스워커가 이 페이지를 아직 "제어" 중이면(=시크릿과 달리 캐시가 데이터를 가로채 일정이 "없음"으로 뜨는 원인)
+//   SW·캐시를 전부 지운 뒤 '한 번만' 하드 리로드 → 제어 없는 깨끗한 상태로 다시 떠서 schedule.json을 네트워크에서 신선하게 받음.
+window.__SW_CTRL = !!(('serviceWorker' in navigator) && navigator.serviceWorker.controller);   // 진단용(일정 없음 화면 표기)
+(function(){
+  const cleanup = Promise.all([
+    ('serviceWorker' in navigator) ? navigator.serviceWorker.getRegistrations().then(rs=>Promise.all(rs.map(r=>r.unregister()))).catch(()=>{}) : null,
+    window.caches ? caches.keys().then(ks=>Promise.all(ks.map(k=>caches.delete(k)))).catch(()=>{}) : null
+  ]);
+  try{
+    if(window.__SW_CTRL && !sessionStorage.getItem('tc_swclean')){
+      sessionStorage.setItem('tc_swclean','1');
+      cleanup.then(()=>{ try{ location.reload(); }catch(e){ location.href=location.href; } });
+    }
+  }catch(e){}
+})();
 const PRACTICE = { id:"16zdF1VFnNFNR36zQuSu5dzas9ZM-v_NDFF-me-o6Oco", gid:"1804031283" };
 const CSV = s => `https://docs.google.com/spreadsheets/d/${s.id}/export?format=csv&gid=${s.gid}`;
 const DISC_COLOR = { air:"#0081C8", pistol_50:"#00a651", rapid:"#ee334e", sport:"#d99a1f", standard:"#8e44ad", "":"#8b98a8" };
@@ -806,7 +819,10 @@ function buildDay(){
 }
 function slideHTML(s){
   if(s.type==="noplan"){
-    return `<div class="card"><div class="slide-h">📋 ${esc(L().plan)} <small class="fb">${esc(vnDate(SEL))}</small></div><div class="scroller"><div class="nodata"><div style="font-size:1.5em;font-weight:900;color:var(--acc2);margin-bottom:8px">📅 ${esc(vnDate(SEL))}</div>${esc(L().noPlan)}</div></div></div>`;
+    // 진단: 왜 '없음'인지 즉시 판별 가능하도록(날짜수 · 오늘 데이터 · SW제어 여부). 데이터 정상 로드 시엔 이 슬라이드 자체가 안 뜸.
+    let nDates=0, hasToday=false; try{ for(const dk in (SCHED.disc||{})){ const m=SCHED.disc[dk]; for(const dt in m){ nDates++; if(dt===SEL)hasToday=true; } } }catch(e){}
+    const diag=`sched ${nDates}일 · 오늘 ${hasToday?"있음":"없음"} · SW ${window.__SW_CTRL?"제어중⚠":"없음"} · ${esc(BUILD)}`;
+    return `<div class="card"><div class="slide-h">📋 ${esc(L().plan)} <small class="fb">${esc(vnDate(SEL))}</small></div><div class="scroller"><div class="nodata"><div style="font-size:1.5em;font-weight:900;color:var(--acc2);margin-bottom:8px">📅 ${esc(vnDate(SEL))}</div>${esc(L().noPlan)}<div style="margin-top:14px;font-size:.62em;color:var(--mut);opacity:.75">${diag}</div></div></div></div>`;
   }
   if(s.type==="scores"){
     const days=[0,1,2].map(k=>{const x=new Date(SEL+"T00:00:00");x.setDate(x.getDate()-k);return iso(x);});
@@ -947,7 +963,7 @@ setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
 let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(()=>{ renderTicker(); fitSig(); renderWR(); renderDT(); },300); });
 setInterval(loadWorldRank, 6*3600*1000);   // 세계랭킹 월간 갱신 반영(6시간마다 재조회)
 // 키오스크 자동 갱신: 새 배포(BUILD 변경) 감지 시 캐시 무시하고 새로고침 → TV가 옛 버전에 갇히지 않음
-const BUILD="20261024f";
+const BUILD="20261024g";
 setInterval(async()=>{ try{
   const t=await fetch("index.html?x="+Date.now(),{cache:"no-store"}).then(r=>r.text());
   const m=t.match(/const BUILD="([^"]+)"/);
