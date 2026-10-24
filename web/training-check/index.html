@@ -405,12 +405,18 @@ async function loadLiveSchedule(){
     if(!raw||!raw.startsWith("ENC:"))return false;
     const plan=JSON.parse(decryptData(raw));
     const s=buildSchedFromPlan(plan);
-    if(s&&Object.keys(s.disc).length){ SCHED=s; return true; }
+    if(s&&Object.keys(s.disc).length){
+      // 라이브가 현재(정적 포함)보다 최신일 때만 교체 — 오래된 라이브가 최신 정적 데이터를 덮지 않도록
+      const liveMax=maxDateOf(s), curMax=maxDateOf(SCHED);
+      if(!curMax || liveMax>=curMax){ SCHED=s; return true; }
+    }
   }catch(e){}
   return false;
 }
-async function loadStatic(){ if(SCHED._live)return; try{ const r=await fetch("schedule.json",{cache:"no-store"}); const j=r.ok?await r.json():null; if(j&&j.disc&&!SCHED._live)SCHED=j; }catch(e){} }
+async function loadStatic(){ try{ const r=await fetch("schedule.json?x="+Date.now(),{cache:"no-store"}); const j=r.ok?await r.json():null;
+  if(j&&j.disc){ const sMax=maxDateOf(j), curMax=maxDateOf(SCHED); if(!curMax || sMax>=curMax) SCHED=j; } }catch(e){} }
 const schedHas = d => Object.values(SCHED.disc||{}).some(m=>m&&m[d]);
+function maxDateOf(sc){ let m=""; for(const dk in ((sc&&sc.disc)||{})){ for(const dt in sc.disc[dk]){ if(dt>m)m=dt; } } return m; }
 function latestSchedDate(){ let best=null; for(const dk in (SCHED.disc||{})){ for(const dt in SCHED.disc[dk]){ if(!best||dt>best) best=dt; } } return best; }
 // 주간 반복 루틴: 해당 날짜가 없으면 같은 요일의 최신 일정일을 반환(오늘 요일에 맞는 루틴)
 function weekdaySchedDate(sel){
@@ -923,7 +929,7 @@ setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
 let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(()=>{ renderTicker(); fitSig(); renderWR(); renderDT(); },300); });
 setInterval(loadWorldRank, 6*3600*1000);   // 세계랭킹 월간 갱신 반영(6시간마다 재조회)
 // 키오스크 자동 갱신: 새 배포(BUILD 변경) 감지 시 캐시 무시하고 새로고침 → TV가 옛 버전에 갇히지 않음
-const BUILD="20261024b";
+const BUILD="20261024c";
 setInterval(async()=>{ try{
   const t=await fetch("index.html?x="+Date.now(),{cache:"no-store"}).then(r=>r.text());
   const m=t.match(/const BUILD="([^"]+)"/);
