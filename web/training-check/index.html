@@ -104,6 +104,17 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .mt-chk{display:flex;align-items:flex-start;gap:7px;font-size:calc(13px*var(--fz));font-weight:700;color:var(--tx);cursor:pointer;line-height:1.3}
 .mt-chk input{margin-top:2px;flex:0 0 auto}
 .mt-chk b{color:var(--acc2);flex:0 0 auto}
+.pb-badge{display:inline-block;margin-left:6px;font-size:.72em;font-weight:900;color:#fff;background:linear-gradient(90deg,#e8a81a,#d1194a);padding:1px 8px;border-radius:999px;vertical-align:middle;animation:pbPulse 1.1s ease-in-out infinite}
+.pb-row{background:linear-gradient(90deg,rgba(232,168,26,.16),transparent)}
+@keyframes pbPulse{0%,100%{box-shadow:0 0 0 rgba(232,168,26,0)}50%{box-shadow:0 0 12px rgba(232,168,26,.8)}}
+.wk-wrap{display:flex;flex-direction:column;gap:14px;padding:6px 2px}
+.wk-card{display:flex;align-items:center;gap:16px;background:var(--bg2);border:1px solid var(--line2);border-radius:14px;padding:16px 20px}
+.wk-ico{font-size:calc(40px*var(--fz));flex:0 0 auto}
+.wk-body{flex:1;min-width:0}
+.wk-ttl{font-size:calc(15px*var(--fz));font-weight:800;color:var(--mut);letter-spacing:.02em}
+.wk-name{font-size:calc(30px*var(--fz));font-weight:900;color:var(--acc2);line-height:1.1}
+.wk-sub{font-size:calc(15px*var(--fz));font-weight:700;color:var(--tx);margin-top:2px}
+.wk-up{color:#1f9d57;font-weight:900}
 .dt-e i{font-style:normal;font-size:1.05em}
 .dt-e.k{color:var(--gold2)}
 .dt-sep{color:var(--line2);font-size:calc(15px*var(--fz))}
@@ -353,9 +364,9 @@ let DISC_SEL=localStorage.getItem("tc_disc")||"all";   // 종목 선택: all/10m
 let HALF_SEL=localStorage.getItem("tc_half")||"auto";  // 시간대: auto/am/pm/all
 let SPEED=parseFloat(localStorage.getItem("tc_speed")||"0.25");
 const UI={
-  ko:{plan:"일정",scores:"최근 3일",ath:"선수",disc:"종목",series:"시리즈",total:"총점",conv60:"60발환산",streak:"연속",am:"오전",pm:"오후",noRec:"기록 없음",noPlan:"오늘 훈련계획이 없습니다 — TrainingPlan에서 입력",speed:"속도",vAll:"전체",vSched:"일정",vScore:"점수",tkPH:"전광판 문구 입력 후 Enter…",tkSave:"적용",vMode:"보기",langLab:"언어",dateLab:"날짜",tkPauseLab:"시작멈춤",timer:"타이머",alarm:"알람",start:"시작",almTest:"테스트",min:"분",sec:"초",add:"추가",halfLab:"시간대",hAuto:"자동",allDay:"전체",wrLab:"세계랭킹",wrRank:"랭킹",wrEmpty:"세계랭킹 로딩 중…",wrWR:"세계신",wrJWR:"주니어신",dtLab:"단훈",dtPH:"베트남어로 단훈 입력 후 번역",dtEmpty:"",trBtn:"번역"},
-  vi:{plan:"Lịch tập",scores:"3 ngày gần nhất",ath:"VĐV",disc:"Nội dung",series:"Loạt",total:"Tổng",conv60:"Quy đổi 60",streak:"Chuỗi",am:"Sáng",pm:"Chiều",noRec:"Không có dữ liệu",noPlan:"Chưa có lịch tập — nhập trong TrainingPlan",speed:"Tốc độ",vAll:"Tất cả",vSched:"Lịch",vScore:"Điểm",tkPH:"Nhập dòng chữ chạy rồi nhấn Enter…",tkSave:"Áp dụng",vMode:"Chế độ",langLab:"Ngôn ngữ",dateLab:"Ngày",tkPauseLab:"Dừng đầu",timer:"Hẹn giờ",alarm:"Báo thức",start:"Bắt đầu",almTest:"Thử",min:"Phút",sec:"Giây",add:"Thêm",halfLab:"Buổi",hAuto:"Tự động",allDay:"Cả ngày",wrLab:"Xếp hạng TG",wrRank:"Hạng",wrEmpty:"Đang tải…",wrWR:"KLTG",wrJWR:"KL Trẻ",dtLab:"Dặn dò",dtPH:"Nhập tiếng Việt rồi dịch",dtEmpty:"",trBtn:"Dịch"},
-  en:{plan:"Schedule",scores:"Last 3 days",ath:"Athlete",disc:"Event",series:"Series",total:"Total",conv60:"60-shot",streak:"Streak",am:"AM",pm:"PM",noRec:"No data",noPlan:"No training plan — enter in TrainingPlan",speed:"Speed",vAll:"All",vSched:"Schedule",vScore:"Scores",tkPH:"Type ticker text, press Enter…",tkSave:"Apply",vMode:"View",langLab:"Language",dateLab:"Date",tkPauseLab:"Start pause",timer:"Timer",alarm:"Alarm",start:"Start",almTest:"Test",min:"min",sec:"sec",add:"Add",halfLab:"Time",hAuto:"Auto",allDay:"All",wrLab:"World Rank",wrRank:"Rank",wrEmpty:"Loading…",wrWR:"WR",wrJWR:"Jr WR",dtLab:"Note",dtPH:"Type Vietnamese, then translate",dtEmpty:"",trBtn:"Translate"}
+  ko:{plan:"일정",scores:"최근 3일",ath:"선수",disc:"종목",series:"시리즈",total:"총점",conv60:"60발환산",streak:"연속",am:"오전",pm:"오후",noRec:"기록 없음",noPlan:"오늘 훈련계획이 없습니다 — TrainingPlan에서 입력",speed:"속도",vAll:"전체",vSched:"일정",vScore:"점수",tkPH:"전광판 문구 입력 후 Enter…",tkSave:"적용",vMode:"보기",langLab:"언어",dateLab:"날짜",tkPauseLab:"시작멈춤",timer:"타이머",alarm:"알람",start:"시작",almTest:"테스트",min:"분",sec:"초",add:"추가",halfLab:"시간대",hAuto:"자동",allDay:"전체",wrLab:"세계랭킹",wrRank:"랭킹",wrEmpty:"세계랭킹 로딩 중…",wrWR:"세계신",wrJWR:"주니어신",dtLab:"단훈",dtPH:"베트남어로 단훈 입력 후 번역",dtEmpty:"",trBtn:"번역",weekLab:"주간 하이라이트",mvpLab:"이번 주 MVP",impLab:"최다 향상",sessUnit:"회"},
+  vi:{plan:"Lịch tập",scores:"3 ngày gần nhất",ath:"VĐV",disc:"Nội dung",series:"Loạt",total:"Tổng",conv60:"Quy đổi 60",streak:"Chuỗi",am:"Sáng",pm:"Chiều",noRec:"Không có dữ liệu",noPlan:"Chưa có lịch tập — nhập trong TrainingPlan",speed:"Tốc độ",vAll:"Tất cả",vSched:"Lịch",vScore:"Điểm",tkPH:"Nhập dòng chữ chạy rồi nhấn Enter…",tkSave:"Áp dụng",vMode:"Chế độ",langLab:"Ngôn ngữ",dateLab:"Ngày",tkPauseLab:"Dừng đầu",timer:"Hẹn giờ",alarm:"Báo thức",start:"Bắt đầu",almTest:"Thử",min:"Phút",sec:"Giây",add:"Thêm",halfLab:"Buổi",hAuto:"Tự động",allDay:"Cả ngày",wrLab:"Xếp hạng TG",wrRank:"Hạng",wrEmpty:"Đang tải…",wrWR:"KLTG",wrJWR:"KL Trẻ",dtLab:"Dặn dò",dtPH:"Nhập tiếng Việt rồi dịch",dtEmpty:"",trBtn:"Dịch",weekLab:"Nổi bật tuần",mvpLab:"MVP tuần này",impLab:"Tiến bộ nhất",sessUnit:"buổi"},
+  en:{plan:"Schedule",scores:"Last 3 days",ath:"Athlete",disc:"Event",series:"Series",total:"Total",conv60:"60-shot",streak:"Streak",am:"AM",pm:"PM",noRec:"No data",noPlan:"No training plan — enter in TrainingPlan",speed:"Speed",vAll:"All",vSched:"Schedule",vScore:"Scores",tkPH:"Type ticker text, press Enter…",tkSave:"Apply",vMode:"View",langLab:"Language",dateLab:"Date",tkPauseLab:"Start pause",timer:"Timer",alarm:"Alarm",start:"Start",almTest:"Test",min:"min",sec:"sec",add:"Add",halfLab:"Time",hAuto:"Auto",allDay:"All",wrLab:"World Rank",wrRank:"Rank",wrEmpty:"Loading…",wrWR:"WR",wrJWR:"Jr WR",dtLab:"Note",dtPH:"Type Vietnamese, then translate",dtEmpty:"",trBtn:"Translate",weekLab:"Weekly highlights",mvpLab:"MVP this week",impLab:"Most improved",sessUnit:"sessions"}
 };
 const L = () => UI[LANG]||UI.vi;
 const pick = o => o ? (LANG==="en"?(o.en||o.vi||o.ko):LANG==="vi"?(o.vi||o.ko):(o.ko||o.vi)) : "";
@@ -589,11 +600,65 @@ const MOTTOS=[
  {ko:"한 발에 최선을 다하되, 한 발로 자신의 가치를 판단하지 마라.", vi:"Hãy nỗ lực hết mình trong từng phát bắn, nhưng đừng đánh giá giá trị bản thân chỉ qua một phát bắn.", en:"Give your best to each shot, but never judge your worth by a single shot."},
  {ko:"총을 내려놓은 뒤에도, 자랑스러운 사람으로 남아라.", vi:"Ngay cả khi đã đặt súng xuống, hãy luôn sống như một con người đáng tự hào.", en:"Even after you put down the gun, remain someone to be proud of."}
 ];
-let MOTTO_ON = localStorage.getItem("tc_motto_on")==="1";   // 명언 자동 순환 사용 여부
-function mottoSel(){ try{ const a=JSON.parse(localStorage.getItem("tc_motto_sel")||"null"); return Array.isArray(a)?a.filter(i=>i>=0&&i<MOTTOS.length):MOTTOS.map((_,i)=>i); }catch(e){ return MOTTOS.map((_,i)=>i); } }
-function saveMottoSel(a){ localStorage.setItem("tc_motto_sel",JSON.stringify(a)); }
-// 날짜 기준으로 선택된 명언 중 하나를 고름(날마다 다음 것으로 순환)
-function mottoOfDay(dateStr){ const sel=mottoSel(); if(!sel.length) return null; const di=Math.floor(new Date((dateStr||iso(new Date()))+"T00:00:00").getTime()/864e5); return MOTTOS[sel[((di%sel.length)+sel.length)%sel.length]]; }
+// ===== 훈련 중 핵심 문구 12 (하루 2개씩 자동 순환) =====
+const TR_PHRASES=[
+ {ko:"매 발 새롭게 시작한다.", vi:"Mỗi phát bắn, bắt đầu lại từ đầu.", en:"Start fresh with every shot."},
+ {ko:"점수보다 과정을 지킨다.", vi:"Ưu tiên quy trình, không chạy theo điểm số.", en:"Protect the process, not the score."},
+ {ko:"자세를 세우고 균형을 유지한다.", vi:"Giữ tư thế vững, giữ cơ thể cân bằng.", en:"Stand tall and keep your balance."},
+ {ko:"호흡을 정리한 뒤 조준한다.", vi:"Ổn định hơi thở rồi mới ngắm.", en:"Settle your breath, then aim."},
+ {ko:"가늠쇠를 격발 후까지 본다.", vi:"Mắt giữ ở đầu ruồi trước, trong và sau khi bắn.", en:"Keep your eyes on the front sight through the shot."},
+ {ko:"조준이 불안하면 힘으로 버티지 않는다.", vi:"Đường ngắm chưa ổn, đừng cố ghì súng.", en:"If the aim is unstable, don't force the hold."},
+ {ko:"조준이 안정되면 3~5초 동안 부드럽게 격발한다.", vi:"Khi ngắm ổn định, bóp cò mượt trong 3–5 giây.", en:"When aim is steady, press smoothly for 3–5 seconds."},
+ {ko:"5초가 지나도 못 쏘면 총을 내리고 다시 시작한다.", vi:"Quá 5 giây chưa bắn, hạ súng và làm lại.", en:"If you can't fire within 5s, lower the gun and restart."},
+ {ko:"격발 후 최소 4초 자세를 유지한다.", vi:"Giữ nguyên tư thế ít nhất 4 giây sau khi bắn.", en:"Hold your position at least 4 seconds after the shot."},
+ {ko:"손목을 안정시키고 총구를 끌지 않는다.", vi:"Giữ cổ tay vững, không kéo súng.", en:"Keep the wrist steady; don't drag the muzzle."},
+ {ko:"나쁜 한 발은 정보다. 원인을 하나만 찾는다.", vi:"Phát chưa tốt là dữ liệu; tìm một nguyên nhân.", en:"A bad shot is data — find just one cause."},
+ {ko:"짧게 분석하고 다음 발을 새로 시작한다.", vi:"Phân tích ngắn, bắt đầu phát tiếp theo.", en:"Analyze briefly, then start the next shot fresh."}
+];
+// ===== 시합 전·경기 중 문구 10 (대회 1주 전부터 자동 노출) =====
+const CM_PHRASES=[
+ {ko:"익힌 루틴을 지키고 새 기술은 시도하지 않는다.", vi:"Giữ routine đã tập, không thử kỹ thuật mới.", en:"Keep your trained routine; don't try new techniques."},
+ {ko:"훈련처럼 쏘고, 매 발 과정에 집중한다.", vi:"Thi đấu như khi tập, tập trung quy trình từng phát.", en:"Compete as you train; focus on each shot's process."},
+ {ko:"긴장은 자연스럽다. 루틴으로 돌아온다.", vi:"Hồi hộp là bình thường; hãy trở lại với routine.", en:"Nerves are normal — return to your routine."},
+ {ko:"이전 발과 점수는 내려놓고 지금 한 발에 집중한다.", vi:"Bỏ qua phát trước và điểm số; tập trung phát này.", en:"Let go of the last shot and score; focus on this one."},
+ {ko:"점수에 급해지지 말고 리듬을 지킨다.", vi:"Đừng vội vì điểm số; hãy giữ nhịp ổn định.", en:"Don't rush for score; keep your rhythm."},
+ {ko:"조준이 흐트러지면 총을 내리고 다시 준비한다.", vi:"Đường ngắm chưa ổn, hạ súng và chuẩn bị lại.", en:"If the aim breaks down, lower the gun and reset."},
+ {ko:"3~5초 격발, 추적은 최소 4초.", vi:"Bóp cò 3–5 giây, giữ tư thế ít nhất 4 giây.", en:"Press for 3–5s, follow through at least 4s."},
+ {ko:"어깨 힘을 빼고 호흡을 정리한다.", vi:"Thả lỏng vai, ổn định hơi thở.", en:"Relax your shoulders and settle your breath."},
+ {ko:"내 사대와 내 한 발에 집중한다.", vi:"Tập trung vào bệ bắn và phát bắn của mình.", en:"Focus on your own lane and your own shot."},
+ {ko:"장비 문제는 알리고 임의로 조정하지 않는다.", vi:"Báo thầy khi có vấn đề; không tự ý điều chỉnh.", en:"Report equipment issues; don't adjust on your own."}
+];
+const PHRASE_SETS={ motto:MOTTOS, train:TR_PHRASES, comp:CM_PHRASES };
+const CAT_DEFAULT={ motto:"off", train:"auto", comp:"auto" };   // 기본: 훈련·시합 자동, 명언 꺼짐
+function catMode(cat){ return localStorage.getItem("tc_"+cat+"_mode") || CAT_DEFAULT[cat] || "off"; }
+function setCatMode(cat,m){ localStorage.setItem("tc_"+cat+"_mode",m); }
+function catSel(cat){ const n=(PHRASE_SETS[cat]||[]).length; try{ const a=JSON.parse(localStorage.getItem("tc_"+cat+"_sel")||"null"); return Array.isArray(a)?a.filter(i=>i>=0&&i<n):PHRASE_SETS[cat].map((_,i)=>i); }catch(e){ return PHRASE_SETS[cat].map((_,i)=>i); } }
+function saveCatSel(cat,a){ localStorage.setItem("tc_"+cat+"_sel",JSON.stringify(a)); }
+function dayIdx(dateStr){ return Math.floor(new Date((dateStr||iso(new Date()))+"T00:00:00").getTime()/864e5); }
+function pick2(arr,dateStr){ if(!arr.length)return[]; const n=arr.length,di=dayIdx(dateStr); if(n===1)return[arr[0]]; const a=((2*di)%n+n)%n,b=((2*di+1)%n+n)%n; return a===b?[arr[a]]:[arr[a],arr[b]]; }
+function compInfo(){ const d=localStorage.getItem("tc_comp_date")||""; if(!d)return null; const nm=localStorage.getItem("tc_comp_name")||""; const du=Math.round((new Date(d+"T00:00:00")-new Date(iso(new Date())+"T00:00:00"))/864e5); return {date:d,name:nm,du}; }
+// 호환: 기존 mottoSel/mottoOfDay 유지
+function mottoSel(){ return catSel("motto"); }
+function saveMottoSel(a){ saveCatSel("motto",a); }
+function mottoOfDay(dateStr){ const sel=catSel("motto"); if(!sel.length)return null; const di=dayIdx(dateStr); return MOTTOS[sel[((di%sel.length)+sel.length)%sel.length]]; }
+// 배너에 연속 표시할 문구 모음(시합→훈련→명언→입력단훈 순)
+function bannerEntries(dateStr){
+  dateStr=dateStr||((typeof SEL!=="undefined"&&SEL)?SEL:iso(new Date()));
+  const out=[], ci=compInfo();
+  // 🎂 생일 축하(오늘 생일인 선수) — 맨 앞
+  const bd=bdaysToday(); if(bd.length){ const nm=bd.join(", "); out.push({ko:`🎂 ${nm} 생일 축하합니다!`, vi:`🎂 Chúc mừng sinh nhật ${nm}!`, en:`🎂 Happy birthday, ${nm}!`}); }
+  const cmode=catMode("comp");
+  if(cmode==="auto"){ if(ci && ci.du<=7 && ci.du>=0) pick2(CM_PHRASES,dateStr).forEach(p=>out.push(p)); }
+  else if(cmode==="manual") catSel("comp").forEach(i=>out.push(CM_PHRASES[i]));
+  const tmode=catMode("train");
+  if(tmode==="auto") pick2(TR_PHRASES,dateStr).forEach(p=>out.push(p));
+  else if(tmode==="manual") catSel("train").forEach(i=>out.push(TR_PHRASES[i]));
+  const mmode=catMode("motto");
+  if(mmode==="auto"){ const m=mottoOfDay(dateStr); if(m)out.push(m); }
+  else if(mmode==="manual") catSel("motto").forEach(i=>out.push(MOTTOS[i]));
+  const typed=dtGet(); if(typed && (typed.vi||typed.ko||typed.en) && localStorage.getItem("tc_dt_on")!=="0") out.push(typed);
+  return out.filter(Boolean);
+}
 function dtGet(){ try{ return JSON.parse(localStorage.getItem("tc_dt")||"null"); }catch(e){ return null; } }
 async function translateDT(vi){
   const r=await fetch(GAS_TR+"&sl=vi&tl=ko,en&q="+encodeURIComponent(vi),{cache:"no-store"}).then(r=>r.json());
@@ -602,16 +667,19 @@ async function translateDT(vi){
 let dtKf=null;
 function renderDT(){
   const box=document.getElementById("dt"); if(!box) return;
-  // 명언 자동 순환 ON이면 오늘 날짜 기준 선택 명언, 아니면 코치가 입력한 단훈
-  const d = MOTTO_ON ? mottoOfDay((typeof SEL!=="undefined"&&SEL)?SEL:iso(new Date())) : dtGet();
-  if(!d || !(d.vi||d.ko||d.en)){ box.innerHTML=""; return; }
-  const txt = d[LANG] || d.vi || d.ko || d.en || "";   // 선택 언어만 출력
-  if(!txt){ box.innerHTML=""; return; }
+  const entries=bannerEntries();
+  // 대회 D-day 머리말(대회 3주 이내 자동 표시)
+  const ci=compInfo(); let lead=null;
+  if(ci && ci.du>=0 && ci.du<=21){ const nm=ci.name||({ko:"대회",vi:"Giải đấu",en:"Competition"}[LANG]||"대회");
+    lead = ci.du===0 ? {ko:`🏆 ${nm} 오늘!`,vi:`🏆 ${nm} HÔM NAY!`,en:`🏆 ${nm} TODAY!`} : {ko:`🏆 ${nm} D-${ci.du}`,vi:`🏆 ${nm} · Còn ${ci.du} ngày`,en:`🏆 ${nm} · D-${ci.du}`}; }
+  const list = lead ? [lead].concat(entries) : entries;
+  if(!list.length){ box.innerHTML=""; return; }
   const flag = LANG==="ko"?"🇰🇷":LANG==="en"?"🇬🇧":"🇻🇳";
   const sep=`<span class="dt-sep">•</span>`;
-  const entry=`<span class="dt-e${LANG==="ko"?" k":""}"><i>${flag}</i>${esc(txt)}</span>`;
+  const inner = list.map(d=>{ const txt=d[LANG]||d.vi||d.ko||d.en||""; return txt?`<span class="dt-e${LANG==="ko"?" k":""}"><i>${flag}</i>${esc(txt)}</span>`+sep:""; }).join("");
+  if(!inner){ box.innerHTML=""; return; }
   box.innerHTML=`<div class="dt-view"><div class="dt-track" id="dt-track"></div></div>`;
-  fillMarquee(box.querySelector(".dt-view"), document.getElementById("dt-track"), entry+sep, "dt-kf", "dtmarq", 45);
+  fillMarquee(box.querySelector(".dt-view"), document.getElementById("dt-track"), inner, "dt-kf", "dtmarq", 45);
 }
 
 const sessOn = d => SESSIONS.filter(x=>x.date===d);
@@ -718,6 +786,15 @@ function speedCtl(){ return `<div class="speed"><span>${esc(L().speed)}</span><i
 let PANEL_OPEN=false;
 function applyPanel(){ const p=document.getElementById("panel"); if(p)p.hidden=!PANEL_OPEN; }
 function togglePanel(){ PANEL_OPEN=!PANEL_OPEN; applyPanel(); if(PANEL_OPEN){ const i=document.getElementById("pt-input"); if(i){ i.value=localStorage.getItem("tc_ticker")||""; i.focus(); } } }
+// 문구 카테고리 UI(끄기·자동·수동 + 수동일 때 체크 목록)
+function phraseCatUI(cat,icon,hint){
+  const mode=catMode(cat), sel=catSel(cat), arr=PHRASE_SETS[cat];
+  let s=`<div class="pn-row"><span class="pn-lab">${icon}</span><div class="seg pcat" data-cat="${cat}"><button data-m="off"${mode==="off"?' class="on"':''}>끄기</button><button data-m="auto"${mode==="auto"?' class="on"':''}>자동</button><button data-m="manual"${mode==="manual"?' class="on"':''}>수동</button></div><span class="pn-sub">${esc(hint)}</span></div>`;
+  s+=`<div class="pn-row pgrid-row" data-cat="${cat}"${mode==="manual"?"":' style="display:none"'}><span class="pn-lab"></span><div class="mt-grid">`
+    +arr.map((m,i)=>`<label class="mt-chk"><input type="checkbox" class="mt-c" data-cat="${cat}" data-i="${i}"${sel.includes(i)?" checked":""}><b>${pad(i+1)}</b><span>${esc(m[LANG]||m.vi)}</span></label>`).join("")
+    +`</div></div>`;
+  return s;
+}
 function renderPanel(){
   const dayView=!document.getElementById("day").hidden;
   let h="";
@@ -733,12 +810,14 @@ function renderPanel(){
   h+=`<div class="pn-row"><span class="pn-lab">${esc(L().langLab)}</span>${langSeg()}</div>`;
   h+=`<div class="pn-row"><span class="pn-lab">📢</span><input class="pt-input" id="pt-input" placeholder="${esc(L().tkPH)}"><button class="tb" id="pt-save">${esc(L().tkSave)}</button></div>`;
   h+=`<div class="pn-row"><span class="pn-lab">📣 ${esc(L().dtLab)}</span><input class="pt-input" id="dt-input" placeholder="${esc(L().dtPH)}" value="${esc((dtGet()||{}).vi||"")}"><button class="tb" id="dt-tr">🌐 ${esc(L().trBtn)}</button><button class="tb" id="dt-clr">✕</button><span class="pn-sub" id="dt-stat"></span></div>`;
-  // 🏅 명언 10선: 자동 순환 ON/OFF + 체크 선택(체크한 것만 날마다 번갈아 표시)
-  const _msel=mottoSel();
-  h+=`<div class="pn-row"><span class="pn-lab">🏅 명언</span><label class="al-tog"><input type="checkbox" id="mt-on"${MOTTO_ON?" checked":""}> 요일별 자동 순환</label><span class="pn-sub">체크한 것만 날마다 번갈아 표시 · 켜면 위 단훈 대신 명언이 나옵니다</span></div>`;
-  h+=`<div class="pn-row"><span class="pn-lab"></span><div class="mt-grid">`
-    +MOTTOS.map((m,i)=>`<label class="mt-chk"><input type="checkbox" class="mt-c" data-i="${i}"${_msel.includes(i)?" checked":""}><b>${pad(i+1)}</b><span>${esc(m[LANG]||m.vi)}</span></label>`).join("")
-    +`</div></div>`;
+  // 🏆 대회(다음 시합): D-day 표시 + 시합문구 자동(D-7) 기준
+  h+=`<div class="pn-row"><span class="pn-lab">🏆 대회</span><input class="pt-input" id="cm-name" placeholder="대회명(예: 전국선수권)" value="${esc(localStorage.getItem('tc_comp_name')||'')}" style="min-width:150px;flex:0 1 230px"><input type="date" id="cm-date" class="tm-in" value="${esc(localStorage.getItem('tc_comp_date')||'')}"><button class="tb" id="cm-clr">✕</button><span class="pn-sub">D-day·시합문구 자동(D-7부터)</span></div>`;
+  // 🎯훈련 / 🏆시합 / 🏅명언 문구: 각각 끄기·자동·수동(체크) 설정
+  h+=phraseCatUI("train","🎯 훈련","자동=하루 2개씩 순환");
+  h+=phraseCatUI("comp","🏆 시합","자동=대회 D-7부터");
+  h+=phraseCatUI("motto","🏅 명언","자동=날마다 1개");
+  // 🎂 생일 축하(이름:MM-DD) — 해당 날짜에 자동 배너
+  h+=`<div class="pn-row"><span class="pn-lab">🎂 생일</span><input class="pt-input" id="bd-input" placeholder="홍수현:03-15, 부솔:07-02" value="${esc(localStorage.getItem('tc_bdays')||'')}"><button class="tb" id="bd-save">${esc(L().tkSave)}</button></div>`;
   h+=`<div class="pn-row"><span class="pn-lab"></span><span class="pn-sub">${esc(L().speed)}</span><input type="range" id="tk-speed" min="20" max="220" step="10" value="${TK_SPEED}"><span class="pn-sub">${esc(L().tkPauseLab)}</span><input type="range" id="tk-pause" min="0" max="10" step="0.5" value="${TK_PAUSE}"></div>`;
   h+=`<div class="pn-row"><span class="pn-lab">⏱ ${esc(L().timer)}</span><input type="number" id="tm-min" class="tm-in" min="0" max="180" placeholder="${esc(L().min)}"><span class="pn-sub">:</span><input type="number" id="tm-sec" class="tm-in" min="0" max="59" placeholder="${esc(L().sec)}"><button class="tb" id="tm-start">▶ ${esc(L().start)}</button><button class="tb" id="tm-stop">■</button><button class="tb q" data-m="1">1'</button><button class="tb q" data-m="3">3'</button><button class="tb q" data-m="5">5'</button><button class="tb q" data-m="10">10'</button></div>`;
   h+=`<div class="pn-row"><span class="pn-lab">⏰ ${esc(L().alarm)}</span><input type="time" id="al-time" class="tm-in"><input type="number" id="al-dur" class="tm-in" min="0" max="180" placeholder="⏱${esc(L().min)}" title="알람 시 자동 시작할 타이머(분) · 선택"><button class="tb" id="al-add">➕ ${esc(L().add)}</button><button class="tb" id="al-test">🔔 ${esc(L().almTest)}</button>`
@@ -779,9 +858,16 @@ function bindPanel(){
   if(q("dt-tr"))q("dt-tr").onclick=dtDo;
   if(q("dt-input"))q("dt-input").onkeydown=e=>{ if(e.key==="Enter")dtDo(); };
   if(q("dt-clr"))q("dt-clr").onclick=()=>{ localStorage.removeItem("tc_dt"); if(q("dt-input"))q("dt-input").value=""; const st=q("dt-stat"); if(st)st.textContent=""; renderDT(); };
-  // 🏅 명언: 자동순환 토글 + 개별 체크
-  if(q("mt-on"))q("mt-on").onchange=()=>{ MOTTO_ON=q("mt-on").checked; localStorage.setItem("tc_motto_on",MOTTO_ON?"1":"0"); renderDT(); };
-  document.querySelectorAll("#panel .mt-c").forEach(c=>c.onchange=()=>{ const sel=[]; document.querySelectorAll("#panel .mt-c").forEach(x=>{ if(x.checked)sel.push(+x.dataset.i); }); saveMottoSel(sel); renderDT(); });
+  // 🏆 대회(다음 시합): 이름/날짜 → D-day·시합문구 자동 기준
+  const cmSave=()=>{ const nm=(q("cm-name")?.value||"").trim(), dt=q("cm-date")?.value||""; if(nm)localStorage.setItem("tc_comp_name",nm);else localStorage.removeItem("tc_comp_name"); if(dt)localStorage.setItem("tc_comp_date",dt);else localStorage.removeItem("tc_comp_date"); renderDT(); };
+  if(q("cm-name"))q("cm-name").onchange=cmSave;
+  if(q("cm-date"))q("cm-date").onchange=cmSave;
+  if(q("cm-clr"))q("cm-clr").onclick=()=>{ localStorage.removeItem("tc_comp_name"); localStorage.removeItem("tc_comp_date"); renderPanel(); renderDT(); };
+  // 🎂 생일 저장
+  if(q("bd-save"))q("bd-save").onclick=()=>{ localStorage.setItem("tc_bdays",(q("bd-input").value||"").trim()); renderDT(); const st=q("bd-input"); if(st){ st.style.borderColor="#1f9d57"; setTimeout(()=>st.style.borderColor="",900);} };
+  // 🎯🏆🏅 문구 카테고리: 끄기/자동/수동 전환 + 수동 체크
+  document.querySelectorAll("#panel .seg.pcat button").forEach(b=>b.onclick=()=>{ const cat=b.parentNode.dataset.cat; setCatMode(cat,b.dataset.m); renderPanel(); renderDT(); });
+  document.querySelectorAll("#panel .mt-c").forEach(c=>c.onchange=()=>{ const cat=c.dataset.cat; const sel=[]; document.querySelectorAll(`#panel .mt-c[data-cat="${cat}"]`).forEach(x=>{ if(x.checked)sel.push(+x.dataset.i); }); saveCatSel(cat,sel); renderDT(); });
   const ts=q("tk-speed"); if(ts)ts.oninput=()=>{ TK_SPEED=parseFloat(ts.value); localStorage.setItem("tc_tkspeed",TK_SPEED); renderTicker(); };
   const tp=q("tk-pause"); if(tp)tp.oninput=()=>{ TK_PAUSE=parseFloat(tp.value); localStorage.setItem("tc_tkpause",TK_PAUSE); renderTicker(); };
   // 타이머
@@ -861,6 +947,7 @@ function buildDay(){
   }
   if(VIEW!=="score" && !SLIDES.some(s=>s.type==="sched")) SLIDES.push({type:"noplan"});   // 전체 일정 데이터 없음
   if(VIEW!=="sched") SLIDES.push({type:"scores"});
+  if(VIEW!=="sched"){ const wk=weeklyHighlights(); if(wk && (wk.mvp||wk.improved)) SLIDES.push({type:"weekly",wk}); }   // 🥇 주간 하이라이트
   if(!SLIDES.length) SLIDES.push({type:"scores"});
   renderSlides(); showSlide(0); restartTimer();
 }
@@ -875,6 +962,8 @@ function slideHTML(s){
   if(s.type==="scores"){
     // 훈련 기록이 '있는 날' 기준 최근 3일(쉬는 날은 건너뜀 — 예: 일요일 쉬면 토·금·목)
     const days=[...new Set((SESSIONS||[]).map(x=>x.date))].filter(d=>d&&d<=SEL).sort().reverse().slice(0,3);
+    // 🏆 개인 최고기록(PB, 60발환산): 선수별 역대 최고 → 그 기록이 표에 뜨면 축하 강조
+    const PB={}; (SESSIONS||[]).forEach(x=>{ const c=conv60(x); if(!(x.name in PB)||c>PB[x.name])PB[x.name]=c; });
     let body="",any=false;
     for(const dt of days){ const ss=sessOn(dt).slice().sort((a,b)=>conv60(b)-conv60(a)); if(!ss.length)continue; any=true;
       body+=`<div class="daygroup"><div class="daygroup-h">${vnShort(dt)}${dt===SEL?' <span class="sel">●</span>':''}</div>`+
@@ -882,11 +971,18 @@ function slideHTML(s){
         ss.map(x=>{const d=x.dist||[];const hd=d.length>0;const d6=hd?d.slice(4,11).reduce((s,v)=>s+(v||0),0):null;
           const serHTML=x.series.length?x.series.map(v=>{let c="";if(v>=99)c="s-blink";else if(v>=96)c="s-good";else if(v<=94)c="s-bad";return `<span class="sv ${c}">${v}</span>`;}).join(""):"—";
           const lngHTML=x.long10!=null?`<span class="${x.long10>=10?'blink10':''}">${x.long10}</span>`:"—";
-          return `<tr><td class="l ath">${esc(x.name)}</td><td><span class="disc" style="background:${DISC_COLOR[x.dk]||'#888'}">${esc(discLabel(x))}</span></td><td class="l series">${serHTML}</td><td class="total">${fmt(x.total)}<span class="tot-raw">${esc(L().conv60)} ${fmt(conv60(x))}</span></td><td class="d10">${d[0]!=null?d[0]:"—"}</td><td>${d[1]!=null?d[1]:"—"}</td><td class="dlow">${d[2]!=null?d[2]:"—"}</td><td class="dlow">${d[3]?d[3]:(hd?"":"—")}</td><td class="dlow">${d6?d6:(hd?"":"—")}</td><td class="lng">${lngHTML}</td></tr>`;}).join("")+
+          const isPB = PB[x.name]!=null && conv60(x)>=PB[x.name]-0.049;
+          return `<tr class="${isPB?'pb-row':''}"><td class="l ath">${esc(x.name)}${isPB?' <span class="pb-badge">🏆PB</span>':''}</td><td><span class="disc" style="background:${DISC_COLOR[x.dk]||'#888'}">${esc(discLabel(x))}</span></td><td class="l series">${serHTML}</td><td class="total">${fmt(x.total)}<span class="tot-raw">${esc(L().conv60)} ${fmt(conv60(x))}</span></td><td class="d10">${d[0]!=null?d[0]:"—"}</td><td>${d[1]!=null?d[1]:"—"}</td><td class="dlow">${d[2]!=null?d[2]:"—"}</td><td class="dlow">${d[3]?d[3]:(hd?"":"—")}</td><td class="dlow">${d6?d6:(hd?"":"—")}</td><td class="lng">${lngHTML}</td></tr>`;}).join("")+
         `</tbody></table></div>`;
     }
     const hdRange = days.length ? (days.length>1?`${vnShort(days[days.length-1])}~${vnShort(days[0])}`:vnShort(days[0])) : "";
     return `<div class="card"><div class="slide-h">📊 ${esc(L().scores)} <small>${hdRange}</small></div><div class="scroller">${any?body:`<div class="nodata">${esc(L().noRec)}</div>`}</div></div>`;
+  }
+  if(s.type==="weekly"){
+    const wk=s.wk, f=v=>fmt(Math.round(v*10)/10); let b="";
+    if(wk.mvp) b+=`<div class="wk-card"><div class="wk-ico">🥇</div><div class="wk-body"><div class="wk-ttl">${esc(L().mvpLab)}</div><div class="wk-name">${esc(wk.mvp.name)}</div><div class="wk-sub">${esc(L().conv60)} ${f(wk.mvp.avg)} · ${wk.mvp.n}${esc(L().sessUnit)}</div></div></div>`;
+    if(wk.improved) b+=`<div class="wk-card"><div class="wk-ico">📈</div><div class="wk-body"><div class="wk-ttl">${esc(L().impLab)}</div><div class="wk-name">${esc(wk.improved.name)}</div><div class="wk-sub"><span class="wk-up">▲ ${f(wk.improved.gain)}</span> · ${esc(L().conv60)} ${f(wk.improved.avg)}</div></div></div>`;
+    return `<div class="card"><div class="slide-h">🥇 ${esc(L().weekLab)}</div><div class="scroller"><div class="wk-wrap">${b||`<div class="nodata">${esc(L().noRec)}</div>`}</div></div></div>`;
   }
   const half=s.half==="all"?L().allDay:(s.half==="am"?L().am:L().pm);
   const rows=s.rows.map(r=>`<div class="sched-row"><span class="t">${esc(r.s)}${r.e&&r.e!==r.s?"~"+esc(r.e):""}</span><span>${pick(r.ev)?`<span class="ev">${esc(pick(r.ev))}</span>`:""}${esc(pick(r.tr))}${pick(r.sh)?` <span class="shots">${esc(pick(r.sh))}</span>`:""}${pick(r.fc)?`<span class="foc"> · ${esc(pick(r.fc))}</span>`:""}</span></div>`).join("");
@@ -929,6 +1025,32 @@ function restartTimer(){ clearTimeout(slideTimer); if(SLIDES.length>1) slideTime
 const fmt = v => Number.isInteger(v)?v:(Math.round(v*10)/10);
 // 60발 환산 평균: 세션 발수(시리즈수×10)가 달라도 공정 비교. 발수 모르면 총점 그대로.
 function conv60(x){ const shots=(x.series&&x.series.length)?x.series.length*10:0; return shots>0?Math.round(x.total/shots*60*10)/10:x.total; }
+// 🥇 주간 하이라이트: 최근 7일 MVP(평균 60발환산 1위) + 최다 향상(지난 7일 대비 상승 1위)
+function weeklyHighlights(){
+  const base=new Date(((typeof SEL!=="undefined"&&SEL)?SEL:iso(new Date()))+"T00:00:00");
+  const d0=new Date(base); d0.setDate(d0.getDate()-6);
+  const p1=new Date(base); p1.setDate(p1.getDate()-13); const p2=new Date(base); p2.setDate(p2.getDate()-7);
+  const inR=(ds,lo,hi)=>{ const t=new Date(ds+"T00:00:00"); return t>=lo&&t<=hi; };
+  const cur={}, pre={};
+  (SESSIONS||[]).forEach(x=>{ const c=conv60(x);
+    if(inR(x.date,d0,base)){ (cur[x.name]=cur[x.name]||{s:0,n:0}); cur[x.name].s+=c; cur[x.name].n++; }
+    else if(inR(x.date,p1,p2)){ (pre[x.name]=pre[x.name]||{s:0,n:0}); pre[x.name].s+=c; pre[x.name].n++; } });
+  const rows=Object.keys(cur).map(n=>({name:n, avg:cur[n].s/cur[n].n, n:cur[n].n, prev:pre[n]?pre[n].s/pre[n].n:null}));
+  if(!rows.length) return null;
+  const mvp=rows.slice().sort((a,b)=>b.avg-a.avg)[0];
+  const impRows=rows.filter(r=>r.prev!=null).map(r=>({...r,gain:r.avg-r.prev})).filter(r=>r.gain>0);
+  const improved=impRows.length?impRows.sort((a,b)=>b.gain-a.gain)[0]:null;
+  return {mvp,improved};
+}
+// 🎂 오늘 생일인 선수들(설정: "이름:MM-DD, 이름:MM-DD")
+function bdaysToday(){
+  const raw=localStorage.getItem("tc_bdays")||""; if(!raw.trim())return [];
+  const now=(typeof SEL!=="undefined"&&SEL)?SEL:iso(new Date()); const md=now.slice(5);   // MM-DD
+  const out=[];
+  raw.split(/[,\n]/).forEach(p=>{ const m=p.split(":"); if(m.length<2)return; const nm=m[0].trim(); const dd=m[1].trim().replace(/\//g,"-").replace(/\./g,"-");
+    const mm=dd.match(/(\d{1,2})-(\d{1,2})/); if(nm&&mm){ const key=pad(+mm[1])+"-"+pad(+mm[2]); if(key===md)out.push(nm); } });
+  return out;
+}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 // 공용 가로 전광판: inner(한 벌)을 뷰포트 채울 만큼 반복 후 2배 → 여백 없이 끝→처음 끊김없는 무한 루프
 function fillMarquee(view, track, inner, kfId, kfName, speed){
@@ -1013,7 +1135,7 @@ setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
 let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(()=>{ renderTicker(); fitSig(); renderWR(); renderDT(); },300); });
 setInterval(loadWorldRank, 6*3600*1000);   // 세계랭킹 월간 갱신 반영(6시간마다 재조회)
 // 키오스크 자동 갱신: 새 배포(BUILD 변경) 감지 시 캐시 무시하고 새로고침 → TV가 옛 버전에 갇히지 않음
-const BUILD="20261026i";
+const BUILD="20261026j";
 setInterval(async()=>{ try{
   const t=await fetch("index.html?x="+Date.now(),{cache:"no-store"}).then(r=>r.text());
   const m=t.match(/const BUILD="([^"]+)"/);
