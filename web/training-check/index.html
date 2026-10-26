@@ -99,7 +99,11 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .dt-track{display:inline-flex;align-items:center;white-space:nowrap;will-change:transform}
 .mq-u{display:inline-flex;align-items:center;white-space:nowrap}
 .dt-copy{display:inline-flex;align-items:center}
-.dt-e{display:inline-flex;align-items:center;gap:8px;padding:0 24px;font-size:calc(20px*var(--fz));font-weight:800;color:var(--acc2);white-space:nowrap}
+.dt-e{display:inline-flex;align-items:center;gap:8px;padding:0 24px;font-size:calc(27px*var(--fz));font-weight:800;color:var(--acc2);white-space:nowrap}
+.mt-grid{display:flex;flex-direction:column;gap:5px;flex:1;min-width:0}
+.mt-chk{display:flex;align-items:flex-start;gap:7px;font-size:calc(13px*var(--fz));font-weight:700;color:var(--tx);cursor:pointer;line-height:1.3}
+.mt-chk input{margin-top:2px;flex:0 0 auto}
+.mt-chk b{color:var(--acc2);flex:0 0 auto}
 .dt-e i{font-style:normal;font-size:1.05em}
 .dt-e.k{color:var(--gold2)}
 .dt-sep{color:var(--line2);font-size:calc(15px*var(--fz))}
@@ -135,7 +139,7 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .hbtns{display:flex;flex-direction:column;gap:6px;flex:0 0 auto}
 .gear.sm{width:38px;height:38px;font-size:19px}
 /* 설정 패널 */
-.panel{position:absolute;top:74px;left:50%;transform:translateX(-50%);z-index:60;background:var(--panel);border:1px solid var(--line2);border-radius:14px;box-shadow:0 18px 44px rgba(16,40,80,.30);padding:15px 18px;display:flex;flex-direction:column;gap:12px;min-width:min(620px,94vw)}
+.panel{position:absolute;top:74px;left:50%;transform:translateX(-50%);z-index:60;background:var(--panel);border:1px solid var(--line2);border-radius:14px;box-shadow:0 18px 44px rgba(16,40,80,.30);padding:15px 18px;display:flex;flex-direction:column;gap:12px;min-width:min(620px,94vw);max-height:calc(100vh - 86px);overflow-y:auto;overscroll-behavior:contain}
 .pn-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .pn-lab{font-size:calc(14px*var(--fz));font-weight:800;color:var(--mut);min-width:58px}
 .pt-input{flex:1;min-width:220px;border:1px solid var(--line2);border-radius:9px;padding:10px 13px;font-size:calc(17px*var(--fz));font-weight:700;color:var(--tx);background:var(--bg2);outline:none}
@@ -572,6 +576,24 @@ function renderWR(){
 
 // ===== 단훈 안내 배너: VI 입력 → GAS LanguageApp 번역(KO/EN) → 우→좌 =====
 const GAS_TR=GAS_PLAN.replace("api=plan","api=tr");
+// ===== 단훈 명언 10선 (요일별 자동 순환 또는 체크 선택) =====
+const MOTTOS=[
+ {ko:"과녁에는 실력을, 인생에는 품격을 남겨라.", vi:"Hãy ghi dấu thực lực trên bia bắn và để lại dấu ấn nhân cách cao đẹp trong cuộc đời.", en:"Leave skill on the target, and dignity on your life."},
+ {ko:"메달은 목에 걸지만, 존경은 삶으로 얻는다.", vi:"Huy chương được đeo trên cổ, nhưng sự kính trọng phải được tạo nên bằng cách sống.", en:"A medal hangs on your neck, but respect is earned by how you live."},
+ {ko:"승리는 잠시의 영광이고, 성실은 평생의 자산이다.", vi:"Chiến thắng là vinh quang nhất thời, còn sự chăm chỉ và tận tâm là tài sản suốt đời.", en:"Victory is a brief glory; sincerity is a lifelong asset."},
+ {ko:"훌륭한 선수가 되기 전에, 먼저 훌륭한 사람이 되어라.", vi:"Trước khi trở thành một vận động viên xuất sắc, hãy trở thành một con người tốt đẹp.", en:"Before becoming a great athlete, first become a good person."},
+ {ko:"남을 이긴 기록보다 자신을 이긴 하루가 더 값지다.", vi:"Một ngày chiến thắng chính mình còn quý giá hơn thành tích vượt qua người khác.", en:"A day you win over yourself is worth more than a record over others."},
+ {ko:"재능은 시작을 결정하지만, 태도는 미래를 결정한다.", vi:"Tài năng có thể quyết định điểm khởi đầu, nhưng thái độ mới quyết định tương lai.", en:"Talent decides the start, but attitude decides the future."},
+ {ko:"실수는 지나가지만, 실수를 대하는 태도는 남는다.", vi:"Sai lầm rồi sẽ qua, nhưng thái độ đối diện với sai lầm sẽ còn lại.", en:"Mistakes pass, but how you face them remains."},
+ {ko:"아무도 보지 않을 때 지키는 원칙이 너의 진짜 인격이다.", vi:"Những nguyên tắc em giữ vững khi không ai quan sát mới thể hiện nhân cách thật sự của em.", en:"The principles you keep when no one is watching are your true character."},
+ {ko:"한 발에 최선을 다하되, 한 발로 자신의 가치를 판단하지 마라.", vi:"Hãy nỗ lực hết mình trong từng phát bắn, nhưng đừng đánh giá giá trị bản thân chỉ qua một phát bắn.", en:"Give your best to each shot, but never judge your worth by a single shot."},
+ {ko:"총을 내려놓은 뒤에도, 자랑스러운 사람으로 남아라.", vi:"Ngay cả khi đã đặt súng xuống, hãy luôn sống như một con người đáng tự hào.", en:"Even after you put down the gun, remain someone to be proud of."}
+];
+let MOTTO_ON = localStorage.getItem("tc_motto_on")==="1";   // 명언 자동 순환 사용 여부
+function mottoSel(){ try{ const a=JSON.parse(localStorage.getItem("tc_motto_sel")||"null"); return Array.isArray(a)?a.filter(i=>i>=0&&i<MOTTOS.length):MOTTOS.map((_,i)=>i); }catch(e){ return MOTTOS.map((_,i)=>i); } }
+function saveMottoSel(a){ localStorage.setItem("tc_motto_sel",JSON.stringify(a)); }
+// 날짜 기준으로 선택된 명언 중 하나를 고름(날마다 다음 것으로 순환)
+function mottoOfDay(dateStr){ const sel=mottoSel(); if(!sel.length) return null; const di=Math.floor(new Date((dateStr||iso(new Date()))+"T00:00:00").getTime()/864e5); return MOTTOS[sel[((di%sel.length)+sel.length)%sel.length]]; }
 function dtGet(){ try{ return JSON.parse(localStorage.getItem("tc_dt")||"null"); }catch(e){ return null; } }
 async function translateDT(vi){
   const r=await fetch(GAS_TR+"&sl=vi&tl=ko,en&q="+encodeURIComponent(vi),{cache:"no-store"}).then(r=>r.json());
@@ -580,7 +602,8 @@ async function translateDT(vi){
 let dtKf=null;
 function renderDT(){
   const box=document.getElementById("dt"); if(!box) return;
-  const d=dtGet();
+  // 명언 자동 순환 ON이면 오늘 날짜 기준 선택 명언, 아니면 코치가 입력한 단훈
+  const d = MOTTO_ON ? mottoOfDay((typeof SEL!=="undefined"&&SEL)?SEL:iso(new Date())) : dtGet();
   if(!d || !(d.vi||d.ko||d.en)){ box.innerHTML=""; return; }
   const txt = d[LANG] || d.vi || d.ko || d.en || "";   // 선택 언어만 출력
   if(!txt){ box.innerHTML=""; return; }
@@ -710,6 +733,12 @@ function renderPanel(){
   h+=`<div class="pn-row"><span class="pn-lab">${esc(L().langLab)}</span>${langSeg()}</div>`;
   h+=`<div class="pn-row"><span class="pn-lab">📢</span><input class="pt-input" id="pt-input" placeholder="${esc(L().tkPH)}"><button class="tb" id="pt-save">${esc(L().tkSave)}</button></div>`;
   h+=`<div class="pn-row"><span class="pn-lab">📣 ${esc(L().dtLab)}</span><input class="pt-input" id="dt-input" placeholder="${esc(L().dtPH)}" value="${esc((dtGet()||{}).vi||"")}"><button class="tb" id="dt-tr">🌐 ${esc(L().trBtn)}</button><button class="tb" id="dt-clr">✕</button><span class="pn-sub" id="dt-stat"></span></div>`;
+  // 🏅 명언 10선: 자동 순환 ON/OFF + 체크 선택(체크한 것만 날마다 번갈아 표시)
+  const _msel=mottoSel();
+  h+=`<div class="pn-row"><span class="pn-lab">🏅 명언</span><label class="al-tog"><input type="checkbox" id="mt-on"${MOTTO_ON?" checked":""}> 요일별 자동 순환</label><span class="pn-sub">체크한 것만 날마다 번갈아 표시 · 켜면 위 단훈 대신 명언이 나옵니다</span></div>`;
+  h+=`<div class="pn-row"><span class="pn-lab"></span><div class="mt-grid">`
+    +MOTTOS.map((m,i)=>`<label class="mt-chk"><input type="checkbox" class="mt-c" data-i="${i}"${_msel.includes(i)?" checked":""}><b>${pad(i+1)}</b><span>${esc(m[LANG]||m.vi)}</span></label>`).join("")
+    +`</div></div>`;
   h+=`<div class="pn-row"><span class="pn-lab"></span><span class="pn-sub">${esc(L().speed)}</span><input type="range" id="tk-speed" min="20" max="220" step="10" value="${TK_SPEED}"><span class="pn-sub">${esc(L().tkPauseLab)}</span><input type="range" id="tk-pause" min="0" max="10" step="0.5" value="${TK_PAUSE}"></div>`;
   h+=`<div class="pn-row"><span class="pn-lab">⏱ ${esc(L().timer)}</span><input type="number" id="tm-min" class="tm-in" min="0" max="180" placeholder="${esc(L().min)}"><span class="pn-sub">:</span><input type="number" id="tm-sec" class="tm-in" min="0" max="59" placeholder="${esc(L().sec)}"><button class="tb" id="tm-start">▶ ${esc(L().start)}</button><button class="tb" id="tm-stop">■</button><button class="tb q" data-m="1">1'</button><button class="tb q" data-m="3">3'</button><button class="tb q" data-m="5">5'</button><button class="tb q" data-m="10">10'</button></div>`;
   h+=`<div class="pn-row"><span class="pn-lab">⏰ ${esc(L().alarm)}</span><input type="time" id="al-time" class="tm-in"><input type="number" id="al-dur" class="tm-in" min="0" max="180" placeholder="⏱${esc(L().min)}" title="알람 시 자동 시작할 타이머(분) · 선택"><button class="tb" id="al-add">➕ ${esc(L().add)}</button><button class="tb" id="al-test">🔔 ${esc(L().almTest)}</button>`
@@ -750,6 +779,9 @@ function bindPanel(){
   if(q("dt-tr"))q("dt-tr").onclick=dtDo;
   if(q("dt-input"))q("dt-input").onkeydown=e=>{ if(e.key==="Enter")dtDo(); };
   if(q("dt-clr"))q("dt-clr").onclick=()=>{ localStorage.removeItem("tc_dt"); if(q("dt-input"))q("dt-input").value=""; const st=q("dt-stat"); if(st)st.textContent=""; renderDT(); };
+  // 🏅 명언: 자동순환 토글 + 개별 체크
+  if(q("mt-on"))q("mt-on").onchange=()=>{ MOTTO_ON=q("mt-on").checked; localStorage.setItem("tc_motto_on",MOTTO_ON?"1":"0"); renderDT(); };
+  document.querySelectorAll("#panel .mt-c").forEach(c=>c.onchange=()=>{ const sel=[]; document.querySelectorAll("#panel .mt-c").forEach(x=>{ if(x.checked)sel.push(+x.dataset.i); }); saveMottoSel(sel); renderDT(); });
   const ts=q("tk-speed"); if(ts)ts.oninput=()=>{ TK_SPEED=parseFloat(ts.value); localStorage.setItem("tc_tkspeed",TK_SPEED); renderTicker(); };
   const tp=q("tk-pause"); if(tp)tp.oninput=()=>{ TK_PAUSE=parseFloat(tp.value); localStorage.setItem("tc_tkpause",TK_PAUSE); renderTicker(); };
   // 타이머
@@ -841,7 +873,8 @@ function slideHTML(s){
     return `<div class="card"><div class="slide-h">📋 ${esc(L().plan)} <small class="fb">${esc(vnDate(SEL))}</small></div><div class="scroller"><div class="nodata"><div style="font-size:1.5em;font-weight:900;color:var(--acc2);margin-bottom:8px">📅 ${esc(vnDate(SEL))}</div>${esc(L().noPlan)}<div style="margin-top:14px;font-size:.62em;color:var(--mut);opacity:.75">${diag}</div></div></div></div>`;
   }
   if(s.type==="scores"){
-    const days=[0,1,2].map(k=>{const x=new Date(SEL+"T00:00:00");x.setDate(x.getDate()-k);return iso(x);});
+    // 훈련 기록이 '있는 날' 기준 최근 3일(쉬는 날은 건너뜀 — 예: 일요일 쉬면 토·금·목)
+    const days=[...new Set((SESSIONS||[]).map(x=>x.date))].filter(d=>d&&d<=SEL).sort().reverse().slice(0,3);
     let body="",any=false;
     for(const dt of days){ const ss=sessOn(dt).slice().sort((a,b)=>conv60(b)-conv60(a)); if(!ss.length)continue; any=true;
       body+=`<div class="daygroup"><div class="daygroup-h">${vnShort(dt)}${dt===SEL?' <span class="sel">●</span>':''}</div>`+
@@ -852,7 +885,8 @@ function slideHTML(s){
           return `<tr><td class="l ath">${esc(x.name)}</td><td><span class="disc" style="background:${DISC_COLOR[x.dk]||'#888'}">${esc(discLabel(x))}</span></td><td class="l series">${serHTML}</td><td class="total">${fmt(x.total)}<span class="tot-raw">${esc(L().conv60)} ${fmt(conv60(x))}</span></td><td class="d10">${d[0]!=null?d[0]:"—"}</td><td>${d[1]!=null?d[1]:"—"}</td><td class="dlow">${d[2]!=null?d[2]:"—"}</td><td class="dlow">${d[3]?d[3]:(hd?"":"—")}</td><td class="dlow">${d6?d6:(hd?"":"—")}</td><td class="lng">${lngHTML}</td></tr>`;}).join("")+
         `</tbody></table></div>`;
     }
-    return `<div class="card"><div class="slide-h">📊 ${esc(L().scores)} <small>${vnShort(iso(new Date(new Date(SEL+"T00:00:00").getTime()-2*864e5)))}~${vnShort(SEL)}</small></div><div class="scroller">${any?body:`<div class="nodata">${esc(L().noRec)}</div>`}</div></div>`;
+    const hdRange = days.length ? (days.length>1?`${vnShort(days[days.length-1])}~${vnShort(days[0])}`:vnShort(days[0])) : "";
+    return `<div class="card"><div class="slide-h">📊 ${esc(L().scores)} <small>${hdRange}</small></div><div class="scroller">${any?body:`<div class="nodata">${esc(L().noRec)}</div>`}</div></div>`;
   }
   const half=s.half==="all"?L().allDay:(s.half==="am"?L().am:L().pm);
   const rows=s.rows.map(r=>`<div class="sched-row"><span class="t">${esc(r.s)}${r.e&&r.e!==r.s?"~"+esc(r.e):""}</span><span>${pick(r.ev)?`<span class="ev">${esc(pick(r.ev))}</span>`:""}${esc(pick(r.tr))}${pick(r.sh)?` <span class="shots">${esc(pick(r.sh))}</span>`:""}${pick(r.fc)?`<span class="foc"> · ${esc(pick(r.fc))}</span>`:""}</span></div>`).join("");
@@ -979,7 +1013,7 @@ setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
 let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(()=>{ renderTicker(); fitSig(); renderWR(); renderDT(); },300); });
 setInterval(loadWorldRank, 6*3600*1000);   // 세계랭킹 월간 갱신 반영(6시간마다 재조회)
 // 키오스크 자동 갱신: 새 배포(BUILD 변경) 감지 시 캐시 무시하고 새로고침 → TV가 옛 버전에 갇히지 않음
-const BUILD="20261026h";
+const BUILD="20261026i";
 setInterval(async()=>{ try{
   const t=await fetch("index.html?x="+Date.now(),{cache:"no-store"}).then(r=>r.text());
   const m=t.match(/const BUILD="([^"]+)"/);
