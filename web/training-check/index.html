@@ -638,7 +638,7 @@ const CM_PHRASES=[
  {ko:"장비 문제는 알리고 임의로 조정하지 않는다.", vi:"Báo thầy khi có vấn đề; không tự ý điều chỉnh.", en:"Report equipment issues; don't adjust on your own."}
 ];
 const PHRASE_SETS={ motto:MOTTOS, train:TR_PHRASES, comp:CM_PHRASES };
-const CAT_DEFAULT={ motto:"auto", train:"off", comp:"auto" };   // 기본: 명언·시합 자동, 훈련 꺼짐(설정에서 변경 가능)
+const CAT_DEFAULT={ motto:"auto", train:"auto", comp:"auto" };   // 기본: 단훈=명언 자동 · 전광판=훈련·시합 자동
 function catMode(cat){ return localStorage.getItem("tc_"+cat+"_mode") || CAT_DEFAULT[cat] || "off"; }
 function setCatMode(cat,m){ localStorage.setItem("tc_"+cat+"_mode",m); }
 function catSel(cat){ const n=(PHRASE_SETS[cat]||[]).length; try{ const a=JSON.parse(localStorage.getItem("tc_"+cat+"_sel")||"null"); return Array.isArray(a)?a.filter(i=>i>=0&&i<n):PHRASE_SETS[cat].map((_,i)=>i); }catch(e){ return PHRASE_SETS[cat].map((_,i)=>i); } }
@@ -667,22 +667,25 @@ function compInfo(){ const today=iso(new Date()); const list=compList().slice().
 function mottoSel(){ return catSel("motto"); }
 function saveMottoSel(a){ saveCatSel("motto",a); }
 function mottoOfDay(dateStr){ const sel=catSel("motto"); if(!sel.length)return null; const di=periodIdx(); return MOTTOS[sel[((di%sel.length)+sel.length)%sel.length]]; }
-// 배너에 연속 표시할 문구 모음(시합→훈련→명언→입력단훈 순)
-function bannerEntries(dateStr){
-  dateStr=dateStr||((typeof SEL!=="undefined"&&SEL)?SEL:iso(new Date()));
-  const out=[], ci=compInfo();
-  // 🎂 생일 축하(오늘 생일인 선수) — 맨 앞
+// 단훈(상단 배너): 🎂생일 + 🏅명언 + 코치 입력 단훈 (D-day는 renderDT에서 머리말)
+function bannerEntries(){
+  const out=[];
   const bd=bdaysToday(); if(bd.length){ const nm=bd.join(", "); out.push({ko:`🎂 ${nm} 생일 축하합니다!`, vi:`🎂 Chúc mừng sinh nhật ${nm}!`, en:`🎂 Happy birthday, ${nm}!`}); }
-  const cmode=catMode("comp");
-  if(cmode==="auto"){ if(ci && ci.du<=7 && ci.du>=0) pick2(CM_PHRASES,dateStr).forEach(p=>out.push(p)); }
-  else if(cmode==="manual") catSel("comp").forEach(i=>out.push(CM_PHRASES[i]));
-  const tmode=catMode("train");
-  if(tmode==="auto") pick2(TR_PHRASES,dateStr).forEach(p=>out.push(p));
-  else if(tmode==="manual") catSel("train").forEach(i=>out.push(TR_PHRASES[i]));
   const mmode=catMode("motto");
-  if(mmode==="auto"){ const m=mottoOfDay(dateStr); if(m)out.push(m); }
+  if(mmode==="auto"){ const m=mottoOfDay(); if(m)out.push(m); }
   else if(mmode==="manual") catSel("motto").forEach(i=>out.push(MOTTOS[i]));
   const typed=dtGet(); if(typed && (typed.vi||typed.ko||typed.en) && localStorage.getItem("tc_dt_on")!=="0") out.push(typed);
+  return out.filter(Boolean);
+}
+// 전광판(하단 LED): 🎯훈련 문구 + 🏆시합 문구(D-7부터)
+function tickerPhrases(){
+  const out=[], ci=compInfo();
+  const cmode=catMode("comp");
+  if(cmode==="auto"){ if(ci && ci.du<=7 && ci.du>=0) pick2(CM_PHRASES).forEach(p=>out.push(p)); }
+  else if(cmode==="manual") catSel("comp").forEach(i=>out.push(CM_PHRASES[i]));
+  const tmode=catMode("train");
+  if(tmode==="auto") pick2(TR_PHRASES).forEach(p=>out.push(p));
+  else if(tmode==="manual") catSel("train").forEach(i=>out.push(TR_PHRASES[i]));
   return out.filter(Boolean);
 }
 function dtGet(){ try{ return JSON.parse(localStorage.getItem("tc_dt")||"null"); }catch(e){ return null; } }
@@ -738,8 +741,8 @@ function tick(){
     if(box) paintFlaps(box, s);
   }
   checkAlarms(n);
-  // 문구 순환 주기가 바뀌면(시간 단위 포함) 배너 자동 갱신
-  const pi=periodIdx(); if(pi!==_lastBannerPeriod){ _lastBannerPeriod=pi; if(!document.getElementById("day").hidden) renderDT(); }
+  // 문구 순환 주기가 바뀌면(시간 단위 포함) 단훈·전광판 자동 갱신
+  const pi=periodIdx(); if(pi!==_lastBannerPeriod){ _lastBannerPeriod=pi; if(!document.getElementById("day").hidden){ renderDT(); renderTicker(); } }
 }
 let _lastBannerPeriod=null;
 // ===== 타이머 · 알람 · 성당 종소리(Web Audio) =====
@@ -849,9 +852,9 @@ function renderPanel(){
     +`</div></div>`;
   h+=`<div class="pn-row"><span class="pn-lab"></span><input class="pt-input" id="cm-name" placeholder="대회명" style="min-width:120px;flex:0 1 200px"><input type="date" id="cm-date" class="tm-in"><button class="tb" id="cm-add">➕ 추가</button><span class="pn-sub">다음 대회 자동 표시 · 시합문구 D-7부터</span></div>`;
   // 🎯훈련 / 🏆시합 / 🏅명언 문구: 각각 끄기·자동·수동(체크) 설정
-  h+=phraseCatUI("train","🎯 훈련","자동=하루 2개씩 순환");
-  h+=phraseCatUI("comp","🏆 시합","자동=대회 D-7부터");
-  h+=phraseCatUI("motto","🏅 명언","자동=주기마다 1개");
+  h+=phraseCatUI("train","🎯 훈련","전광판 · 자동=주기마다 2개");
+  h+=phraseCatUI("comp","🏆 시합","전광판 · 자동=대회 D-7부터");
+  h+=phraseCatUI("motto","🏅 명언","단훈 · 자동=주기마다 1개");
   // 🔁 문구 순환 주기(시간 단위 포함)
   h+=`<div class="pn-row"><span class="pn-lab">🔁 주기</span><select id="rot-h" class="tm-in" style="width:auto;max-width:150px">`
     +[[1,"1시간마다"],[2,"2시간마다"],[3,"3시간마다"],[4,"4시간마다"],[6,"6시간마다"],[8,"8시간마다"],[12,"12시간마다"],[24,"하루 1회"]].map(([v,l])=>`<option value="${v}"${rotHours()===v?" selected":""}>${esc(l)}</option>`).join("")
@@ -1137,10 +1140,13 @@ function fillMarquee(view, track, inner, kfId, kfName, speed){
 // LED 전광판 티커: 수동 입력(localStorage) 우선, 없으면 당일 routine. 우→좌 연속 스크롤.
 let TK_SPEED=parseFloat(localStorage.getItem("tc_tkspeed")||"60");   // px/초 (조절 가능)
 let TK_PAUSE=parseFloat(localStorage.getItem("tc_tkpause")||"3");    // 시작 멈춤(초, 조절 가능)
+// 전광판 = 코치 입력 문구 + 🎯훈련 + 🏆시합 문구(현재 언어). 아무것도 없으면 오늘 루틴.
 function tickerText(){
-  const manual=(localStorage.getItem("tc_ticker")||"").trim();
-  if(manual) return manual;
-  return document.getElementById("day").hidden ? "" : routineOf(SEL);
+  const parts=[];
+  const manual=(localStorage.getItem("tc_ticker")||"").trim(); if(manual) parts.push(manual);
+  tickerPhrases().forEach(p=>{ const t=p[LANG]||p.vi||p.ko||p.en; if(t)parts.push(t); });
+  if(!parts.length && !document.getElementById("day").hidden){ const r=routineOf(SEL); if(r)parts.push(r); }
+  return parts.join("    •    ");
 }
 function renderTicker(){
   const view=document.getElementById("tk-view"), track=document.getElementById("tk-track");
@@ -1199,7 +1205,7 @@ setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
 let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(()=>{ renderTicker(); fitSig(); renderWR(); renderDT(); },300); });
 setInterval(loadWorldRank, 6*3600*1000);   // 세계랭킹 월간 갱신 반영(6시간마다 재조회)
 // 키오스크 자동 갱신: 새 배포(BUILD 변경) 감지 시 캐시 무시하고 새로고침 → TV가 옛 버전에 갇히지 않음
-const BUILD="20261028r";
+const BUILD="20261028s";
 setInterval(async()=>{ try{
   const t=await fetch("index.html?x="+Date.now(),{cache:"no-store"}).then(r=>r.text());
   const m=t.match(/const BUILD="([^"]+)"/);
