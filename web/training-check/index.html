@@ -373,9 +373,9 @@ let DISC_SEL=localStorage.getItem("tc_disc")||"all";   // 종목 선택: all/10m
 let HALF_SEL=localStorage.getItem("tc_half")||"auto";  // 시간대: auto/am/pm/all
 let SPEED=parseFloat(localStorage.getItem("tc_speed")||"0.25");
 const UI={
-  ko:{plan:"일정",scores:"최근 3일",ath:"선수",disc:"종목",series:"시리즈",total:"총점",conv60:"60발환산",streak:"연속",am:"오전",pm:"오후",noRec:"기록 없음",noPlan:"오늘 훈련계획이 없습니다 — TrainingPlan에서 입력",speed:"속도",vAll:"전체",vSched:"일정",vScore:"점수",tkPH:"전광판 문구 입력 후 Enter…",tkSave:"적용",vMode:"보기",langLab:"언어",dateLab:"날짜",tkPauseLab:"시작멈춤",timer:"타이머",alarm:"알람",start:"시작",almTest:"테스트",min:"분",sec:"초",add:"추가",halfLab:"시간대",hAuto:"자동",allDay:"전체",wrLab:"세계랭킹",wrRank:"랭킹",wrEmpty:"세계랭킹 로딩 중…",wrWR:"세계신",wrJWR:"주니어신",dtLab:"단훈",dtPH:"베트남어로 단훈 입력 후 번역",dtEmpty:"",trBtn:"번역",weekLab:"주간 하이라이트",mvpLab:"이번 주 MVP",impLab:"최다 향상",sessUnit:"회"},
-  vi:{plan:"Lịch tập",scores:"3 ngày gần nhất",ath:"VĐV",disc:"Nội dung",series:"Loạt",total:"Tổng",conv60:"Quy đổi 60",streak:"Chuỗi",am:"Sáng",pm:"Chiều",noRec:"Không có dữ liệu",noPlan:"Chưa có lịch tập — nhập trong TrainingPlan",speed:"Tốc độ",vAll:"Tất cả",vSched:"Lịch",vScore:"Điểm",tkPH:"Nhập dòng chữ chạy rồi nhấn Enter…",tkSave:"Áp dụng",vMode:"Chế độ",langLab:"Ngôn ngữ",dateLab:"Ngày",tkPauseLab:"Dừng đầu",timer:"Hẹn giờ",alarm:"Báo thức",start:"Bắt đầu",almTest:"Thử",min:"Phút",sec:"Giây",add:"Thêm",halfLab:"Buổi",hAuto:"Tự động",allDay:"Cả ngày",wrLab:"Xếp hạng TG",wrRank:"Hạng",wrEmpty:"Đang tải…",wrWR:"KLTG",wrJWR:"KL Trẻ",dtLab:"Dặn dò",dtPH:"Nhập tiếng Việt rồi dịch",dtEmpty:"",trBtn:"Dịch",weekLab:"Nổi bật tuần",mvpLab:"MVP tuần này",impLab:"Tiến bộ nhất",sessUnit:"buổi"},
-  en:{plan:"Schedule",scores:"Last 3 days",ath:"Athlete",disc:"Event",series:"Series",total:"Total",conv60:"60-shot",streak:"Streak",am:"AM",pm:"PM",noRec:"No data",noPlan:"No training plan — enter in TrainingPlan",speed:"Speed",vAll:"All",vSched:"Schedule",vScore:"Scores",tkPH:"Type ticker text, press Enter…",tkSave:"Apply",vMode:"View",langLab:"Language",dateLab:"Date",tkPauseLab:"Start pause",timer:"Timer",alarm:"Alarm",start:"Start",almTest:"Test",min:"min",sec:"sec",add:"Add",halfLab:"Time",hAuto:"Auto",allDay:"All",wrLab:"World Rank",wrRank:"Rank",wrEmpty:"Loading…",wrWR:"WR",wrJWR:"Jr WR",dtLab:"Note",dtPH:"Type Vietnamese, then translate",dtEmpty:"",trBtn:"Translate",weekLab:"Weekly highlights",mvpLab:"MVP this week",impLab:"Most improved",sessUnit:"sessions"}
+  ko:{plan:"일정",scores:"최근 3일",ath:"선수",disc:"종목",series:"시리즈",total:"총점",conv60:"60발환산",streak:"연속",am:"오전",pm:"오후",noRec:"기록 없음",noPlan:"오늘 훈련계획이 없습니다 — TrainingPlan에서 입력",speed:"속도",vAll:"전체",vSched:"일정",vScore:"점수",tkPH:"전광판 문구 입력 후 Enter…",tkSave:"적용",vMode:"보기",langLab:"언어",dateLab:"날짜",tkPauseLab:"시작멈춤",timer:"타이머",alarm:"알람",start:"시작",almTest:"테스트",min:"분",sec:"초",add:"추가",halfLab:"시간대",hAuto:"자동",allDay:"전체",wrLab:"세계랭킹",wrRank:"랭킹",wrEmpty:"세계랭킹 로딩 중…",wrWR:"세계신",wrJWR:"주니어신",dtLab:"단훈",dtPH:"베트남어로 단훈 입력 후 번역",dtEmpty:"",trBtn:"번역",weekLab:"주간 하이라이트",mvpLab:"이번 주 MVP",impLab:"최다 향상",sessUnit:"회",tCnt:"회"},
+  vi:{plan:"Lịch tập",scores:"3 ngày gần nhất",ath:"VĐV",disc:"Nội dung",series:"Loạt",total:"Tổng",conv60:"Quy đổi 60",streak:"Chuỗi",am:"Sáng",pm:"Chiều",noRec:"Không có dữ liệu",noPlan:"Chưa có lịch tập — nhập trong TrainingPlan",speed:"Tốc độ",vAll:"Tất cả",vSched:"Lịch",vScore:"Điểm",tkPH:"Nhập dòng chữ chạy rồi nhấn Enter…",tkSave:"Áp dụng",vMode:"Chế độ",langLab:"Ngôn ngữ",dateLab:"Ngày",tkPauseLab:"Dừng đầu",timer:"Hẹn giờ",alarm:"Báo thức",start:"Bắt đầu",almTest:"Thử",min:"Phút",sec:"Giây",add:"Thêm",halfLab:"Buổi",hAuto:"Tự động",allDay:"Cả ngày",wrLab:"Xếp hạng TG",wrRank:"Hạng",wrEmpty:"Đang tải…",wrWR:"KLTG",wrJWR:"KL Trẻ",dtLab:"Dặn dò",dtPH:"Nhập tiếng Việt rồi dịch",dtEmpty:"",trBtn:"Dịch",weekLab:"Nổi bật tuần",mvpLab:"MVP tuần này",impLab:"Tiến bộ nhất",sessUnit:"buổi",tCnt:"lần"},
+  en:{plan:"Schedule",scores:"Last 3 days",ath:"Athlete",disc:"Event",series:"Series",total:"Total",conv60:"60-shot",streak:"Streak",am:"AM",pm:"PM",noRec:"No data",noPlan:"No training plan — enter in TrainingPlan",speed:"Speed",vAll:"All",vSched:"Schedule",vScore:"Scores",tkPH:"Type ticker text, press Enter…",tkSave:"Apply",vMode:"View",langLab:"Language",dateLab:"Date",tkPauseLab:"Start pause",timer:"Timer",alarm:"Alarm",start:"Start",almTest:"Test",min:"min",sec:"sec",add:"Add",halfLab:"Time",hAuto:"Auto",allDay:"All",wrLab:"World Rank",wrRank:"Rank",wrEmpty:"Loading…",wrWR:"WR",wrJWR:"Jr WR",dtLab:"Note",dtPH:"Type Vietnamese, then translate",dtEmpty:"",trBtn:"Translate",weekLab:"Weekly highlights",mvpLab:"MVP this week",impLab:"Most improved",sessUnit:"sessions",tCnt:"x"}
 };
 const L = () => UI[LANG]||UI.vi;
 const pick = o => o ? (LANG==="en"?(o.en||o.vi||o.ko):LANG==="vi"?(o.vi||o.ko):(o.ko||o.vi)) : "";
@@ -728,7 +728,7 @@ function tick(){
                              : pad(Math.floor(rem/60))+pad(rem%60);
     if(box) paintFlaps(box, digits);
     if(clk){ clk.classList.add("timing"); clk.classList.toggle("warn", !TIMER.done && rem<=10); clk.classList.toggle("done", !!TIMER.done); }
-    if(!TIMER.done && rem<=0){ TIMER.running=false; TIMER.done=true; TIMER.doneAt=Date.now(); playBell(3); }
+    if(!TIMER.done && rem<=0){ TIMER.running=false; TIMER.done=true; TIMER.doneAt=Date.now(); playBell(BELL_TIMER); }
     if(TIMER.done && Date.now()-(TIMER.doneAt||0) > 12000) stopTimer();   // 종료 12초 후 시계 복귀
   } else {
     if(clk) clk.classList.remove("timing","warn","done");
@@ -743,6 +743,10 @@ let ALARMS = (()=>{ try{ return JSON.parse(localStorage.getItem("tc_alarms"))||[
 (function migrateAlarm(){ const t=localStorage.getItem("tc_alarm_t"); if(t && !ALARMS.length){ ALARMS=[{hhmm:t,on:localStorage.getItem("tc_alarm_on")==="1"}]; saveAlarms(); } })();
 let ALM_FIRED={};
 function saveAlarms(){ try{ localStorage.setItem("tc_alarms", JSON.stringify(ALARMS)); }catch(e){} }
+// 종소리 횟수·볼륨(설정 가능): 타이머 종료·알람
+let BELL_TIMER = Math.max(1, Math.min(10, parseInt(localStorage.getItem("tc_bell_timer")||"3",10)||3));
+let BELL_ALARM = Math.max(1, Math.min(10, parseInt(localStorage.getItem("tc_bell_alarm")||"4",10)||4));
+let BELL_VOL = (()=>{ const v=parseFloat(localStorage.getItem("tc_bell_vol")); return isNaN(v)?1:Math.max(0,Math.min(1,v)); })();   // 0~1
 let AC=null, REVERB=null, BELL_BUS=null;
 function audioCtx(){ try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==="suspended")AC.resume(); }catch(e){} return AC; }
 function unlockAudio(){ audioCtx(); }
@@ -777,7 +781,7 @@ function bellStrike(ac,t0,f0,g0){
   const ng=ac.createGain(); ng.gain.value=0.22*g0;
   ns.connect(bp).connect(ng).connect(mix); ns.start(t0); ns.stop(t0+0.15);
 }
-function playBell(n=3){ const ac=audioCtx(); if(!ac)return; ensureReverb(ac); const t=ac.currentTime+0.06; for(let i=0;i<n;i++) bellStrike(ac,t+i*2.0,165,0.85); }
+function playBell(n=3){ const ac=audioCtx(); if(!ac)return; if(BELL_VOL<=0)return; ensureReverb(ac); const t=ac.currentTime+0.06; const g=0.85*BELL_VOL; for(let i=0;i<n;i++) bellStrike(ac,t+i*2.0,165,g); }
 const fmtMMSS=s=>`${pad(Math.floor(s/60))}:${pad(s%60)}`;
 function flashBar(label){
   const bar=document.getElementById("tbar"); if(!bar)return;
@@ -792,7 +796,7 @@ function stopTimer(){ TIMER={running:false,end:0,dur:0,done:false,doneAt:0}; tic
 function toggleTimer(){ if(TIMER.running||TIMER.done){ stopTimer(); return; } const d=parseInt(localStorage.getItem("tc_lastdur")||"0",10)||0; if(d>0) startTimer(d); else togglePanel(); }
 function checkAlarms(n){
   const cur=`${pad(n.getHours())}:${pad(n.getMinutes())}`;
-  ALARMS.forEach(a=>{ if(a.on && a.hhmm===cur && ALM_FIRED[a.hhmm]!==cur){ ALM_FIRED[a.hhmm]=cur; playBell(4);
+  ALARMS.forEach(a=>{ if(a.on && a.hhmm===cur && ALM_FIRED[a.hhmm]!==cur){ ALM_FIRED[a.hhmm]=cur; playBell(BELL_ALARM);
     if(a.tsec>0){ flashBar("⏰ "+a.hhmm+" → ⏱"); setTimeout(()=>startTimer(a.tsec), 1600); }   // 알람 종 후 타이머 자동 시작
     else flashBar("⏰ "+a.hhmm); } });
   Object.keys(ALM_FIRED).forEach(k=>{ if(ALM_FIRED[k]!==cur) delete ALM_FIRED[k]; });
@@ -850,6 +854,12 @@ function renderPanel(){
   h+=`<div class="pn-row"><span class="pn-lab">⏱ ${esc(L().timer)}</span><input type="number" id="tm-min" class="tm-in" min="0" max="180" placeholder="${esc(L().min)}"><span class="pn-sub">:</span><input type="number" id="tm-sec" class="tm-in" min="0" max="59" placeholder="${esc(L().sec)}"><button class="tb" id="tm-start">▶ ${esc(L().start)}</button><button class="tb" id="tm-stop">■</button><button class="tb q" data-m="1">1'</button><button class="tb q" data-m="3">3'</button><button class="tb q" data-m="5">5'</button><button class="tb q" data-m="10">10'</button></div>`;
   h+=`<div class="pn-row"><span class="pn-lab">⏰ ${esc(L().alarm)}</span><input type="time" id="al-time" class="tm-in"><input type="number" id="al-dur" class="tm-in" min="0" max="180" placeholder="⏱${esc(L().min)}" title="알람 시 자동 시작할 타이머(분) · 선택"><button class="tb" id="al-add">➕ ${esc(L().add)}</button><button class="tb" id="al-test">🔔 ${esc(L().almTest)}</button>`
     +`<span class="alm-list">${ALARMS.map((a,i)=>`<span class="alm-chip${a.on?"":" off"}"><b>${esc(a.hhmm)}</b>${a.tsec>0?`<i class="alm-tm">⏱${Math.round(a.tsec/60)}′</i>`:""}<button class="alm-tog" data-i="${i}" title="켜기/끄기">${a.on?"🔔":"🔕"}</button><button class="alm-del" data-i="${i}" title="삭제">✕</button></span>`).join("")||`<span class="pn-sub">—</span>`}</span></div>`;
+  // 🔊 종소리: 횟수(타이머·알람) + 볼륨 + 테스트
+  h+=`<div class="pn-row"><span class="pn-lab">🔊 종소리</span>`
+    +`<span class="pn-sub">${esc(L().timer)}</span><input type="number" id="bell-timer" class="tm-in" min="1" max="10" value="${BELL_TIMER}"><span class="pn-sub">${esc(L().tCnt)}</span>`
+    +`<span class="pn-sub">${esc(L().alarm)}</span><input type="number" id="bell-alarm" class="tm-in" min="1" max="10" value="${BELL_ALARM}"><span class="pn-sub">${esc(L().tCnt)}</span>`
+    +`<span class="pn-sub">🔈</span><input type="range" id="bell-vol" min="0" max="1" step="0.05" value="${BELL_VOL}"><span class="pn-sub" id="bell-vol-val">${Math.round(BELL_VOL*100)}%</span>`
+    +`<button class="tb" id="bell-test">🔔 ${esc(L().almTest)}</button></div>`;
   // 🌍 세계 랭킹(ISSF 자동) — 코치는 종목만 선택
   h+=`<div class="pn-row"><span class="pn-lab">🌍 ${esc(L().wrLab)}</span>`
     +`<select id="wr-ev" class="tm-in" style="width:auto;max-width:230px">${WR_DATA.events.map(e=>`<option value="${esc(e.code)}"${e.code===WR_SEL?" selected":""}>${esc(wrLabelOf(e))}</option>`).join("")||`<option value="">${esc(L().wrEmpty)}</option>`}</select>`
@@ -908,7 +918,12 @@ function bindPanel(){
     const ex=ALARMS.find(a=>a.hhmm===v); if(ex){ ex.tsec=tsec; ex.on=true; } else ALARMS.push({hhmm:v,on:true,tsec}); ALARMS.sort((a,b)=>a.hhmm.localeCompare(b.hhmm)); saveAlarms(); renderPanel(); };
   document.querySelectorAll("#panel .alm-tog").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; if(ALARMS[i]){ALARMS[i].on=!ALARMS[i].on; saveAlarms(); renderPanel();} });
   document.querySelectorAll("#panel .alm-del").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; ALARMS.splice(i,1); saveAlarms(); renderPanel(); });
-  if(q("al-test"))q("al-test").onclick=()=>{ unlockAudio(); playBell(2); };
+  if(q("al-test"))q("al-test").onclick=()=>{ unlockAudio(); playBell(BELL_ALARM); };
+  // 🔊 종소리 횟수·볼륨
+  if(q("bell-timer"))q("bell-timer").onchange=()=>{ BELL_TIMER=Math.max(1,Math.min(10,parseInt(q("bell-timer").value,10)||3)); localStorage.setItem("tc_bell_timer",BELL_TIMER); q("bell-timer").value=BELL_TIMER; };
+  if(q("bell-alarm"))q("bell-alarm").onchange=()=>{ BELL_ALARM=Math.max(1,Math.min(10,parseInt(q("bell-alarm").value,10)||4)); localStorage.setItem("tc_bell_alarm",BELL_ALARM); q("bell-alarm").value=BELL_ALARM; };
+  if(q("bell-vol"))q("bell-vol").oninput=()=>{ BELL_VOL=parseFloat(q("bell-vol").value); localStorage.setItem("tc_bell_vol",BELL_VOL); const vv=q("bell-vol-val"); if(vv)vv.textContent=Math.round(BELL_VOL*100)+"%"; };
+  if(q("bell-test"))q("bell-test").onclick=()=>{ unlockAudio(); playBell(BELL_ALARM); };
   // 🌍 세계 랭킹(ISSF 자동) — 종목 선택 + 속도만
   if(q("wr-ev"))q("wr-ev").onchange=()=>{ WR_SEL=q("wr-ev").value; localStorage.setItem("tc_wr_sel",WR_SEL); renderWR(); };
   if(q("wr-spd"))q("wr-spd").oninput=()=>{ WR_SPD=parseFloat(q("wr-spd").value); localStorage.setItem("tc_wr_spd",WR_SPD); renderPanel(); renderWR(); };
@@ -1173,7 +1188,7 @@ setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
 let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(()=>{ renderTicker(); fitSig(); renderWR(); renderDT(); },300); });
 setInterval(loadWorldRank, 6*3600*1000);   // 세계랭킹 월간 갱신 반영(6시간마다 재조회)
 // 키오스크 자동 갱신: 새 배포(BUILD 변경) 감지 시 캐시 무시하고 새로고침 → TV가 옛 버전에 갇히지 않음
-const BUILD="20261028n";
+const BUILD="20261028o";
 setInterval(async()=>{ try{
   const t=await fetch("index.html?x="+Date.now(),{cache:"no-store"}).then(r=>r.text());
   const m=t.match(/const BUILD="([^"]+)"/);
