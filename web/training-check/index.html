@@ -217,8 +217,11 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
 .tbl tr:last-child td{border-bottom:none}
 .ath{font-weight:800}
 .disc{font-size:calc(13px*var(--fz));font-weight:800;color:#fff;border-radius:5px;padding:2px 9px}
-.series{font-size:calc(26px*var(--fz));color:var(--mut);font-variant-numeric:tabular-nums;font-weight:700;white-space:normal;line-height:1.25;max-width:520px}
-.series .sv{display:inline-block;margin:1px 7px 1px 0;font-weight:800}
+.series{font-size:calc(26px*var(--fz));color:var(--mut);font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap;line-height:1.25}
+.series .sv{display:inline-block;margin:1px 6px 1px 0;font-weight:800}
+/* 100발(시리즈 10개)이면 한 줄에 다 들어가도록 자동 축소 */
+.series.many{font-size:calc(19px*var(--fz))}
+.series.many .sv{margin:0 4px 0 0}
 .series .s-good{color:var(--good);font-weight:900}
 .series .s-bad{color:#d62828;font-weight:900}
 .series .s-blink{color:var(--good);font-weight:900;animation:blinkhi .8s ease-in-out infinite}
@@ -998,7 +1001,7 @@ function slideHTML(s){
           const serHTML=x.series.length?x.series.map(v=>{let c="";if(v>=99)c="s-blink";else if(v>=96)c="s-good";else if(v<=94)c="s-bad";return `<span class="sv ${c}">${v}</span>`;}).join(""):"—";
           const lngHTML=x.long10!=null?`<span class="${x.long10>=10?'blink10':''}">${x.long10}</span>`:"—";
           const isPB = PB[x.name]!=null && conv60(x)>=PB[x.name]-0.049;
-          return `<tr class="${isPB?'pb-row':''}"><td class="l ath">${esc(x.name)}${isPB?' <span class="pb-badge">🏆PB</span>':''}</td><td><span class="disc" style="background:${DISC_COLOR[x.dk]||'#888'}">${esc(discLabel(x))}</span></td><td class="l series">${serHTML}</td><td class="total">${fmt(x.total)}<span class="tot-raw">${esc(L().conv60)} ${fmt(conv60(x))}</span></td><td class="d10">${d[0]!=null?d[0]:"—"}</td><td>${d[1]!=null?d[1]:"—"}</td><td class="dlow">${d[2]!=null?d[2]:"—"}</td><td class="dlow">${d[3]?d[3]:(hd?"":"—")}</td><td class="dlow">${d6?d6:(hd?"":"—")}</td><td class="lng">${lngHTML}</td></tr>`;}).join("")+
+          return `<tr class="${isPB?'pb-row':''}"><td class="l ath">${esc(x.name)}${isPB?' <span class="pb-badge">🏆PB</span>':''}</td><td><span class="disc" style="background:${DISC_COLOR[x.dk]||'#888'}">${esc(discLabel(x))}</span></td><td class="l series${x.series.length>=8?' many':''}">${serHTML}</td><td class="total">${fmt(x.total)}<span class="tot-raw">${esc(L().conv60)} ${fmt(conv60(x))}</span></td><td class="d10">${d[0]!=null?d[0]:"—"}</td><td>${d[1]!=null?d[1]:"—"}</td><td class="dlow">${d[2]!=null?d[2]:"—"}</td><td class="dlow">${d[3]?d[3]:(hd?"":"—")}</td><td class="dlow">${d6?d6:(hd?"":"—")}</td><td class="lng">${lngHTML}</td></tr>`;}).join("")+
         `</tbody></table></div>`;
     }
     const hdRange = days.length ? (days.length>1?`${vnShort(days[days.length-1])}~${vnShort(days[0])}`:vnShort(days[0])) : "";
@@ -1170,7 +1173,7 @@ setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
 let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(()=>{ renderTicker(); fitSig(); renderWR(); renderDT(); },300); });
 setInterval(loadWorldRank, 6*3600*1000);   // 세계랭킹 월간 갱신 반영(6시간마다 재조회)
 // 키오스크 자동 갱신: 새 배포(BUILD 변경) 감지 시 캐시 무시하고 새로고침 → TV가 옛 버전에 갇히지 않음
-const BUILD="20261028m";
+const BUILD="20261028n";
 setInterval(async()=>{ try{
   const t=await fetch("index.html?x="+Date.now(),{cache:"no-store"}).then(r=>r.text());
   const m=t.match(/const BUILD="([^"]+)"/);
