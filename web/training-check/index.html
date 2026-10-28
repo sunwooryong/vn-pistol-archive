@@ -700,9 +700,8 @@ function renderDT(){
     lead = ci.du===0 ? {ko:`🏆 ${nm} 오늘!`,vi:`🏆 ${nm} HÔM NAY!`,en:`🏆 ${nm} TODAY!`} : {ko:`🏆 ${nm} D-${ci.du}`,vi:`🏆 ${nm} · Còn ${ci.du} ngày`,en:`🏆 ${nm} · D-${ci.du}`}; }
   const list = lead ? [lead].concat(entries) : entries;
   if(!list.length){ box.innerHTML=""; return; }
-  const flag = LANG==="ko"?"🇰🇷":LANG==="en"?"🇬🇧":"🇻🇳";
   const sep=`<span class="dt-sep">•</span>`;
-  const inner = list.map(d=>{ const txt=d[LANG]||d.vi||d.ko||d.en||""; return txt?`<span class="dt-e${LANG==="ko"?" k":""}"><i>${flag}</i>${esc(txt)}</span>`+sep:""; }).join("");
+  const inner = list.map(d=>{ const txt=d[LANG]||d.vi||d.ko||d.en||""; return txt?`<span class="dt-e${LANG==="ko"?" k":""}">${esc(txt)}</span>`+sep:""; }).join("");
   if(!inner){ box.innerHTML=""; return; }
   box.innerHTML=`<div class="dt-view"><div class="dt-track" id="dt-track"></div></div>`;
   fillMarquee(box.querySelector(".dt-view"), document.getElementById("dt-track"), inner, "dt-kf", "dtmarq", 45);
@@ -1200,7 +1199,7 @@ setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
 let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(()=>{ renderTicker(); fitSig(); renderWR(); renderDT(); },300); });
 setInterval(loadWorldRank, 6*3600*1000);   // 세계랭킹 월간 갱신 반영(6시간마다 재조회)
 // 키오스크 자동 갱신: 새 배포(BUILD 변경) 감지 시 캐시 무시하고 새로고침 → TV가 옛 버전에 갇히지 않음
-const BUILD="20261028p";
+const BUILD="20261028q";
 setInterval(async()=>{ try{
   const t=await fetch("index.html?x="+Date.now(),{cache:"no-store"}).then(r=>r.text());
   const m=t.match(/const BUILD="([^"]+)"/);
