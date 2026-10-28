@@ -842,6 +842,7 @@ function renderPanel(){
   h+=phraseCatUI("motto","🏅 명언","자동=날마다 1개");
   // 🎂 생일 축하(이름:MM-DD) — 해당 날짜에 자동 배너
   h+=`<div class="pn-row"><span class="pn-lab">🎂 생일</span><input class="pt-input" id="bd-input" placeholder="홍수현:03-15, 부솔:07-02" value="${esc(localStorage.getItem('tc_bdays')||'')}"><button class="tb" id="bd-save">${esc(L().tkSave)}</button></div>`;
+  h+=`<div class="pn-row"><span class="pn-lab">🥇 주간</span><label class="al-tog"><input type="checkbox" id="wk-on"${localStorage.getItem('tc_weekly_on')!=='0'?' checked':''}> ${esc(L().weekLab)} 슬라이드 표시 (MVP·${esc(L().impLab)})</label></div>`;
   h+=`<div class="pn-row"><span class="pn-lab"></span><span class="pn-sub">${esc(L().speed)}</span><input type="range" id="tk-speed" min="20" max="220" step="10" value="${TK_SPEED}"><span class="pn-sub">${esc(L().tkPauseLab)}</span><input type="range" id="tk-pause" min="0" max="10" step="0.5" value="${TK_PAUSE}"></div>`;
   h+=`<div class="pn-row"><span class="pn-lab">⏱ ${esc(L().timer)}</span><input type="number" id="tm-min" class="tm-in" min="0" max="180" placeholder="${esc(L().min)}"><span class="pn-sub">:</span><input type="number" id="tm-sec" class="tm-in" min="0" max="59" placeholder="${esc(L().sec)}"><button class="tb" id="tm-start">▶ ${esc(L().start)}</button><button class="tb" id="tm-stop">■</button><button class="tb q" data-m="1">1'</button><button class="tb q" data-m="3">3'</button><button class="tb q" data-m="5">5'</button><button class="tb q" data-m="10">10'</button></div>`;
   h+=`<div class="pn-row"><span class="pn-lab">⏰ ${esc(L().alarm)}</span><input type="time" id="al-time" class="tm-in"><input type="number" id="al-dur" class="tm-in" min="0" max="180" placeholder="⏱${esc(L().min)}" title="알람 시 자동 시작할 타이머(분) · 선택"><button class="tb" id="al-add">➕ ${esc(L().add)}</button><button class="tb" id="al-test">🔔 ${esc(L().almTest)}</button>`
@@ -888,6 +889,8 @@ function bindPanel(){
   document.querySelectorAll("#panel .cmp-del").forEach(b=>b.onclick=()=>{ const list=compList().filter(c=>!(c.date===b.dataset.date && (c.name||"")===(b.dataset.name||""))); saveComps(list); renderPanel(); renderDT(); });
   // 🎂 생일 저장
   if(q("bd-save"))q("bd-save").onclick=()=>{ localStorage.setItem("tc_bdays",(q("bd-input").value||"").trim()); renderDT(); const st=q("bd-input"); if(st){ st.style.borderColor="#1f9d57"; setTimeout(()=>st.style.borderColor="",900);} };
+  // 🥇 주간 MVP 슬라이드 표시 on/off
+  if(q("wk-on"))q("wk-on").onchange=()=>{ localStorage.setItem("tc_weekly_on", q("wk-on").checked?"1":"0"); if(!document.getElementById("day").hidden) buildDay(); };
   // 🎯🏆🏅 문구 카테고리: 끄기/자동/수동 전환 + 수동 체크
   document.querySelectorAll("#panel .seg.pcat button").forEach(b=>b.onclick=()=>{ const cat=b.parentNode.dataset.cat; setCatMode(cat,b.dataset.m); renderPanel(); renderDT(); });
   document.querySelectorAll("#panel .mt-c").forEach(c=>c.onchange=()=>{ const cat=c.dataset.cat; const sel=[]; document.querySelectorAll(`#panel .mt-c[data-cat="${cat}"]`).forEach(x=>{ if(x.checked)sel.push(+x.dataset.i); }); saveCatSel(cat,sel); renderDT(); });
@@ -970,7 +973,7 @@ function buildDay(){
   }
   if(VIEW!=="score" && !SLIDES.some(s=>s.type==="sched")) SLIDES.push({type:"noplan"});   // 전체 일정 데이터 없음
   if(VIEW!=="sched") SLIDES.push({type:"scores"});
-  if(VIEW!=="sched"){ const wk=weeklyHighlights(); if(wk && (wk.mvp||wk.improved)) SLIDES.push({type:"weekly",wk}); }   // 🥇 주간 하이라이트
+  if(VIEW!=="sched" && localStorage.getItem("tc_weekly_on")!=="0"){ const wk=weeklyHighlights(); if(wk && (wk.mvp||wk.improved)) SLIDES.push({type:"weekly",wk}); }   // 🥇 주간 하이라이트(설정에서 on/off)
   if(!SLIDES.length) SLIDES.push({type:"scores"});
   renderSlides(); showSlide(0); restartTimer();
 }
@@ -1024,24 +1027,33 @@ function showSlide(i){
   const box=document.getElementById("slides");
   [...box.children].forEach((el,k)=>el.classList.toggle("active",k===CUR));
   document.querySelectorAll("#dots .dot2").forEach((d,k)=>d.classList.toggle("on",k===CUR));
-  SST={pos:0,dir:1,pause:PAUSE};
+  SST={pos:0};
   const el=activeScroller(); if(el)el.scrollTop=0;
 }
-// 스크롤 한 바퀴 계산: 기본속도(SPEED)로의 프레임수. 단, PASS_CAP_MS를 넘으면 그 시간에 맞춰 가속.
-// → 긴 내용(3일치 기록)도 상한시간 안에 바닥까지 한 번 훑고, 짧으면 기본속도 유지.
-function scrollPass(el){
-  const max=el?el.scrollHeight-el.clientHeight:0;
-  if(!el||SPEED<=0||max<=4) return {max:Math.max(max,0),frames:0,speed:(SPEED>0?SPEED:0.25)};
-  const capFrames=PASS_CAP_MS/1000*60;
-  const frames=Math.min(max/SPEED, capFrames);
-  return {max,frames,speed:max/frames};
+// 끊김없는 세로 순환: 내용이 넘치면 같은 내용을 한 벌 더 복제해 이어붙임(가로 전광판과 동일 원리).
+// → 맨 아래에서 멈췄다 되돌아가지 않고, 복제본으로 자연스럽게 이어져 계속 흐름.
+function setupScroll(el){
+  if(!el || el.dataset.scInit==="1") return;
+  el.dataset.scInit="1";
+  const copyH=el.scrollHeight;                 // 1벌 콘텐츠 높이
+  if(copyH - el.clientHeight <= 4){ el._dup=false; el._copyH=0; return; }   // 안 넘치면 스크롤 불필요
+  el._dup=true; el._copyH=copyH;
+  el.insertAdjacentHTML("beforeend", el.innerHTML);   // 같은 내용 한 벌 더 → 끊김없이 순환
 }
-// 슬라이드 체류시간: 스크롤이 바닥까지 한 번 훑는 시간만큼 머문 뒤 다음 슬라이드로(짧으면 기본 15초).
-// → 훈련기록(오늘·어제·그제)이 끝까지 보인 뒤 일정으로 넘어감.
+// 한 바퀴(=1벌 높이) 스크롤 계산: 기본속도, 단 PASS_CAP_MS 넘으면 가속.
+function scrollPass(el){
+  if(!el||SPEED<=0) return {loop:0,frames:0,speed:(SPEED>0?SPEED:0.25),dup:false};
+  setupScroll(el);
+  if(!el._dup) return {loop:0,frames:0,speed:SPEED,dup:false};
+  const loop=el._copyH, capFrames=PASS_CAP_MS/1000*60;
+  const frames=Math.min(loop/SPEED, capFrames);
+  return {loop,frames,speed:loop/frames,dup:true};
+}
+// 슬라이드 체류시간: 한 바퀴 다 돌(=내용 한 번 다 보임) 시간 머문 뒤 다음 슬라이드로(짧으면 기본 15초).
 function slideDwellMs(){
   const p=scrollPass(activeScroller());
-  if(p.frames<=0) return SLIDE_MS;
-  const ms=(PAUSE + p.frames)/60*1000 + 1600;   // 시작정지 + 바닥까지 스크롤(60fps) + 1.6초 여유
+  if(!p.dup || p.frames<=0) return SLIDE_MS;
+  const ms=p.frames/60*1000 + 1500;   // 한 바퀴(60fps) + 1.5초 여유
   return Math.max(SLIDE_MS, Math.round(ms));
 }
 function restartTimer(){ clearTimeout(slideTimer); if(SLIDES.length>1) slideTimer=setTimeout(()=>{ showSlide(CUR+1); restartTimer(); }, slideDwellMs()); }
@@ -1112,18 +1124,17 @@ function renderTicker(){
 }
 // (티커 편집은 설정 패널의 pt-input/pt-save에서 처리)
 
-// 활성 슬라이드 자동스크롤 (시작·끝 3초 정지)
-let SST={pos:0,dir:1,pause:PAUSE};
+// 활성 슬라이드 자동스크롤 (복제본으로 끊김없이 연속 순환)
+let SST={pos:0};
 function activeScroller(){ return document.querySelector(".slide.active .scroller"); }
 function animScroll(){
   requestAnimationFrame(animScroll);
   if(SPEED<=0||document.getElementById("day").hidden) return;
   const el=activeScroller(); if(!el) return;
   const p=scrollPass(el);
-  if(p.max<=4){ el.scrollTop=0; return; }
-  if(SST.pause>0){ SST.pause--; return; }
-  SST.pos+=p.speed;   // 내용이 길면 자동 가속(상한시간 내 한 바퀴)
-  if(SST.pos>=p.max){ SST.pos=0; SST.pause=PAUSE; }   // 아래→위 한 방향 연속(끝 도달 시 처음으로, 반대방향 없음)
+  if(!p.dup){ el.scrollTop=0; return; }   // 안 넘치면 고정
+  SST.pos+=p.speed;
+  if(SST.pos>=p.loop) SST.pos-=p.loop;    // 끝→처음 끊김없이 연속(복제본으로 이어져 멈춤 없음)
   el.scrollTop=SST.pos;
 }
 animScroll();
@@ -1158,7 +1169,7 @@ setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
 let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(()=>{ renderTicker(); fitSig(); renderWR(); renderDT(); },300); });
 setInterval(loadWorldRank, 6*3600*1000);   // 세계랭킹 월간 갱신 반영(6시간마다 재조회)
 // 키오스크 자동 갱신: 새 배포(BUILD 변경) 감지 시 캐시 무시하고 새로고침 → TV가 옛 버전에 갇히지 않음
-const BUILD="20261026k";
+const BUILD="20261028l";
 setInterval(async()=>{ try{
   const t=await fetch("index.html?x="+Date.now(),{cache:"no-store"}).then(r=>r.text());
   const m=t.match(/const BUILD="([^"]+)"/);
