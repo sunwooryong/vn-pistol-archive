@@ -638,7 +638,7 @@ const CM_PHRASES=[
  {ko:"장비 문제는 알리고 임의로 조정하지 않는다.", vi:"Báo thầy khi có vấn đề; không tự ý điều chỉnh.", en:"Report equipment issues; don't adjust on your own."}
 ];
 const PHRASE_SETS={ motto:MOTTOS, train:TR_PHRASES, comp:CM_PHRASES };
-const CAT_DEFAULT={ motto:"off", train:"auto", comp:"auto" };   // 기본: 훈련·시합 자동, 명언 꺼짐
+const CAT_DEFAULT={ motto:"auto", train:"off", comp:"auto" };   // 기본: 명언·시합 자동, 훈련 꺼짐(설정에서 변경 가능)
 function catMode(cat){ return localStorage.getItem("tc_"+cat+"_mode") || CAT_DEFAULT[cat] || "off"; }
 function setCatMode(cat,m){ localStorage.setItem("tc_"+cat+"_mode",m); }
 function catSel(cat){ const n=(PHRASE_SETS[cat]||[]).length; try{ const a=JSON.parse(localStorage.getItem("tc_"+cat+"_sel")||"null"); return Array.isArray(a)?a.filter(i=>i>=0&&i<n):PHRASE_SETS[cat].map((_,i)=>i); }catch(e){ return PHRASE_SETS[cat].map((_,i)=>i); } }
@@ -1199,7 +1199,7 @@ setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
 let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(()=>{ renderTicker(); fitSig(); renderWR(); renderDT(); },300); });
 setInterval(loadWorldRank, 6*3600*1000);   // 세계랭킹 월간 갱신 반영(6시간마다 재조회)
 // 키오스크 자동 갱신: 새 배포(BUILD 변경) 감지 시 캐시 무시하고 새로고침 → TV가 옛 버전에 갇히지 않음
-const BUILD="20261028q";
+const BUILD="20261028r";
 setInterval(async()=>{ try{
   const t=await fetch("index.html?x="+Date.now(),{cache:"no-store"}).then(r=>r.text());
   const m=t.match(/const BUILD="([^"]+)"/);
