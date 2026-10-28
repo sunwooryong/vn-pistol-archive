@@ -358,7 +358,7 @@ const CSV = s => `https://docs.google.com/spreadsheets/d/${s.id}/export?format=c
 const DISC_COLOR = { air:"#0081C8", pistol_50:"#00a651", rapid:"#ee334e", sport:"#d99a1f", standard:"#8e44ad", "":"#8b98a8" };
 const WD={vi:["CN","T2","T3","T4","T5","T6","T7"],ko:["일","월","화","수","목","금","토"],en:["Su","Mo","Tu","We","Th","Fr","Sa"]};
 const SLIDE_MS = 15000, PAUSE = 180;   // 끝/시작 3초 정지 (60fps*3)
-const PASS_CAP_MS = 50000;   // 한 슬라이드 스크롤 한 바퀴 상한(내용 길면 속도 자동 가속)
+const PASS_CAP_MS = 240000;   // 체류시간 안전 상한(4분) — 스크롤 속도는 설정값 그대로, 이건 '다음 슬라이드로' 넘어가는 최대 대기만 제한
 const pad = n => String(n).padStart(2,"0");
 const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const vnDate = ds => { const [y,m,d]=ds.split("-"); return `${d}/${m}/${y}`; };
@@ -801,7 +801,7 @@ function langSeg(){ return `<div class="seg lang">${["vi","ko","en"].map(l=>`<bu
 function viewSeg(){ return `<div class="seg view">${[["all",L().vAll],["sched",L().vSched],["score",L().vScore]].map(([v,lab])=>`<button data-v="${v}"${VIEW===v?' class="on"':''}>${esc(lab)}</button>`).join("")}</div>`; }
 function halfSeg(){ return `<div class="seg half">${[["auto",L().hAuto],["am",L().am],["pm",L().pm],["all",L().allDay]].map(([v,lab])=>`<button data-h="${v}"${HALF_SEL===v?' class="on"':''}>${esc(lab)}</button>`).join("")}</div>`; }
 function discSeg(){ const order=(SCHED.order||Object.keys(SCHED.disc||{})); return `<div class="seg disc">${[["all",L().vAll]].concat(order.map(k=>[k,k])).map(([v,lab])=>`<button data-d="${v}"${DISC_SEL===v?' class="on"':''}>${esc(lab)}</button>`).join("")}</div>`; }
-function speedCtl(){ return `<div class="speed"><span>${esc(L().speed)}</span><input type="range" id="speed" min="0" max="3" step="0.25" value="${SPEED}"></div>`; }
+function speedCtl(){ return `<div class="speed"><span>${esc(L().speed)}</span><input type="range" id="speed" min="0.05" max="2" step="0.05" value="${SPEED}"><span class="pn-sub" id="speed-val">${(+SPEED).toFixed(2)}</span></div>`; }
 // ===== 설정 패널(시계/⚙ 클릭으로 열림) — 날짜·보기·언어·속도·전광판 모두 =====
 let PANEL_OPEN=false;
 function applyPanel(){ const p=document.getElementById("panel"); if(p)p.hidden=!PANEL_OPEN; }
@@ -872,7 +872,7 @@ function bindPanel(){
   document.querySelectorAll("#panel .view button").forEach(b=>b.onclick=()=>setView(b.dataset.v));
   document.querySelectorAll("#panel .half button").forEach(b=>b.onclick=()=>setHalf(b.dataset.h));
   document.querySelectorAll("#panel .disc button").forEach(b=>b.onclick=()=>setDisc(b.dataset.d));
-  const sp=q("speed"); if(sp)sp.oninput=()=>{SPEED=parseFloat(sp.value);localStorage.setItem("tc_speed",SPEED);};
+  const sp=q("speed"); if(sp)sp.oninput=()=>{SPEED=parseFloat(sp.value);localStorage.setItem("tc_speed",SPEED); const sv=q("speed-val"); if(sv)sv.textContent=SPEED.toFixed(2);};
   const save=()=>{ localStorage.setItem("tc_ticker",(q("pt-input").value||"").trim()); renderTicker(); PANEL_OPEN=false; applyPanel(); };
   if(q("pt-save"))q("pt-save").onclick=save;
   if(q("pt-input"))q("pt-input").onkeydown=e=>{ if(e.key==="Enter")save(); else if(e.key==="Escape"){PANEL_OPEN=false;applyPanel();} };
@@ -1040,20 +1040,21 @@ function setupScroll(el){
   el._dup=true; el._copyH=copyH;
   el.insertAdjacentHTML("beforeend", el.innerHTML);   // 같은 내용 한 벌 더 → 끊김없이 순환
 }
-// 한 바퀴(=1벌 높이) 스크롤 계산: 기본속도, 단 PASS_CAP_MS 넘으면 가속.
+// 스크롤 속도는 설정값(SPEED) 그대로 — 가속 없음(느리게 하면 실제로 느려짐).
+// frames=한 바퀴에 걸리는 프레임(=loop/SPEED). dwellFrames=체류 상한(PASS_CAP) 적용.
 function scrollPass(el){
-  if(!el||SPEED<=0) return {loop:0,frames:0,speed:(SPEED>0?SPEED:0.25),dup:false};
+  if(!el||SPEED<=0) return {loop:0,frames:0,speed:(SPEED>0?SPEED:0.2),dup:false};
   setupScroll(el);
   if(!el._dup) return {loop:0,frames:0,speed:SPEED,dup:false};
   const loop=el._copyH, capFrames=PASS_CAP_MS/1000*60;
-  const frames=Math.min(loop/SPEED, capFrames);
-  return {loop,frames,speed:loop/frames,dup:true};
+  const frames=loop/SPEED;
+  return {loop, frames, dwellFrames:Math.min(frames,capFrames), speed:SPEED, dup:true};
 }
-// 슬라이드 체류시간: 한 바퀴 다 돌(=내용 한 번 다 보임) 시간 머문 뒤 다음 슬라이드로(짧으면 기본 15초).
+// 슬라이드 체류시간: 한 바퀴 다 보일 시간 머문 뒤 다음 슬라이드로(짧으면 기본 15초, 너무 길면 4분 상한).
 function slideDwellMs(){
   const p=scrollPass(activeScroller());
   if(!p.dup || p.frames<=0) return SLIDE_MS;
-  const ms=p.frames/60*1000 + 1500;   // 한 바퀴(60fps) + 1.5초 여유
+  const ms=(p.dwellFrames!=null?p.dwellFrames:p.frames)/60*1000 + 1500;
   return Math.max(SLIDE_MS, Math.round(ms));
 }
 function restartTimer(){ clearTimeout(slideTimer); if(SLIDES.length>1) slideTimer=setTimeout(()=>{ showSlide(CUR+1); restartTimer(); }, slideDwellMs()); }
@@ -1169,7 +1170,7 @@ setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
 let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(()=>{ renderTicker(); fitSig(); renderWR(); renderDT(); },300); });
 setInterval(loadWorldRank, 6*3600*1000);   // 세계랭킹 월간 갱신 반영(6시간마다 재조회)
 // 키오스크 자동 갱신: 새 배포(BUILD 변경) 감지 시 캐시 무시하고 새로고침 → TV가 옛 버전에 갇히지 않음
-const BUILD="20261028l";
+const BUILD="20261028m";
 setInterval(async()=>{ try{
   const t=await fetch("index.html?x="+Date.now(),{cache:"no-store"}).then(r=>r.text());
   const m=t.match(/const BUILD="([^"]+)"/);
