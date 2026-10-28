@@ -10,6 +10,8 @@
   const clean = v => { v = String(v || "").trim(); return (!v || LBL.test(v)) ? "" : v; };
   const cnum = v => { const c = clean(v); return c ? num(c) : null; };
   function tDate(s) { const m = String(s || "").match(/(\d{4})[-.\s]+(\d{1,2})[-.\s]+(\d{1,2})/); return m ? `${m[1]}-${pad(+m[2])}-${pad(+m[3])}` : null; }
+  // 저장된 시각으로 오전/오후 구분(오전/오후 또는 H:MM). 시간 없으면 null.
+  function tHalf(s) { s = String(s || ""); if (/오전|SA\b|\bAM\b/i.test(s)) return "am"; if (/오후|CH\b|\bPM\b/i.test(s)) return "pm"; const m = s.match(/\b(\d{1,2}):(\d{2})/); if (m) { const h = +m[1]; return h < 12 ? "am" : "pm"; } return null; }
   function tDisc(s) {
     s = (s || "").toLowerCase();
     if (/50m|50 m/.test(s)) return "pistol_50";
@@ -54,7 +56,7 @@
     const distRaw = cols.dist.map(i => (i >= 0 ? cnum(row[i]) : null));
     const hasDist = distRaw.some(v => v != null);
     return {
-      date, name, disc, dk: tDisc(disc), total, series,
+      date, half: tHalf(row[cols.date]), name, disc, dk: tDisc(disc), total, series,
       dist: hasDist ? distRaw.map(v => v || 0) : null,
       long10: cols.long10 >= 0 ? cnum(row[cols.long10]) : null,
     };
@@ -75,5 +77,5 @@
     return out;
   }
 
-  return { num, cnum, tDate, tDisc, resolveCols, rowToSession, buildSessions };
+  return { num, cnum, tDate, tHalf, tDisc, resolveCols, rowToSession, buildSessions };
 });
