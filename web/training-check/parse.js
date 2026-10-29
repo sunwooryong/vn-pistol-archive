@@ -73,6 +73,7 @@
     const out = [];
     for (const row of rows.slice(dataStart)) {
       if (!row || row.length < need) continue;
+      if (row.some(c => /MERGED_INTO/i.test(String(c == null ? "" : c)))) continue;   // 다른 기록에 병합된 조각(shot-log)은 제외 → 중복 표시 방지
       const s = rowToSession(row, cols);
       if (s) out.push(s);
     }
