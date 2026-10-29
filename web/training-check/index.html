@@ -342,7 +342,7 @@ header{display:flex;align-items:center;gap:13px;flex-wrap:nowrap}
   <div class="wr" id="wr" aria-label="세계 랭킹·기록" title="세계 랭킹·기록"></div>
 </div>
 
-<script src="parse.js?v=2"></script>
+<script src="parse.js?v=3"></script>
 <script>
 // 캐시 정체 방지: training-check는 오프라인 불필요 → 서비스워커/캐시 제거(네트워크 최신만 사용)
 // ★ 옛 서비스워커가 이 페이지를 아직 "제어" 중이면(=시크릿과 달리 캐시가 데이터를 가로채 일정이 "없음"으로 뜨는 원인)
@@ -1215,7 +1215,7 @@ setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
 let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(()=>{ renderTicker(); fitSig(); renderWR(); renderDT(); },300); });
 setInterval(loadWorldRank, 6*3600*1000);   // 세계랭킹 월간 갱신 반영(6시간마다 재조회)
 // 키오스크 자동 갱신: 새 배포(BUILD 변경) 감지 시 캐시 무시하고 새로고침 → TV가 옛 버전에 갇히지 않음
-const BUILD="20261029u";
+const BUILD="20261029v";
 setInterval(async()=>{ try{
   const t=await fetch("index.html?x="+Date.now(),{cache:"no-store"}).then(r=>r.text());
   const m=t.match(/const BUILD="([^"]+)"/);
