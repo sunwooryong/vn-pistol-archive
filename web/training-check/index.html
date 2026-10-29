@@ -654,6 +654,8 @@ function dayIdx(dateStr){ return Math.floor(new Date((dateStr||iso(new Date()))+
 function rotHours(){ const h=parseInt(localStorage.getItem("tc_rot_hours")||"24",10); return (h>=1&&h<=24)?h:24; }
 function periodIdx(){ const off=new Date().getTimezoneOffset()*60000; return Math.floor((Date.now()-off)/(rotHours()*3600000)); }
 function pick2(arr){ if(!arr.length)return[]; const n=arr.length,di=periodIdx(); if(n===1)return[arr[0]]; const a=((2*di)%n+n)%n,b=((2*di+1)%n+n)%n; return a===b?[arr[a]]:[arr[a],arr[b]]; }
+// 자동 모드: 선택된 문구 전체를 주기마다 시작 순서만 바꿔 반환(전광판/단훈에서 계속 돌아가며 표시 → 자동으로 바뀜)
+function rotatedSel(cat){ const sel=catSel(cat); if(!sel.length)return[]; const n=sel.length, off=((periodIdx()%n)+n)%n; return sel.slice(off).concat(sel.slice(0,off)); }
 // 🏆 베트남 대회 일정(목록) — 다음(가장 가까운 미래) 대회가 자동으로 D-day·시합문구 기준
 const DEFAULT_COMPS=[
  {name:"Giải VĐ súng hơi QG (Đắk Lắk)", date:"2026-03-20"},
@@ -678,7 +680,7 @@ function bannerEntries(){
   const out=[];
   const bd=bdaysToday(); if(bd.length){ const nm=bd.join(", "); out.push({ko:`🎂 ${nm} 생일 축하합니다!`, vi:`🎂 Chúc mừng sinh nhật ${nm}!`, en:`🎂 Happy birthday, ${nm}!`}); }
   const mmode=catMode("motto");
-  if(mmode==="auto"){ const m=mottoOfDay(); if(m)out.push(m); }
+  if(mmode==="auto") rotatedSel("motto").forEach(i=>out.push(MOTTOS[i]));   // 선택 명언 전체를 돌려가며
   else if(mmode==="manual") catSel("motto").forEach(i=>out.push(MOTTOS[i]));
   const typed=dtGet(); if(typed && (typed.vi||typed.ko||typed.en) && localStorage.getItem("tc_dt_on")!=="0") out.push(typed);
   return out.filter(Boolean);
@@ -687,10 +689,10 @@ function bannerEntries(){
 function tickerPhrases(){
   const out=[], ci=compInfo();
   const cmode=catMode("comp");
-  if(cmode==="auto"){ if(ci && ci.du<=7 && ci.du>=0) pick2(CM_PHRASES).forEach(p=>out.push(p)); }
+  if(cmode==="auto"){ if(ci && ci.du<=7 && ci.du>=0) rotatedSel("comp").forEach(i=>out.push(CM_PHRASES[i])); }
   else if(cmode==="manual") catSel("comp").forEach(i=>out.push(CM_PHRASES[i]));
   const tmode=catMode("train");
-  if(tmode==="auto") pick2(TR_PHRASES).forEach(p=>out.push(p));
+  if(tmode==="auto") rotatedSel("train").forEach(i=>out.push(TR_PHRASES[i]));   // 선택 훈련문구 전체를 돌려가며
   else if(tmode==="manual") catSel("train").forEach(i=>out.push(TR_PHRASES[i]));
   return out.filter(Boolean);
 }
@@ -858,9 +860,9 @@ function renderPanel(){
     +`</div></div>`;
   h+=`<div class="pn-row"><span class="pn-lab"></span><input class="pt-input" id="cm-name" placeholder="대회명" style="min-width:120px;flex:0 1 200px"><input type="date" id="cm-date" class="tm-in"><button class="tb" id="cm-add">➕ 추가</button><span class="pn-sub">다음 대회 자동 표시 · 시합문구 D-7부터</span></div>`;
   // 🎯훈련 / 🏆시합 / 🏅명언 문구: 각각 끄기·자동·수동(체크) 설정
-  h+=phraseCatUI("train","🎯 훈련","전광판 · 자동=주기마다 2개");
+  h+=phraseCatUI("train","🎯 훈련","전광판 · 자동=선택 전체 순환");
   h+=phraseCatUI("comp","🏆 시합","전광판 · 자동=대회 D-7부터");
-  h+=phraseCatUI("motto","🏅 명언","단훈 · 자동=주기마다 1개");
+  h+=phraseCatUI("motto","🏅 명언","단훈 · 자동=선택 전체 순환");
   // 🔁 문구 순환 주기(시간 단위 포함)
   h+=`<div class="pn-row"><span class="pn-lab">🔁 주기</span><select id="rot-h" class="tm-in" style="width:auto;max-width:150px">`
     +[[1,"1시간마다"],[2,"2시간마다"],[3,"3시간마다"],[4,"4시간마다"],[6,"6시간마다"],[8,"8시간마다"],[12,"12시간마다"],[24,"하루 1회"]].map(([v,l])=>`<option value="${v}"${rotHours()===v?" selected":""}>${esc(l)}</option>`).join("")
@@ -1215,7 +1217,7 @@ setInterval(loadWeather, 600000);   // 날씨 10분마다 갱신
 let _tkRz; window.addEventListener("resize",()=>{ clearTimeout(_tkRz); _tkRz=setTimeout(()=>{ renderTicker(); fitSig(); renderWR(); renderDT(); },300); });
 setInterval(loadWorldRank, 6*3600*1000);   // 세계랭킹 월간 갱신 반영(6시간마다 재조회)
 // 키오스크 자동 갱신: 새 배포(BUILD 변경) 감지 시 캐시 무시하고 새로고침 → TV가 옛 버전에 갇히지 않음
-const BUILD="20261029w";
+const BUILD="20261029x";
 setInterval(async()=>{ try{
   const t=await fetch("index.html?x="+Date.now(),{cache:"no-store"}).then(r=>r.text());
   const m=t.match(/const BUILD="([^"]+)"/);
