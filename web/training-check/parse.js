@@ -12,6 +12,8 @@
   function tDate(s) { const m = String(s || "").match(/(\d{4})[-.\s]+(\d{1,2})[-.\s]+(\d{1,2})/); return m ? `${m[1]}-${pad(+m[2])}-${pad(+m[3])}` : null; }
   // 저장된 시각으로 오전/오후 구분(오전/오후 또는 H:MM). 시간 없으면 null.
   function tHalf(s) { s = String(s || ""); if (/오전|SA\b|\bAM\b/i.test(s)) return "am"; if (/오후|CH\b|\bPM\b/i.test(s)) return "pm"; const m = s.match(/\b(\d{1,2}):(\d{2})/); if (m) { const h = +m[1]; return h < 12 ? "am" : "pm"; } return null; }
+  // 행 안에 명시된 '오전/오후(Buổi sáng/chiều)' 값을 우선 사용(헤더가 비어 있어 위치로 못 찾음). 없으면 null.
+  function rowHalf(row) { for (const v of (row || [])) { const s = String(v == null ? "" : v); if (/오후|Buổi chiều/i.test(s)) return "pm"; if (/오전|Buổi sáng/i.test(s)) return "am"; } return null; }
   function tDisc(s) {
     s = (s || "").toLowerCase();
     if (/50m|50 m/.test(s)) return "pistol_50";
@@ -56,7 +58,7 @@
     const distRaw = cols.dist.map(i => (i >= 0 ? cnum(row[i]) : null));
     const hasDist = distRaw.some(v => v != null);
     return {
-      date, half: tHalf(row[cols.date]), name, disc, dk: tDisc(disc), total, series,
+      date, half: rowHalf(row) || tHalf(row[cols.date]), name, disc, dk: tDisc(disc), total, series,
       dist: hasDist ? distRaw.map(v => v || 0) : null,
       long10: cols.long10 >= 0 ? cnum(row[cols.long10]) : null,
     };
@@ -77,5 +79,5 @@
     return out;
   }
 
-  return { num, cnum, tDate, tHalf, tDisc, resolveCols, rowToSession, buildSessions };
+  return { num, cnum, tDate, tHalf, rowHalf, tDisc, resolveCols, rowToSession, buildSessions };
 });
