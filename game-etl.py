@@ -232,6 +232,46 @@ def parse_xlsx(f):
              'athletes': [{'rank': 1, 'raw_name': nm, 'region': None, 'total': total,
                            'result': (f'{int(shots)}발' if shots else None), 'status': '', 'shootoff': None}]}]
 
+# ---- 게임 앱 결과 JSON(구조화) 파서: 최신 PDF가 이미지형이라 못 읽는 경기 보완 ----
+GAME_LABEL = {'target': '목표 사격', 'tenstreak': '10점 연결', 'blackjack': 'Blackjack', '3-0': '3-0',
+              'percent10s': 'Percent 10s', 'tickingclock': 'Ticking Clock', 'steptest': 'Step Test',
+              '10perfectshots': '10 Perfect Shots', 'approachtape': 'Approach Tape', 'clickclick': 'Click Click',
+              'monitor': 'Monitor Off/On'}
+def result_json_str(r, game):
+    ex = r.get('extra') or {}; parts = []
+    if game == 'tenstreak':
+        if r.get('score'): parts.append(f"{int(r['score'])}연속")
+        if r.get('scoreSum'): parts.append(f"{int(r['scoreSum'])}점")
+        if r.get('shots'): parts.append(f"{r['shots']}발")
+    elif game == 'target':
+        if ex.get('stage'): parts.append(f"Lv{ex['stage']}")
+        if r.get('shots'): parts.append(f"{r['shots']}발")
+    else:
+        if r.get('scoreSum'): parts.append(f"{int(r['scoreSum'])}점")
+        elif r.get('score'): parts.append(str(r['score']))
+        if r.get('shots'): parts.append(f"{r['shots']}발")
+    return ' · '.join(parts) or None
+def parse_result_json(f):
+    try: d = json.load(open(f, encoding='utf-8'))
+    except Exception: return []
+    st = d.get('standings') or []
+    if not st: return []
+    se = d.get('settings') or {}
+    game = d.get('game') or se.get('gameKey') or 'game'
+    arch = d.get('archivedAt') or ''
+    date = arch[:10] if re.match(r'\d{4}-\d{2}-\d{2}', arch) else ''
+    nm = (d.get('gameName') or se.get('gameName') or '').strip() or GAME_LABEL.get(game, game)
+    ath = []
+    for i, r in enumerate(st):
+        rk = int(r.get('rank') or (i + 1))
+        tot = r.get('scoreSum')
+        tot = float(tot) if isinstance(tot, (int, float)) and tot else None
+        ath.append({'rank': rk, 'raw_name': (r.get('name') or '').strip(), 'region': r.get('region') or None,
+                    'total': tot, 'result': result_json_str(r, game),
+                    'status': '우승' if rk == 1 else '', 'shootoff': None})
+    return [{'date': date, 'name': nm, 'file': os.path.basename(f), 'game_type': game,
+             'athletes': ath, '_archivedAt': arch}]
+
 # ---- 수집 ----
 all_matches = []
 for f in sorted(glob.glob(os.path.join(folder, '*'))):
@@ -243,10 +283,26 @@ for f in sorted(glob.glob(os.path.join(folder, '*'))):
     except Exception as e:
         print(f'  [건너뜀] {os.path.basename(f)}: {e}')
 
+# 게임 앱 구조화 결과 JSON 수집(백업 폴더). 같은 (날짜,게임)의 중간 스냅샷은 가장 최근 1개만.
+BK = os.path.expanduser('~/Sunwoo_Shooting Game_Backup')
+_jm = []
+for jf in sorted(glob.glob(os.path.join(BK, 'result-*.json'))):
+    try: _jm += parse_result_json(jf)
+    except Exception as e: print(f'  [건너뜀] {os.path.basename(jf)}: {e}')
+_latest = {}
+for mt in _jm:
+    if not mt['date'] or not mt['athletes']: continue
+    k = (mt['date'], mt['game_type'])
+    if k not in _latest or mt.get('_archivedAt', '') > _latest[k].get('_archivedAt', ''):
+        _latest[k] = mt
+for mt in _latest.values():
+    mt.pop('_archivedAt', None); all_matches.append(mt)
+
 # ---- 중복 제거 (같은 날짜+경기명+선수/총점 구성) ----
 PRIO = {'csv': 5, 'elimination': 4, 'knockdown': 4, 'analysis': 3, 'target': 2}  # 높을수록 우선
 def src_prio(mt):
     b = mt['file'].lower()
+    if b.startswith('result-') and b.endswith('.json'): return 7   # 게임 앱 구조화 결과(최우선)
     if b.endswith('.csv'): return 6
     if '_vi.pdf' in b or 'ho_so' in b: return 1      # VI판은 KO판에 양보
     if '_ko.pdf' in b: return 5
