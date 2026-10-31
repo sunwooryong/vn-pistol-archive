@@ -1068,15 +1068,20 @@ async function buildReportSection(a, allRows, year) {
     const totMed = [...finByD.values()].reduce((s, o) => s + o.med, 0);
     h += `<div class="dos-sec">🎖️ ${t('결선 분석')} <span class="dos-help">${t('결선 진출 성적·전환율')}</span></div>
       <div class="dos-cap">${t('결선=본선 통과 후 최종 순위 결정전 (별도 점수 체계)')}</div>
-      <table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('결선 진출')}</th><th>${t('전환율')}</th><th>${t('결선 평균')}</th><th>${t('최고')}</th><th>${t('단위')}</th><th>${t('메달')}</th></tr></thead><tbody>`;
+      <table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('결선 진출')}</th><th>${t('전환율')}</th><th>${t('결선 평균')}</th><th>${t('최고')}</th><th>${t('단위')}</th><th>${t('메달')}</th><th>${t('메달 가능성')}</th></tr></thead><tbody>`;
     [...finByD.entries()].sort((x, y) => (WEAPON_ORDER.indexOf(weaponOf(x[0])) - WEAPON_ORDER.indexOf(weaponOf(y[0])))).forEach(([k, o]) => {
       const dr = discRows.find(d => d.k === k); const qn = dr ? dr.n : o.vals.length;
       const conv = qn ? Math.round(o.vals.length / qn * 100) : null;
       const avg = o.vals.reduce((s, v) => s + v, 0) / o.vals.length;
       const convCls = conv == null ? '' : conv >= 50 ? 'up' : conv < 25 ? 'dn' : '';
-      h += `<tr><td class="dos-nm">${esc(DISC[k] || k)}</td><td>${o.vals.length}${t('회')}</td><td class="${convCls}">${conv != null ? conv + '%' : '–'}</td><td class="dos-b">${finalFmt(avg, k)}</td><td class="dos-pb">${finalFmt(Math.max(...o.vals), k)}</td><td class="dos-unit">${finalUnit(k)}</td><td>${o.med ? o.med + t('개') : '–'}</td></tr>`;
+      // 결선 메달 획득 가능성: 과거 (메달/결선진출)을 결선 기본 메달률(~37%=3/8)로 소표본 보정(사전가중 W=2)
+      const W = 2, base = 0.37;
+      const medProb = Math.round((o.med + base * W) / (o.vals.length + W) * 100);
+      const low = o.vals.length < 3;
+      const medCls = medProb >= 50 ? 'up' : medProb < 20 ? 'dn' : '';
+      h += `<tr><td class="dos-nm">${esc(DISC[k] || k)}</td><td>${o.vals.length}${t('회')}</td><td class="${convCls}">${conv != null ? conv + '%' : '–'}</td><td class="dos-b">${finalFmt(avg, k)}</td><td class="dos-pb">${finalFmt(Math.max(...o.vals), k)}</td><td class="dos-unit">${finalUnit(k)}</td><td>${o.med ? o.med + t('개') : '–'}</td><td class="${medCls}">~${medProb}%${low ? `<s class="dos-brk">${t('정보부족')}</s>` : ''}</td></tr>`;
     });
-    h += `</tbody></table><div class="dos-cap">${t('전환율=본선 경기 대비 결선 진출 비율')} · ${t('총')} ${totFin}${t('회')} · ${t('메달')} ${totMed}${t('개')}</div>`;
+    h += `</tbody></table><div class="dos-cap">${t('전환율=본선 경기 대비 결선 진출 비율')} · ${t('메달 가능성=결선 진출 시 메달 확률(과거 성과·소표본 보정)')} · ${t('총')} ${totFin}${t('회')} · ${t('메달')} ${totMed}${t('개')}</div>`;
   }
 
   // 강·약점 막대 그래프 (종목별 전국 백분위, 무기군 소계)
@@ -1116,17 +1121,17 @@ async function buildReportSection(a, allRows, year) {
     h += `</tbody></table>`;
   }
 
-  // 월별 추이 (주력 종목: 대회 per10 + 훈련 per10)
-  if (mainK) {
+  // 월별 추이 (종목별: 대회 per10 + 훈련 per10) — 선수가 가진 모든 종목을 각각 표시
+  (discRows.length ? discRows.map(d => d.k) : (mainK ? [mainK] : [])).forEach(dk => {
     const monthly = new Map();
-    rows.forEach(r => { if (r.event.discipline !== mainK || r.event.team_type !== 'individual' || !scored(r)) return; const mo = dsort(r).slice(0, 7); const ns = r.event.n_series || 6; (monthly.get(mo) || monthly.set(mo, { c: [], t: [] }).get(mo)).c.push(r.qual_total / ns); });
-    if (TR) TR.sessions.forEach(s => { if ((s.dk || s.disc) !== mainK) return; const mo = s.date.slice(0, 7); if (year !== 'all' && +mo.slice(0, 4) !== year) return; const v = per10t(s); if (v != null) (monthly.get(mo) || monthly.set(mo, { c: [], t: [] }).get(mo)).t.push(v); });
+    rows.forEach(r => { if (r.event.discipline !== dk || r.event.team_type !== 'individual' || !scored(r)) return; const mo = dsort(r).slice(0, 7); const ns = r.event.n_series || 6; (monthly.get(mo) || monthly.set(mo, { c: [], t: [] }).get(mo)).c.push(r.qual_total / ns); });
+    if (TR) TR.sessions.forEach(s => { if ((s.dk || s.disc) !== dk) return; const mo = s.date.slice(0, 7); if (year !== 'all' && +mo.slice(0, 4) !== year) return; const v = per10t(s); if (v != null) (monthly.get(mo) || monthly.set(mo, { c: [], t: [] }).get(mo)).t.push(v); });
     const mos = [...monthly.keys()].sort();
     if (mos.length >= 2) {
       const cSeries = mos.map(mo => { const a2 = monthly.get(mo).c; return a2.length ? a2.reduce((s, v) => s + v, 0) / a2.length : null; });
       const tSeries = mos.map(mo => { const a2 = monthly.get(mo).t; return a2.length ? a2.reduce((s, v) => s + v, 0) / a2.length : null; });
       const hasT = tSeries.some(v => v != null);
-      h += `<div class="dos-sec">📈 ${t('월별 추이')} <span class="dos-help">${t('월별 평균 점수 흐름')}</span> <span>${esc(DISC[mainK] || mainK)}</span></div>
+      h += `<div class="dos-sec">📈 ${t('월별 추이')} <span class="dos-help">${t('월별 평균 점수 흐름')}</span> <span>${esc(DISC[dk] || dk)}</span></div>
         <div class="dos-cap">${t('월별 시리즈 평균 점수 (높을수록 좋음) · 대회 vs 훈련')} · <span class="lg-dot" style="background:#0b5cab"></span>${t('대회')}${hasT ? ` <span class="lg-dot" style="background:#e8590c"></span>${t('훈련')}` : ''}</div>
         <div class="dos-linewrap">${REPORT_MLINE(mos.map(m => m.slice(2).replace('-', '.')), [{ name: t('대회'), color: '#0b5cab', vals: cSeries }, { name: t('훈련'), color: '#e8590c', vals: tSeries }])}</div>
         <table class="dos-tab month"><thead><tr><th>${t('월')}</th>${mos.map(m => `<th>${m.slice(2).replace('-', '.')}</th>`).join('')}</tr></thead><tbody>
@@ -1134,7 +1139,7 @@ async function buildReportSection(a, allRows, year) {
         ${hasT ? `<tr><td class="dos-nm">🏋️ ${t('훈련')}</td>${tSeries.map(v => `<td>${v != null ? v.toFixed(1) : '–'}</td>`).join('')}</tr>` : ''}
         </tbody></table>`;
     }
-  }
+  });
 
   // PB 경신 타임라인 (경신 횟수가 가장 많은 종목)
   {
