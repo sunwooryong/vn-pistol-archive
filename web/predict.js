@@ -135,6 +135,33 @@
         R.finals = { rate: Math.round(finCount / cr.length * 100), prob: Math.min(90, Math.round((mean(recentP) <= 8 ? 55 : 25) + (R.placement.improving ? 15 : 0))), expScore: finCount ? Math.round(mean(fins.map(r => r.f)) * 10) / 10 : null, n: finCount, low: finCount < 3 };
       } else R.placement = { low: true, n: cr.length };
     }
+
+    // ---- 대회 기록이 없거나 부족할 때: 훈련 환산점수 기반 추정(종목별 벤치마크) → 항상 표시 ----
+    // 벤치마크(국내 주니어 수준 가정): mean/sd=필드 분포, cut=결선 진출 커트라인, size=필드 인원, fin=결선 인원
+    const FIELD = {
+      air: { mean: 552, sd: 14, cut: 560, size: 24, fin: 8 },
+      sport: { mean: 558, sd: 13, cut: 566, size: 20, fin: 8 },
+      pistol_50: { mean: 525, sd: 16, cut: 536, size: 16, fin: 8 },
+      rapid: { mean: 558, sd: 15, cut: 566, size: 16, fin: 6 },
+      standard: { mean: 540, sd: 15, cut: 548, size: 16, fin: 8 },
+    };
+    const needPlc = !R.placement || R.placement.low;
+    const needFin = !R.finals || R.finals.low;
+    if (needPlc || needFin) {
+      const fb = FIELD[dk] || FIELD.air;
+      const q = (R.nextComp && R.nextComp.qual != null) ? R.nextComp.qual : R.cur.qual;  // 예상 본선환산
+      const qsd = Math.max(4, sRecent * stdShots);   // 본선 점수 변동폭
+      if (needFin) {
+        const prob = Math.round(Math.max(3, Math.min(96, ncdf((q - fb.cut) / qsd) * 100)));
+        R.finals = { prob, n: (R.finals && R.finals.n) || 0, low: false, est: true, expScore: (R.finals && R.finals.expScore) || null };
+      }
+      if (needPlc) {
+        const pct = ncdf((q - fb.mean) / fb.sd);                 // 필드 내 상위 비율
+        const rank = Math.max(1, Math.round(1 + (fb.size - 1) * (1 - pct)));
+        const sd1 = Math.max(1, Math.round((fb.size - 1) * (ncdf(0.5) - ncdf(-0.5)) * (qsd / fb.sd))); // 점수 변동→등위 변동폭
+        R.placement = { recentAvg: rank, allAvg: rank, expLo: Math.max(1, rank - sd1), expHi: Math.min(fb.size, rank + sd1), improving: (slopeMonth || 0) > 0.015, n: (R.placement && R.placement.n) || 0, low: false, est: true };
+      }
+    }
     return R;
   }
 
