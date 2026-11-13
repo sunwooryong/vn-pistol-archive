@@ -114,6 +114,7 @@
     '정보 부족(5회 미만)': 'Thiếu dữ liệu (dưới 5 lần)',
     '정보부족': 'Thiếu dữ liệu',
     '추정': 'Ước tính', '훈련 기반 추정': 'Ước tính từ dữ liệu tập luyện',
+    '주니어부': 'Nhóm trẻ', '시니어부': 'Nhóm lớn', '주니어': 'Trẻ', '시니어': 'Lớn',
     '메달 가능성': 'Khả năng huy chương',
     '메달 가능성=결선 진출 시 메달 확률(과거 성과·소표본 보정)': 'Khả năng HC = xác suất giành HC khi vào chung kết (dựa thành tích · hiệu chỉnh mẫu nhỏ)',
     '종합 평가': 'Đánh giá tổng hợp',

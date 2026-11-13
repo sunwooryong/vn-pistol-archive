@@ -136,31 +136,38 @@
       } else R.placement = { low: true, n: cr.length };
     }
 
-    // ---- 대회 기록이 없거나 부족할 때: 훈련 환산점수 기반 추정(종목별 벤치마크) → 항상 표시 ----
-    // 벤치마크(국내 주니어 수준 가정): mean/sd=필드 분포, cut=결선 진출 커트라인, size=필드 인원, fin=결선 인원
-    const FIELD = {
-      air: { mean: 552, sd: 14, cut: 560, size: 24, fin: 8 },
-      sport: { mean: 558, sd: 13, cut: 566, size: 20, fin: 8 },
-      pistol_50: { mean: 525, sd: 16, cut: 536, size: 16, fin: 8 },
-      rapid: { mean: 558, sd: 15, cut: 566, size: 16, fin: 6 },
-      standard: { mean: 540, sd: 15, cut: 548, size: 16, fin: 8 },
+    // ---- 대회 기록이 없거나 부족할 때: 훈련 환산점수 기반 추정(주니어부/시니어부 각각) → 항상 표시 ----
+    // 벤치마크: mean/sd=필드 분포, cut=결선 진출 커트라인, size=필드 인원. 시니어부는 더 강한 필드(평균·커트 ↑).
+    const FIELD_JR = {
+      air: { mean: 552, sd: 14, cut: 560, size: 24 }, sport: { mean: 558, sd: 13, cut: 566, size: 20 },
+      pistol_50: { mean: 525, sd: 16, cut: 536, size: 16 }, rapid: { mean: 558, sd: 15, cut: 566, size: 16 },
+      standard: { mean: 540, sd: 15, cut: 548, size: 16 },
+    };
+    const FIELD_SR = {
+      air: { mean: 566, sd: 11, cut: 576, size: 28 }, sport: { mean: 572, sd: 10, cut: 580, size: 24 },
+      pistol_50: { mean: 545, sd: 13, cut: 555, size: 20 }, rapid: { mean: 575, sd: 12, cut: 582, size: 18 },
+      standard: { mean: 558, sd: 12, cut: 566, size: 18 },
     };
     const needPlc = !R.placement || R.placement.low;
     const needFin = !R.finals || R.finals.low;
     if (needPlc || needFin) {
-      const fb = FIELD[dk] || FIELD.air;
       const q = (R.nextComp && R.nextComp.qual != null) ? R.nextComp.qual : R.cur.qual;  // 예상 본선환산
       const qsd = Math.max(4, sRecent * stdShots);   // 본선 점수 변동폭
-      if (needFin) {
+      const estDiv = (fb) => {
         const prob = Math.round(Math.max(3, Math.min(96, ncdf((q - fb.cut) / qsd) * 100)));
-        R.finals = { prob, n: (R.finals && R.finals.n) || 0, low: false, est: true, expScore: (R.finals && R.finals.expScore) || null };
-      }
-      if (needPlc) {
-        const pct = ncdf((q - fb.mean) / fb.sd);                 // 필드 내 상위 비율
+        const pct = ncdf((q - fb.mean) / fb.sd);
         const rank = Math.max(1, Math.round(1 + (fb.size - 1) * (1 - pct)));
-        const sd1 = Math.max(1, Math.round((fb.size - 1) * (ncdf(0.5) - ncdf(-0.5)) * (qsd / fb.sd))); // 점수 변동→등위 변동폭
-        R.placement = { recentAvg: rank, allAvg: rank, expLo: Math.max(1, rank - sd1), expHi: Math.min(fb.size, rank + sd1), improving: (slopeMonth || 0) > 0.015, n: (R.placement && R.placement.n) || 0, low: false, est: true };
-      }
+        const sd1 = Math.max(1, Math.round((fb.size - 1) * (ncdf(0.5) - ncdf(-0.5)) * (qsd / fb.sd)));
+        return {
+          placement: { recentAvg: rank, allAvg: rank, expLo: Math.max(1, rank - sd1), expHi: Math.min(fb.size, rank + sd1), improving: (slopeMonth || 0) > 0.015, n: 0, low: false, est: true },
+          finals: { prob, n: 0, low: false, est: true, expScore: null }
+        };
+      };
+      const jr = estDiv(FIELD_JR[dk] || FIELD_JR.air);
+      const sr = estDiv(FIELD_SR[dk] || FIELD_SR.air);
+      R.estJr = jr; R.estSr = sr;   // 주니어부/시니어부 추정
+      if (needPlc) R.placement = jr.placement;   // 기존 단일 표시 호환(주니어 기준)
+      if (needFin) R.finals = jr.finals;
     }
     return R;
   }
