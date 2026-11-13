@@ -1992,10 +1992,20 @@ async function renderPredictTab() {
   const body = $('#pr-body'); body.innerHTML = `<div class="muted">${t('분석 중…')}</div>`;
   const key = box._sel || roster[0].key;
   let a = await DB.athleteByKey(key);
-  if (!a) {  // 대회 기록이 없는 선수(청소년 등 훈련·게임만 있는 경우) — 즐겨찾기 이름으로 복구해 훈련 데이터로 예측
+  if (!a) {  // 저장된 key가 대회 테이블과 안 맞을 때 — 이름으로 DB에서 찾아 실제 id·대회기록 확보(없으면 이름만으로 훈련 기반)
     const it = roster.find(r => r.key === key) || roster[0];
     const nm = it && (it.full_name || it.name);
-    if (nm) a = { id: null, full_name: nm, identity_key: key, birth_year: it.birth_year || null, gender: it.gender || null };
+    if (nm) {
+      try {
+        const rows = await DB.searchAthletes(nm);
+        if (rows && rows.length) {
+          const low = s => (s || '').toLowerCase().trim();
+          const hit = rows.find(r => low(r.full_name) === low(nm)) || rows[0];
+          a = (hit.identity_key ? await DB.athleteByKey(hit.identity_key) : null) || { id: (hit.id != null ? hit.id : null), full_name: hit.full_name || nm, identity_key: hit.identity_key || key, birth_year: hit.birth_year || null, gender: hit.gender || null };
+        }
+      } catch (e) { }
+      if (!a) a = { id: null, full_name: nm, identity_key: key, birth_year: it.birth_year || null, gender: it.gender || null };
+    }
   }
   if (!a) { body.innerHTML = `<div class="pr-empty">${t('선수 정보를 찾을 수 없습니다.')}</div>`; return; }
   let TR = null; try { TR = await DB.trainingOf(a.full_name); } catch (e) { }

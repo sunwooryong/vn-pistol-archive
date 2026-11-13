@@ -34,10 +34,17 @@
     // 훈련 기록이 부족하면 대회 본선점수(qual)를 발당평균(psa)으로 변환해 시계열 보완/대체
     if (trCount < MIN && career && career.length) {
       const cdisc = r => (r.event && r.event.discipline) || r.discipline || r.dk || r.disc;
-      const comp = career.filter(r => cdisc(r) === dk && r.qual_total != null && !(r.event && r.event.team_type && r.event.team_type !== 'individual'))
-        .map(r => { const sh = (r.series && r.series.length ? r.series.length * 10 : stdShots); return { dk, date: String(r.match_date || (r.competition && r.competition.date_start) || '').slice(0, 10), psa: r.qual_total / sh, comp: true }; })
-        .filter(r => r.date && isFinite(r.psa) && r.psa > 3 && r.psa < 11);
-      rows = rows.concat(comp).sort((a, b) => a.date.localeCompare(b.date));
+      const comp = [];
+      career.filter(r => cdisc(r) === dk && r.qual_total != null && !(r.event && r.event.team_type && r.event.team_type !== 'individual')).forEach(r => {
+        const date = String(r.match_date || (r.competition && r.competition.date_start) || '').slice(0, 10);
+        if (!date) return;
+        if (r.series && r.series.length) {   // 시리즈(각 10발) 기록을 종합 — 발당평균으로
+          r.series.forEach(s => { const v = (s && s.score != null) ? s.score : (s && s.value); if (v != null && isFinite(v / 10)) comp.push({ dk, date, psa: v / 10, comp: true }); });
+        } else {
+          const p = r.qual_total / stdShots; if (isFinite(p)) comp.push({ dk, date, psa: p, comp: true });
+        }
+      });
+      rows = rows.concat(comp.filter(r => r.psa > 3 && r.psa < 11)).sort((a, b) => a.date.localeCompare(b.date));
     }
     const compBased = trCount < MIN && rows.length > trCount;   // 대회 기록으로 보완/대체됨
     const minNeeded = compBased ? 3 : MIN;                      // 대회 기반은 3회부터 허용(대회는 드물어서)
