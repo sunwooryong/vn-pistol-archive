@@ -1991,27 +1991,34 @@ async function renderPredictTab() {
   // 본문
   const body = $('#pr-body'); body.innerHTML = `<div class="muted">${t('분석 중…')}</div>`;
   const key = box._sel || roster[0].key;
+  const _d = { key: String(key).slice(0, 28), searchN: null, names: [] };
   let a = await DB.athleteByKey(key);
+  _d.byKey = !!a;
   if (!a) {  // 저장된 key가 대회 테이블과 안 맞을 때 — 이름으로 DB에서 찾아 실제 id·대회기록 확보(없으면 이름만으로 훈련 기반)
     const it = roster.find(r => r.key === key) || roster[0];
     const nm = it && (it.full_name || it.name);
     if (nm) {
       try {
         const rows = await DB.searchAthletes(nm);
+        _d.searchN = (rows || []).length; _d.names = (rows || []).slice(0, 3).map(r => r.full_name);
         if (rows && rows.length) {
           const low = s => (s || '').toLowerCase().trim();
           const hit = rows.find(r => low(r.full_name) === low(nm)) || rows[0];
           a = (hit.identity_key ? await DB.athleteByKey(hit.identity_key) : null) || { id: (hit.id != null ? hit.id : null), full_name: hit.full_name || nm, identity_key: hit.identity_key || key, birth_year: hit.birth_year || null, gender: hit.gender || null };
         }
-      } catch (e) { }
+      } catch (e) { _d.searchErr = String(e).slice(0, 40); }
       if (!a) a = { id: null, full_name: nm, identity_key: key, birth_year: it.birth_year || null, gender: it.gender || null };
     }
   }
   if (!a) { body.innerHTML = `<div class="pr-empty">${t('선수 정보를 찾을 수 없습니다.')}</div>`; return; }
-  let TR = null; try { TR = await DB.trainingOf(a.full_name); } catch (e) { }
+  let TR = null; try { TR = await DB.trainingOf(a.full_name); } catch (e) { _d.trErr = String(e).slice(0, 40); }
   const sessions = (TR && TR.sessions) || [];
-  let career = []; try { if (a.id != null) career = await DB.athleteCareer(a.id); } catch (e) { }
-  if (!sessions.length && !career.length) { body.innerHTML = `<div class="pr-empty">${esc(a.full_name)} — ${t('훈련·대회 기록이 없어 예측할 수 없습니다. (기록이 쌓이면 자동 분석됩니다)')}</div>`; return; }
+  let career = []; try { if (a.id != null) career = await DB.athleteCareer(a.id); } catch (e) { _d.carErr = String(e).slice(0, 40); }
+  _d.aid = a.id; _d.car = career.length; _d.tr = sessions.length;
+  if (!sessions.length && !career.length) {
+    const diag = `byKey ${_d.byKey ? 'Y' : 'N'} · 검색 ${_d.searchN == null ? '-' : _d.searchN}명${_d.names.length ? '(' + _d.names.join(', ') + ')' : ''} · id ${_d.aid == null ? '없음' : _d.aid} · 대회 ${_d.car} · 훈련 ${_d.tr}${_d.searchErr ? ' · ⚠' + _d.searchErr : ''}${_d.carErr ? ' · ⚠car:' + _d.carErr : ''}`;
+    body.innerHTML = `<div class="pr-empty">${esc(a.full_name)} — ${t('훈련·대회 기록이 없어 예측할 수 없습니다. (기록이 쌓이면 자동 분석됩니다)')}<div style="margin-top:8px;font-size:12px;color:#888">진단: ${esc(diag)}</div></div>`; return;
+  }
   const myUnit = curUnitOf(career);
   const unitStr = myUnit ? ' · ' + t('소속') + ' ' + regionLabel(myUnit) : '';
   // 주력 종목: 훈련 우선, 없으면 대회 기록에서 가장 많은 종목
