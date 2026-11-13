@@ -115,6 +115,8 @@
     '정보부족': 'Thiếu dữ liệu',
     '추정': 'Ước tính', '훈련 기반 추정': 'Ước tính từ dữ liệu tập luyện',
     '주니어부': 'Nhóm trẻ', '시니어부': 'Nhóm lớn', '주니어': 'Trẻ', '시니어': 'Lớn',
+    '대회': 'Thi đấu', '대회 기반': 'Dựa trên thi đấu',
+    '훈련·대회 기록이 없어 예측할 수 없습니다. (기록이 쌓이면 자동 분석됩니다)': 'Chưa có dữ liệu tập luyện/thi đấu để dự đoán. (Sẽ tự phân tích khi có dữ liệu)',
     '메달 가능성': 'Khả năng huy chương',
     '메달 가능성=결선 진출 시 메달 확률(과거 성과·소표본 보정)': 'Khả năng HC = xác suất giành HC khi vào chung kết (dựa thành tích · hiệu chỉnh mẫu nhỏ)',
     '종합 평가': 'Đánh giá tổng hợp',

@@ -1006,7 +1006,7 @@ async function buildReportSection(a, allRows, year) {
   try { stages = await DB.stageAnalysis(a.id, anYear); } catch (e) { }
   try { TR = await DB.trainingOf(a.full_name); } catch (e) { }
   let P = null; // 예측 (총평+예측섹션 공용)
-  try { if (window.Predict && TR && TR.sessions && TR.sessions.length && mainK) { const _dk = TR.sessions.some(s => (s.dk || s.disc) === mainK) ? mainK : window.Predict.mainDisc(TR.sessions); if (_dk) P = window.Predict.forecast(_dk, TR.sessions, allRows, {}); } } catch (e) { }
+  try { if (window.Predict) { const trs = (TR && TR.sessions) || []; let _dk = (mainK && trs.some(s => (s.dk || s.disc) === mainK)) ? mainK : window.Predict.mainDisc(trs); if (!_dk) { const cnt = {}; (allRows || []).forEach(r => { const d = (r.event && r.event.discipline) || r.discipline; if (d) cnt[d] = (cnt[d] || 0) + 1; }); _dk = (Object.entries(cnt).sort((x, y) => y[1] - x[1])[0] || [])[0] || mainK; } if (_dk && (trs.length || (allRows && allRows.length))) P = window.Predict.forecast(_dk, trs, allRows, {}); } } catch (e) { }
   const per10t = s => s.avg != null ? s.avg : (s.series && s.series.length ? s.total / s.series.length : null);
   // 소속: 최근 국내대회 unit 우선(없으면 전체 최근, 그래도 없으면 전달값) → 항상 표시
   const curUnit = (() => {
@@ -2000,18 +2000,20 @@ async function renderPredictTab() {
   if (!a) { body.innerHTML = `<div class="pr-empty">${t('선수 정보를 찾을 수 없습니다.')}</div>`; return; }
   let TR = null; try { TR = await DB.trainingOf(a.full_name); } catch (e) { }
   const sessions = (TR && TR.sessions) || [];
-  if (!sessions.length) { body.innerHTML = `<div class="pr-empty">${esc(a.full_name)} — ${t('훈련 기록이 없어 예측할 수 없습니다. (일일 훈련시트에 기록이 쌓이면 자동 분석됩니다)')}</div>`; return; }
-  let career = []; try { career = await DB.athleteCareer(a.id); } catch (e) { }
+  let career = []; try { if (a.id != null) career = await DB.athleteCareer(a.id); } catch (e) { }
+  if (!sessions.length && !career.length) { body.innerHTML = `<div class="pr-empty">${esc(a.full_name)} — ${t('훈련·대회 기록이 없어 예측할 수 없습니다. (기록이 쌓이면 자동 분석됩니다)')}</div>`; return; }
   const myUnit = curUnitOf(career);
   const unitStr = myUnit ? ' · ' + t('소속') + ' ' + regionLabel(myUnit) : '';
-  const dk = window.Predict.mainDisc(sessions) || (sessions[0] && sessions[0].dk);
+  // 주력 종목: 훈련 우선, 없으면 대회 기록에서 가장 많은 종목
+  let dk = window.Predict.mainDisc(sessions);
+  if (!dk) { const cnt = {}; career.forEach(r => { const d = (r.event && r.event.discipline) || r.discipline; if (d) cnt[d] = (cnt[d] || 0) + 1; }); dk = (Object.entries(cnt).sort((x, y) => y[1] - x[1])[0] || [])[0] || (sessions[0] && sessions[0].dk); }
   const R = window.Predict.forecast(dk, sessions, career, {});
   const dlab = (window.DISC && DISC[dk]) || dk;
   if (R.low || !R.enough) {
-    body.innerHTML = `<div class="pr-sub"><b>${esc(a.full_name)}</b> · ${esc(dlab)}${unitStr} · ${t('훈련')} ${R.nSessions}${t('회')} <span class="pr-low">${t('정보 부족(5회 미만)')}</span></div><div class="pr-empty">${t('예측에 필요한 최소 기록(5회)이 모이지 않았습니다.')}</div>`; return;
+    body.innerHTML = `<div class="pr-sub"><b>${esc(a.full_name)}</b> · ${esc(dlab)}${unitStr} · ${t(R.compBased ? '대회' : '훈련')} ${R.nSessions}${t('회')} <span class="pr-low">${t('정보 부족(5회 미만)')}</span></div><div class="pr-empty">${t('예측에 필요한 최소 기록(5회)이 모이지 않았습니다.')}</div>`; return;
   }
   const up = v => v >= 0 ? 'up' : 'dn', sgn = v => (v >= 0 ? '+' : '') + v;
-  let H = `<div class="pr-sub"><b>${esc(a.full_name)}</b> · ${esc(dlab)}${unitStr} · ${t('훈련')} ${R.nSessions}${t('회')} · ${t('현재 본선환산')} <b>${R.cur.qual}</b> (${t('발당')} ${R.cur.psa})</div>`;
+  let H = `<div class="pr-sub"><b>${esc(a.full_name)}</b> · ${esc(dlab)}${unitStr} · ${t(R.compBased ? '대회' : '훈련')} ${R.nSessions}${t('회')}${R.compBased ? ' <span class="pr-flag">' + t('대회 기반') + '</span>' : ''} · ${t('현재 본선환산')} <b>${R.cur.qual}</b> (${t('발당')} ${R.cur.psa})</div>`;
   // 타일
   H += `<div class="pr-tiles">
     <div class="pr-tile"><span class="rail" style="background:${PRC.a}"></span><div class="pr-k">${t('다음 대회 예상 본선')}</div><div class="pr-v">${R.nextComp.qual}</div><div class="pr-u">${t('점')} · ${t('60발 환산')}</div><div class="pr-rng">${t('구간')} ${R.nextComp.lo} – ${R.nextComp.hi}</div></div>
