@@ -1989,7 +1989,13 @@ async function renderPredictTab() {
   // 본문
   const body = $('#pr-body'); body.innerHTML = `<div class="muted">${t('분석 중…')}</div>`;
   const key = box._sel || roster[0].key;
-  const a = await DB.athleteByKey(key); if (!a) { body.innerHTML = `<div class="pr-empty">${t('선수 정보를 찾을 수 없습니다.')}</div>`; return; }
+  let a = await DB.athleteByKey(key);
+  if (!a) {  // 대회 기록이 없는 선수(청소년 등 훈련·게임만 있는 경우) — 즐겨찾기 이름으로 복구해 훈련 데이터로 예측
+    const it = roster.find(r => r.key === key) || roster[0];
+    const nm = it && (it.full_name || it.name);
+    if (nm) a = { id: null, full_name: nm, identity_key: key, birth_year: it.birth_year || null, gender: it.gender || null };
+  }
+  if (!a) { body.innerHTML = `<div class="pr-empty">${t('선수 정보를 찾을 수 없습니다.')}</div>`; return; }
   let TR = null; try { TR = await DB.trainingOf(a.full_name); } catch (e) { }
   const sessions = (TR && TR.sessions) || [];
   if (!sessions.length) { body.innerHTML = `<div class="pr-empty">${esc(a.full_name)} — ${t('훈련 기록이 없어 예측할 수 없습니다. (일일 훈련시트에 기록이 쌓이면 자동 분석됩니다)')}</div>`; return; }
