@@ -635,7 +635,7 @@ async function buildTraining() {
       const s = {
         date, disc, dk: tDisc(disc), type, is_match: tIsMatch(type),
         shots: shots, total, series, dec,
-        avg: series.length ? Math.round(total / series.length * 10) / 10 : null,
+        avg: series.length ? Math.round(series.reduce((a, b) => a + b, 0) / series.length * 10) / 10 : null,
         psa: shots ? Math.round(total / shots * 100) / 100 : null,   // 발당 평균(단위 무관 비교용)
       };
       if (hasWx) s.wx = wx;

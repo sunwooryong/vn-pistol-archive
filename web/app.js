@@ -320,7 +320,7 @@ async function renderTeamTraining(box, athletes) {
   box.innerHTML = `<div class="muted" style="padding:8px">${t('계산 중…')}</div>`;
   const today = new Date(); const d14 = new Date(today.getTime() - 14 * 86400000);
   const p2 = n => String(n).padStart(2, '0'); const iso14 = `${d14.getFullYear()}-${p2(d14.getMonth() + 1)}-${p2(d14.getDate())}`;
-  const per10 = s => s.avg != null ? s.avg : (s.series && s.series.length ? s.total / s.series.length : null);
+  const per10 = s => (s.series && s.series.length) ? s.series.reduce((a, b) => a + b, 0) / s.series.length : (s.avg != null ? s.avg : null);
   const rowsD = [];
   for (const a of athletes) {
     let TR = null; try { TR = await DB.trainingOf(a.full_name); } catch (e) { }
@@ -804,7 +804,7 @@ async function openDossier(a, rows) {
   // 훈련 분석
   if (TR && TR.sessions && TR.sessions.length) {
     const S = TR.sessions;
-    const per10 = s => s.avg != null ? s.avg : (s.series && s.series.length ? s.total / s.series.length : null);
+    const per10 = s => (s.series && s.series.length) ? s.series.reduce((a, b) => a + b, 0) / s.series.length : (s.avg != null ? s.avg : null);
     const byDk = new Map(); S.forEach(s => { const k = s.dk || s.disc; (byDk.get(k) || byDk.set(k, []).get(k)).push(s); });
     const compP10 = new Map(); const cAg = new Map();
     rows.forEach(r => { if (r.event.team_type !== 'individual' || !scored(r)) return; const ns = r.event.n_series || 6; const o = cAg.get(r.event.discipline) || { s: 0, n: 0 }; o.s += r.qual_total / ns; o.n++; cAg.set(r.event.discipline, o); });
@@ -1007,7 +1007,7 @@ async function buildReportSection(a, allRows, year) {
   try { TR = await DB.trainingOf(a.full_name); } catch (e) { }
   let P = null; // 예측 (총평+예측섹션 공용)
   try { if (window.Predict) { const trs = (TR && TR.sessions) || []; let _dk = (mainK && trs.some(s => (s.dk || s.disc) === mainK)) ? mainK : window.Predict.mainDisc(trs); if (!_dk) { const cnt = {}; (allRows || []).forEach(r => { const d = (r.event && r.event.discipline) || r.discipline; if (d) cnt[d] = (cnt[d] || 0) + 1; }); _dk = (Object.entries(cnt).sort((x, y) => y[1] - x[1])[0] || [])[0] || mainK; } if (_dk && (trs.length || (allRows && allRows.length))) P = window.Predict.forecast(_dk, trs, allRows, {}); } } catch (e) { }
-  const per10t = s => s.avg != null ? s.avg : (s.series && s.series.length ? s.total / s.series.length : null);
+  const per10t = s => (s.series && s.series.length) ? s.series.reduce((a, b) => a + b, 0) / s.series.length : (s.avg != null ? s.avg : null);
   // 소속: 최근 국내대회 unit 우선(없으면 전체 최근, 그래도 없으면 전달값) → 항상 표시
   const curUnit = (() => {
     const withU = allRows.filter(r => r.unit_code);
@@ -2095,7 +2095,7 @@ async function renderTraining(a, rows, box) {
   let TR = null; try { TR = await DB.trainingOf(a.full_name); } catch (e) { }
   if (!TR || !TR.sessions || !TR.sessions.length) { box.remove(); return; }
   const S = TR.sessions;
-  const per10 = s => s.avg != null ? s.avg : (s.series && s.series.length ? s.total / s.series.length : null);
+  const per10 = s => (s.series && s.series.length) ? s.series.reduce((a, b) => a + b, 0) / s.series.length : (s.avg != null ? s.avg : null);
   const sd = vs => { if (vs.length < 2) return null; const m = vs.reduce((s, v) => s + v, 0) / vs.length; return Math.sqrt(vs.reduce((s, v) => s + (v - m) ** 2, 0) / vs.length); };
   const typeCat = s => { if (s.is_match) return 'match'; const x = s.type || ''; if (/dự đoán|예언/i.test(x)) return 'predict'; if (/chính thức trong|공식기록/i.test(x)) return 'official'; if (/luyện tập|연습/i.test(x)) return 'practice'; if (/nghiên cứu|연구/i.test(x)) return 'research'; return 'train'; };
   const CAT = { predict: t('예언사격'), official: t('공식기록'), practice: t('연습사격'), research: t('연구사격'), match: t('실전'), train: t('훈련') };
