@@ -1192,6 +1192,15 @@ table.dos-tab.ser-tab, table.dos-tab.stg-tab { width: 100%; table-layout: fixed;
 .sp2-e.up { color: #2f9e44; } .sp2-e.dn { color: #e03131; } .sp2-e.flat { color: #868e96; }
 .dos-cap { font-size: 10px; color: #8a94a6; margin: 3px 0 8px; line-height: 1.5; }
 .dos-medaldot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #b8860b; vertical-align: middle; margin: 0 2px; }
+.gm-cmp { border: 1px solid #eef1f6; border-radius: 8px; padding: 12px 12px 8px; margin-bottom: 12px; background: #fcfdff; }
+.gm-cmp-track { position: relative; height: 10px; border-radius: 6px; margin: 4px 4px 10px; background: linear-gradient(90deg, #f1f3f5, #dee6f0); }
+.gm-cmp-mk { position: absolute; top: 50%; width: 3px; height: 20px; transform: translate(-50%, -50%); border-radius: 2px; }
+.gm-cmp-mk.ref { background: #0b5cab; }
+.gm-cmp-mk.g { background: #e8590c; }
+.gm-cmp-mk.g::after { content: '▲'; position: absolute; top: -13px; left: 50%; transform: translateX(-50%); font-size: 8px; color: #e8590c; }
+.gm-cmp-lg { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 11px; color: #5a6475; }
+.gm-cmp-lg .up { color: #2f9e44; } .gm-cmp-lg .dn { color: #e03131; }
+.gm-gt .dos-x { color: #8a94a6; }
 .dos-linewrap { border: 1px solid #eef1f6; border-radius: 8px; padding: 6px 8px; margin-bottom: 10px; background: #fcfdff; }
 .dos-line { width: 100%; height: auto; display: block; }
 .dos-mchart { display: flex; flex-direction: column; gap: 4px; margin: 4px 0 2px; }

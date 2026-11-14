@@ -1260,15 +1260,55 @@ async function buildReportSection(a, allRows, year) {
   if (year !== 'all') GM = GM.filter(x => (x.date || '').slice(0, 4) === String(year));
   if (GM.length) {
     const wins = GM.filter(x => x.status === '우승').length;
-    const scored = GM.filter(x => x.total != null);
-    const totals = scored.map(x => x.total);
+    const scoredG = GM.filter(x => x.total != null);
+    const totals = scoredG.map(x => x.total);
     const avg = totals.length ? totals.reduce((s, v) => s + v, 0) / totals.length : null, best = totals.length ? Math.max(...totals) : null;
-    const pts = scored.map(x => ({ date: x.date, val: x.total, medal: x.status === '우승' ? 'gold' : null, place: x.rank }));
-    h += `<div class="dos-sec">🎮 ${t('게임 연습 기록')} <span class="dos-help">${t('챔피언 결정전 등 · 게임')}</span></div>
-      <div class="dos-kpis sm">${tile(t('경기'), GM.length, '')}${tile(t('우승'), wins + t('회'), '')}${tile(t('평균'), avg != null ? fmt(Math.round(avg * 10) / 10) : '–', '')}${tile(t('최고'), best != null ? fmt(best) : '–', '')}</div>`;
-    if (pts.length >= 2) h += `<div class="dos-cap">📈 ${t('게임 점수 추이')} · <span class="dos-medaldot g"></span>${t('우승')}</div><div class="dos-linewrap">${REPORT_LINE(pts)}</div>`;
-    h += `<table class="dos-tab"><thead><tr><th>${t('날짜')}</th><th>${t('경기')}</th><th>${t('합계')}</th><th>${t('순위')}</th><th>${t('결과')}</th></tr></thead><tbody>` +
-      GM.slice().reverse().map(x => `<tr><td>${(x.date || '').replace(/-/g, '.').slice(2)}</td><td class="dos-nm">${esc(t(x.match))}</td><td class="dos-b">${x.total != null ? fmt(x.total) : (x.result ? esc(x.result) : '–')}${x.shootoff ? ` <s class="dos-unit">SO ${x.shootoff}</s>` : ''}</td><td>${x.rank}${x.n ? '/' + x.n : ''}</td><td>${x.status === '우승' ? `<b class="up">🏆 ${t('우승')}</b>` : (x.status === '탈락' ? t('탈락') : esc(x.status || ''))}</td></tr>`).join('') + `</tbody></table>`;
+    // 게임 유형 분류 + 발수 파싱 → 발당(발당 점수)로 대회와 직접 비교
+    const GT = { elimination: { lab: '챔피언 결정전', shot: false }, tenstreak: { lab: '10점 연결', shot: true }, analysis: { lab: '분석 사격', shot: true }, target: { lab: '목표 사격', shot: true }, knockdown: { lab: '녹다운', shot: false } };
+    GM.forEach(x => {
+      const m = /(\d+)\s*발/.exec(x.result || ''); x._shots = m ? +m[1] : null; x._gt = x.game_type || 'other';
+      const p = (x._shots && x.total != null && GT[x._gt] && GT[x._gt].shot) ? x.total / x._shots : null;
+      x._psa = (p != null && p > 3 && p < 11) ? p : null;
+    });
+    // 본선 발당 기준선: 개인전 본선점수 ÷ 60발
+    const refArr = rows.filter(r => r.event.team_type === 'individual' && r.qual_total != null).map(r => r.qual_total / 60).filter(v => v > 3 && v < 11);
+    const refPsa = refArr.length ? refArr.reduce((a, b) => a + b, 0) / refArr.length : null;
+    const gpsaArr = GM.map(x => x._psa).filter(v => v != null);
+    const gPsa = gpsaArr.length ? gpsaArr.reduce((a, b) => a + b, 0) / gpsaArr.length : null;
+    const dPsa = (gPsa != null && refPsa != null) ? gPsa - refPsa : null;
+
+    h += `<div class="dos-sec">🎮 ${t('게임 연습 기록')} <span class="dos-help">${t('챔피언 결정전 등 · 게임')}</span></div>`;
+    h += `<div class="dos-kpis sm">${tile(t('경기'), GM.length, '')}${tile(t('우승'), wins + t('회'), '')}`
+      + (gPsa != null ? tile(t('게임 발당'), gPsa.toFixed(2), gpsaArr.length + t('경기')) : tile(t('평균'), avg != null ? fmt(Math.round(avg * 10) / 10) : '–', ''))
+      + (dPsa != null ? tile(t('본선 대비'), (dPsa >= 0 ? '+' : '') + dPsa.toFixed(2), t('발당')) : tile(t('최고'), best != null ? fmt(best) : '–', ''))
+      + `</div>`;
+
+    // 발당 비교 바 (게임 vs 본선) — 스케일 다른 점수를 발당으로 통일해 직접 비교
+    if (gPsa != null && refPsa != null) {
+      const lo = Math.min(gPsa, refPsa), hi = Math.max(gPsa, refPsa);
+      const smin = Math.floor((lo - 0.25) * 10) / 10, smax = Math.ceil((hi + 0.25) * 10) / 10, rng = (smax - smin) || 1;
+      const pos = v => ((v - smin) / rng * 100).toFixed(1);
+      h += `<div class="dos-cap">🎯 ${t('발당 점수 비교')} · ${t('게임')} vs ${t('본선')} <span class="dos-help">${t('점수 스케일을 발당으로 통일')}</span></div>
+        <div class="gm-cmp"><div class="gm-cmp-track"><i class="gm-cmp-mk ref" style="left:${pos(refPsa)}%"></i><i class="gm-cmp-mk g" style="left:${pos(gPsa)}%"></i></div>
+        <div class="gm-cmp-lg"><span><i class="lg-dot" style="background:#0b5cab"></i>${t('본선')} <b>${refPsa.toFixed(2)}</b></span><span><i class="lg-dot" style="background:#e8590c"></i>${t('게임')} <b>${gPsa.toFixed(2)}</b></span><b class="${dPsa >= 0 ? 'up' : 'dn'}">${dPsa >= 0 ? '+' : ''}${dPsa.toFixed(2)} ${t('발당')}</b></div></div>`;
+    }
+
+    // 게임 유형별 추이 (같은 종류끼리만 비교 — 스케일 혼동 제거)
+    const byGt = new Map();
+    GM.forEach(x => { if (x.total == null) return; const o = byGt.get(x._gt) || byGt.set(x._gt, { n: 0, tot: [], psa: [], win: 0 }).get(x._gt); o.n++; o.tot.push(x.total); if (x._psa != null) o.psa.push(x._psa); if (x.status === '우승') o.win++; });
+    if (byGt.size) {
+      h += `<div class="dos-cap">📊 ${t('게임 유형별 추이')} <span class="dos-help">${t('같은 종류끼리 비교')}</span></div>`;
+      h += `<table class="dos-tab gm-gt"><thead><tr><th>${t('유형')}</th><th>${t('경기')}</th><th>${t('발당')}</th><th>${t('점수 추이')}</th></tr></thead><tbody>`;
+      [...byGt.entries()].sort((a, b) => b[1].n - a[1].n).forEach(([gt, o]) => {
+        const lab = (GT[gt] && GT[gt].lab) || gt;
+        const psaTxt = o.psa.length ? (o.psa.reduce((a, b) => a + b, 0) / o.psa.length).toFixed(2) : '–';
+        h += `<tr><td class="dos-nm">${esc(t(lab))}${o.win ? ` <b class="up">🏆${o.win}</b>` : ''}</td><td>${o.n}</td><td class="dos-b">${psaTxt}</td><td>${REPORT_SPARKCELL(o.tot)}</td></tr>`;
+      });
+      h += `</tbody></table>`;
+    }
+
+    h += `<table class="dos-tab"><thead><tr><th>${t('날짜')}</th><th>${t('경기')}</th><th>${t('합계')}</th><th>${t('발당')}</th><th>${t('순위')}</th><th>${t('결과')}</th></tr></thead><tbody>` +
+      GM.slice().reverse().map(x => `<tr><td>${(x.date || '').replace(/-/g, '.').slice(2)}</td><td class="dos-nm">${esc(t(x.match))}</td><td class="dos-b">${x.total != null ? fmt(x.total) : (x.result ? esc(x.result) : '–')}${x.shootoff ? ` <s class="dos-unit">SO ${x.shootoff}</s>` : ''}</td><td class="dos-x">${x._psa != null ? x._psa.toFixed(2) : '–'}</td><td>${x.rank}${x.n ? '/' + x.n : ''}</td><td>${x.status === '우승' ? `<b class="up">🏆 ${t('우승')}</b>` : (x.status === '탈락' ? t('탈락') : esc(x.status || ''))}</td></tr>`).join('') + `</tbody></table>`;
   }
 
   // 연도별 (전체 기간일 때만)
