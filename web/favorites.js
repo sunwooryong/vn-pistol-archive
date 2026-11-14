@@ -129,7 +129,7 @@ window.Fav = (function () {
         card.innerHTML = `
           <div class="fc-top">${chk}
             <div class="fc-id"><b class="fc-name">${esc(it.name)}</b>${it.gender ? ` <span class="g g-${it.gender}">${GENDER[it.gender]}</span>` : ''}
-              <span class="fsub">${it.birth_year ? it.birth_year + age : ''}${it.is_foreign ? ' · ' + esc(it.nationality || '') : ''}</span></div>
+              <span class="fsub">${it.birth_year ? it.birth_year + age : ''}${it.is_foreign ? ' · ' + esc(it.nationality || '') : ''}<span class="fc-region"></span></span></div>
             <button class="fav-rm" title="✕">✕</button></div>
           <div class="fc-stats muted">…</div>
           <div class="fc-actions">
@@ -146,6 +146,8 @@ window.Fav = (function () {
           if (!a) { box.textContent = '—'; return; }
           const s = summarize(await DB.athleteCareer(a.id));
           const T2 = k => window.t ? window.t(k) : k;
+          const rg = card.querySelector('.fc-region');   // 이름 밑 소속지역
+          if (rg) rg.innerHTML = s.unit ? ' · 📍' + esc(window.regionLabel ? window.regionLabel(s.unit) : (window.regionShort ? window.regionShort(s.unit) : s.unit)) : '';
           const best = Object.entries(s.perDisc).sort((x, y) => y[1].best - x[1].best).slice(0, 2)
             .map(([d, v]) => `<span class="fc-pb">${(DISC[d] || d)} <b>${v.best}</b></span>`).join('');
           box.classList.remove('muted');
