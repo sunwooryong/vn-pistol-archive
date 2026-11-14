@@ -18,7 +18,7 @@ const P = require('./lib/parse');
 const R = require('./lib/rank');
 
 const SHEET_URL =
-  'https://docs.google.com/spreadsheets/d/1MATLspvOeL4MFObWUIiYqjKkw-PkEEQ7IqXCw-kRheQ/export?format=csv&gid=1558133737';
+  'https://docs.google.com/spreadsheets/d/1uO4XpSWIFw1AfOwNuOfrUss917HkcNJE2Q4oP2Or4XY/export?format=csv&gid=607365874';
 // 연맹 공지/뉴스 시트 (제목·날짜·링크·이미지)
 const NEWS_URL =
   'https://docs.google.com/spreadsheets/d/1dY2xP9LB2jeMeneAY0anZQrMlMtnV7za_C18Slw1tJ8/export?format=csv&gid=823135258';
