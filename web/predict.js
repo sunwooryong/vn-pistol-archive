@@ -82,6 +82,16 @@
     R.nextMonth = { psa: Math.round(pNextMonth * 100) / 100, qual: toQual(pNextMonth), delta: Math.round((pNextMonth - mRecent) * 100) / 100 };
     R.nextComp = { qual: toQual(pNextComp), lo: toQual(pNextComp - sRecent), hi: toQual(pNextComp + sRecent) };
 
+    // 등록된 다음 실제 대회 기준 예측 (opts.nextComp = {name, date})
+    if (opts.nextComp && opts.nextComp.date) {
+      const nd = day(opts.nextComp.date);
+      if (nd != null) {
+        const months = Math.max(0, (nd - last) / 30.44); const p = projPsa(months);
+        const todayN = Math.floor(Date.now() / 86400000);
+        R.nextCompEvent = { name: opts.nextComp.name || '', date: opts.nextComp.date, daysOut: Math.max(0, nd - todayN), qual: toQual(p), lo: toQual(p - sRecent), hi: toQual(p + sRecent) };
+      }
+    }
+
     // 내년 12개월 (감쇠 추세 + 계절효과, 표본<3이면 추세만)
     const monthRes = {};  // month(1-12) -> residuals
     rows.forEach(s => { const d = day(s.date), mo = +s.date.slice(5, 7); if (reg) (monthRes[mo] = monthRes[mo] || []).push(s.psa - at(d)); });
@@ -121,11 +131,19 @@
       R.slump = { drop: Math.round(drop * 100) / 100, warn: (drop > sRecent * 0.6) || (s5 > sAll * 1.6), volUp: s5 > sAll * 1.6 };
     }
 
-    // 시리즈 위치별 약점 (S1..Smax)
+    // 시리즈 위치별 약점 (S1..Smax) — 훈련(숫자배열)+대회(series_no/score) 종합, 평균 회복 시 기대 상승폭
     const pos = {};
-    rows.slice(-20).forEach(s => (s.series || []).forEach((v, i) => { if (v != null) (pos[i] = pos[i] || []).push(v); }));
-    const serArr = Object.keys(pos).map(i => ({ s: +i + 1, avg: mean(pos[i]), n: pos[i].length })).filter(x => x.n >= 3);
-    if (serArr.length) { R.series = serArr; R.weakSeries = serArr.reduce((a, b) => b.avg < a.avg ? b : a); }
+    rows.slice(-30).forEach(s => (Array.isArray(s.series) ? s.series : []).forEach((v, i) => { if (typeof v === 'number' && v > 0) (pos[i] = pos[i] || []).push(v); }));
+    (career || []).forEach(r => { const cd = (r.event && r.event.discipline) || r.discipline || r.dk; if (cd === dk && Array.isArray(r.series)) r.series.forEach(sv => { const v = (sv && sv.score != null) ? sv.score : sv; const p = (sv && sv.series_no) ? sv.series_no - 1 : null; if (p != null && typeof v === 'number' && v > 0) (pos[p] = pos[p] || []).push(v); }); });
+    const serArr = Object.keys(pos).map(i => ({ s: +i + 1, avg: mean(pos[i]), n: pos[i].length })).filter(x => x.n >= 3).sort((a, b) => a.s - b.s);
+    if (serArr.length >= 2) {
+      R.series = serArr;
+      const allAvg = mean(serArr.map(x => x.avg));
+      const weak = serArr.reduce((a, b) => b.avg < a.avg ? b : a);
+      R.weakSeries = weak;
+      const gain = Math.max(0, Math.round((allAvg - weak.avg) * 10) / 10);   // 약점 구간 1개를 평균까지 올리면 본선 +gain점
+      R.seriesFix = { pos: weak.s, weakAvg: Math.round(weak.avg * 10) / 10, avg: Math.round(allAvg * 10) / 10, gain, projQual: (R.nextComp && R.nextComp.qual != null) ? Math.round((R.nextComp.qual + gain) * 10) / 10 : null };
+    }
 
     // 환경 적응지수 (온도대/날씨/시간대) — psa 기준, n≥MIN만 유효
     const wxRows = rows.filter(s => s.wx);

@@ -2024,16 +2024,24 @@ async function renderPredictTab() {
   // 주력 종목: 훈련 우선, 없으면 대회 기록에서 가장 많은 종목
   let dk = window.Predict.mainDisc(sessions);
   if (!dk) { const cnt = {}; career.forEach(r => { const d = (r.event && r.event.discipline) || r.discipline; if (d) cnt[d] = (cnt[d] || 0) + 1; }); dk = (Object.entries(cnt).sort((x, y) => y[1] - x[1])[0] || [])[0] || (sessions[0] && sessions[0].dk); }
-  const R = window.Predict.forecast(dk, sessions, career, {});
+  // 등록된 다음 실제 대회(가장 가까운 미래, 국내 우선)
+  let nextComp = null;
+  try { const comps = await DB.competitions(); const today0 = new Date().toISOString().slice(0, 10);
+    const up = (comps || []).filter(c => (c.date_start || '') >= today0).sort((x, y) => (x.date_start || '').localeCompare(y.date_start || ''));
+    nextComp = up.find(c => c.scope === 'domestic') || up[0] || null;
+  } catch (e) { }
+  const R = window.Predict.forecast(dk, sessions, career, nextComp ? { nextComp: { name: nextComp.name, date: nextComp.date_start } } : {});
   const dlab = (window.DISC && DISC[dk]) || dk;
   if (R.low || !R.enough) {
     body.innerHTML = `<div class="pr-sub"><b>${esc(a.full_name)}</b> · ${esc(dlab)}${unitStr} · ${t(R.compBased ? '대회' : '훈련')} ${R.nSessions}${t('회')} <span class="pr-low">${t('정보 부족(5회 미만)')}</span></div><div class="pr-empty">${t('예측에 필요한 최소 기록(5회)이 모이지 않았습니다.')}</div>`; return;
   }
   const up = v => v >= 0 ? 'up' : 'dn', sgn = v => (v >= 0 ? '+' : '') + v;
   let H = `<div class="pr-sub"><b>${esc(a.full_name)}</b> · ${esc(dlab)}${unitStr} · ${t(R.compBased ? '대회' : '훈련')} ${R.nSessions}${t('회')}${R.compBased ? ' <span class="pr-flag">' + t('대회 기반') + '</span>' : ''} · ${t('현재 본선환산')} <b>${R.cur.qual}</b> (${t('발당')} ${R.cur.psa})</div>`;
+  // PB 경신 확률 + 슬럼프/컨디션 신호
+  if (R.pbProb != null || R.slump) H += `<div style="display:flex;gap:18px;flex-wrap:wrap;margin:6px 0 2px;font-size:14px">${R.pbProb != null ? `<span>🎯 ${t('PB 경신 확률')} <b>${R.pbProb}%</b> <s style="color:${PRC.mu}">(PB ${R.pb.qual})</s></span>` : ''}${R.slump ? `<span>${R.slump.warn ? '⚠ <b class="dn">' + t('슬럼프 주의') + '</b>' + (R.slump.volUp ? ' · ' + t('변동성 커짐') : '') : '✅ <b class="up">' + t('컨디션 안정') + '</b>'}</span>` : ''}</div>`;
   // 타일
   H += `<div class="pr-tiles">
-    <div class="pr-tile"><span class="rail" style="background:${PRC.a}"></span><div class="pr-k">${t('다음 대회 예상 본선')}</div><div class="pr-v">${R.nextComp.qual}</div><div class="pr-u">${t('점')} · ${t('60발 환산')}</div><div class="pr-rng">${t('구간')} ${R.nextComp.lo} – ${R.nextComp.hi}</div></div>
+    <div class="pr-tile"><span class="rail" style="background:${PRC.a}"></span><div class="pr-k">${t('다음 대회 예상 본선')}${R.nextCompEvent ? ` <span class="pr-flag">D-${R.nextCompEvent.daysOut}</span>` : ''}</div><div class="pr-v">${(R.nextCompEvent || R.nextComp).qual}</div><div class="pr-u">${R.nextCompEvent ? esc((R.nextCompEvent.name || '').slice(0, 20)) + ' · ' + R.nextCompEvent.date : t('점') + ' · ' + t('60발 환산')}</div><div class="pr-rng">${t('구간')} ${(R.nextCompEvent || R.nextComp).lo} – ${(R.nextCompEvent || R.nextComp).hi}</div></div>
     <div class="pr-tile"><span class="rail" style="background:${PRC.up}"></span><div class="pr-k">${t('다음 달 발당 평균')}</div><div class="pr-v">${R.nextMonth.psa}</div><div class="pr-u">${t('현재')} ${R.cur.psa}</div><div class="pr-d ${up(R.nextMonth.delta)}">${R.nextMonth.delta >= 0 ? '▲' : '▼'} ${sgn(R.nextMonth.delta)}</div></div>`;
   const divRow = (lab, val, c) => `<div class="pr-u" style="font-size:15px;margin-top:4px"><b style="color:${c}">${lab}</b> ${val}</div>`;
   if (R.estJr && R.estSr) H += `<div class="pr-tile"><span class="rail" style="background:${PRC.a2}"></span><div class="pr-k">${t('예상 등위')} <span class="pr-flag">${t('추정')}</span></div>${divRow(t('주니어부'), `${R.estJr.placement.expLo}–${R.estJr.placement.expHi}${t('위')}`, PRC.a)}${divRow(t('시니어부'), `${R.estSr.placement.expLo}–${R.estSr.placement.expHi}${t('위')}`, PRC.mu)}</div>`;
@@ -2045,6 +2053,8 @@ async function renderPredictTab() {
   H += `</div>`;
   // 단기 예측 차트
   H += `<div class="pr-card"><h4>${t('점수 추세 & 단기 예측')}</h4>${prLineFC(R)}<p class="cap">${t('최근 발당')} <b>${R.cur.psa}</b>, ${t('변동폭')} ±${R.cur.sd}. ${t('추세 유지 시 다음 달')} <b>${R.nextMonth.psa}</b>(${t('60발')} ${R.nextMonth.qual}).${R.eta && R.eta.months ? ` ${t('목표')} ${R.eta.goalQual}${t('점 도달 예상')} ~${R.eta.months}${t('개월')}.` : ''}</p></div>`;
+  // 🔧 약점 시리즈 보완 기대치
+  if (R.seriesFix && R.seriesFix.gain >= 0.3) H += `<div class="pr-card"><h4>🔧 ${t('약점 시리즈 보완 기대')}</h4><p class="cap">${t('가장 약한 구간')} <b>S${R.seriesFix.pos}</b> ${t('평균')} <b>${R.seriesFix.weakAvg}</b> <s style="color:${PRC.mu}">(${t('전체 평균')} ${R.seriesFix.avg})</s>. ${t('이 구간을 평균 수준으로 올리면')} <b class="up">+${R.seriesFix.gain}${t('점')}</b>${R.seriesFix.projQual ? ` → ${t('다음 대회')} ~<b>${R.seriesFix.projQual}</b>${t('점')}` : ''}.</p></div>`;
   // 장기(내년) 차트
   H += `<div class="pr-g2"><div class="pr-card"><h4>${t('내년 12개월 예측')} (${R.year})</h4>${prYearSvg(R)}<p class="cap">${t('연초')} ~${R.monthly[0].qual} → ${t('연말')} ~${R.monthly[11].qual}${t('점 전망. 다음 시즌 대회 목표')} <b>${R.nextSeason.qualMid}</b> (${R.nextSeason.lo}–${R.nextSeason.hi}).</p></div>`;
   // 대회 등위 추세
