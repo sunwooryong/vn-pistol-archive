@@ -44,6 +44,7 @@
     '결선 기록 부족': 'Thiếu dữ liệu chung kết',
     '결선 진출 ': 'Vào chung kết ',
     '결선 진출 확률': 'Xác suất vào chung kết',
+    '본선 상위 8명 결선 진출 커트를 넘을 확률 · 시니어부는 커트가 높아 같은 점수라도 확률이 낮습니다': 'Xác suất vượt ngưỡng vào CK (top 8 vòng loại) · Hạng senior ngưỡng cao hơn nên cùng điểm xác suất thấp hơn',
     '구간': 'Khoảng',
     '기록': 'Hồ sơ',
     '기복 적고 안정적': 'Ít dao động, ổn định',
