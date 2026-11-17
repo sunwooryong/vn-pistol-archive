@@ -252,6 +252,7 @@
     '총': 'Tổng', '전': ' trận', '메달': 'HC', '랭킹': 'Xếp hạng', '국내 대회 · 종목별': 'Giải trong nước · theo nội dung',
     '국내·국제 전체 · 종목별': 'Trong+ngoài nước · theo nội dung', '년 국내 개인전 기록이 없습니다.': ' chưa có KQ cá nhân trong nước.',
     '평균순위': 'Hạng TB', '최고순위': 'Hạng cao nhất', '전체': 'Tất cả', '연령부': 'Lứa tuổi',
+    '정렬': 'Sắp xếp', '즐겨찾기순': 'Theo yêu thích', '이름순': 'Theo tên', '나이 어린순': 'Trẻ → lớn', '나이 많은순': 'Lớn → trẻ',
     '국내 · 종목별 (순위/인원)': 'Trong nước · theo nội dung (hạng/số VĐV)', '합계': 'Tổng', '건': '', '대회': 'Giải', '개': '',
     '수록': 'Dữ liệu', '성적': 'Thành tích', '데이터 기준': 'Cập nhật', '로컬 미리보기': 'Xem thử cục bộ',
     '공개 시트를 주기적으로 자동 반영합니다(약 30분~1시간).': 'Tự động cập nhật từ bảng công khai (khoảng 30 phút~1 giờ).',
