@@ -10,6 +10,8 @@ window.Fav = (function () {
   const DEFAULT_GROUPS = [COACH_GROUP, '국가대표', '청소년 국가대표', '후보 선수', '관심 선수', '기타'];
   let state = load();
   const listeners = [];
+  const discCache = new Map();   // key → 주력 종목 코드 (종목순 정렬용, 1회 로드 후 캐시)
+  const FAV_SORTS = { name: '이름순', age_young: '나이 어린순', age_old: '나이 많은순', gender: '성별순', disc: '종목순' };
 
   function load() {
     try {
@@ -102,13 +104,33 @@ window.Fav = (function () {
   let compareMode = false; const compareSel = new Set();
   async function renderTab(container) {
     container.innerHTML = '';
+    let sortMode = localStorage.getItem('vpa_fav_sort'); if (!FAV_SORTS[sortMode]) sortMode = 'name';
     const bar = el('div', 'fav-bar');
     bar.innerHTML = `<button id="fav-cmp" class="${compareMode ? 'on' : ''}">${t('비교 모드')}</button>
       <button id="fav-addg">+ ${t('그룹')}</button>
+      <select id="fav-sort" class="fav-sortsel" title="${t('정렬')}">${Object.entries(FAV_SORTS).map(([k, lab]) => `<option value="${k}"${k === sortMode ? ' selected' : ''}>${t(lab)}</option>`).join('')}</select>
       <span class="count">${count()}${t('명')} ${t('저장됨')}</span>`;
     container.appendChild(bar);
     bar.querySelector('#fav-cmp').onclick = () => { compareMode = !compareMode; compareSel.clear(); renderTab(container); };
     bar.querySelector('#fav-addg').onclick = () => { const n = prompt(t('새 그룹 이름')); if (n) { addGroup(n); renderTab(container); } };
+    bar.querySelector('#fav-sort').onchange = e => { localStorage.setItem('vpa_fav_sort', e.target.value); renderTab(container); };
+    // 종목순 선택 시 주력 종목 미리 로드(1회 캐시)
+    if (sortMode === 'disc') {
+      const need = list().filter(it => !discCache.has(it.key));
+      if (need.length) { bar.querySelector('.count').textContent = t('정렬 중…'); await Promise.all(need.map(async it => { try { const a = await DB.athleteByKey(it.key); if (a) { const s = summarize(await DB.athleteCareer(a.id)); const md = Object.entries(s.perDisc).sort((x, y) => y[1].n - x[1].n)[0]; discCache.set(it.key, md ? md[0] : 'zzz'); } else discCache.set(it.key, 'zzz'); } catch (e) { discCache.set(it.key, 'zzz'); } })); bar.querySelector('.count').textContent = `${count()}${t('명')} ${t('저장됨')}`; }
+    }
+    const favNm = it => (it.name || it.full_name || it.key || '');
+    const favBirth = it => { const p = (it.key || '').split('|'); return it.birth_year || (+p[1] || null); };
+    const favGen = it => { const p = (it.key || '').split('|'); return it.gender || p[2] || ''; };
+    const sortItems = arr => {
+      const c = arr.slice();
+      if (sortMode === 'age_young') c.sort((a, b) => (favBirth(b) || 0) - (favBirth(a) || 0) || favNm(a).localeCompare(favNm(b)));
+      else if (sortMode === 'age_old') c.sort((a, b) => (favBirth(a) || 9999) - (favBirth(b) || 9999) || favNm(a).localeCompare(favNm(b)));
+      else if (sortMode === 'gender') c.sort((a, b) => String(favGen(a)).localeCompare(String(favGen(b))) || (favBirth(a) || 9999) - (favBirth(b) || 9999) || favNm(a).localeCompare(favNm(b)));
+      else if (sortMode === 'disc') c.sort((a, b) => String(discCache.get(a.key) || 'zzz').localeCompare(String(discCache.get(b.key) || 'zzz')) || favNm(a).localeCompare(favNm(b)));
+      else c.sort((a, b) => favNm(a).localeCompare(favNm(b)));
+      return c;
+    };
 
     const cmpOut = el('div', 'cmp-out'); container.appendChild(cmpOut);
 
@@ -122,7 +144,7 @@ window.Fav = (function () {
       if (delBtn) sec.querySelector('.fav-delg').onclick = () => { if (confirm(`'${t(g)}' ` + t('그룹 삭제? (선수는 기타로 이동)'))) { deleteGroup(g); renderTab(container); } };
       const grid = el('div', 'fav-grid');
       const NOW = new Date().getFullYear();
-      items.sort((a, b) => a.name.localeCompare(b.name)).forEach(it => {
+      sortItems(items).forEach(it => {
         const card = el('div', 'fav-card');
         const chk = compareMode ? `<input type="checkbox" class="fav-chk" ${compareSel.has(it.key) ? 'checked' : ''}>` : '';
         const age = it.birth_year ? ` (${NOW - it.birth_year})` : '';

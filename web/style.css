@@ -146,6 +146,7 @@ main { padding: 14px 16px; max-width: var(--maxw); margin: 0 auto; }
 .fav-bar button { background: var(--card); border: 1px solid var(--line); color: var(--tx); border-radius: 9px; padding: 7px 11px; font-size: 13px; font-weight: 600; }
 .fav-bar #fav-cmp.on { background: var(--acc); color: #fff; border-color: var(--acc); }
 .fav-bar .count { color: var(--mut); font-size: 12px; margin-left: auto; }
+.fav-sortsel { background: var(--card); border: 1px solid var(--line); color: var(--tx); border-radius: 9px; padding: 7px 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
 .fav-sec { margin-bottom: 12px; }
 .fav-h { font-weight: 700; font-size: 13px; padding: 4px 2px; border-bottom: 1px solid var(--line); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
 .fav-h .fc { color: var(--mut); font-weight: 400; font-size: 11px; }
