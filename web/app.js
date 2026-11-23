@@ -1888,6 +1888,10 @@ function prStyle() {
   .pr-chip.on small{opacity:.92}
   .pr-chip .pr-by{font-style:normal;font-weight:600;opacity:.6;margin-left:4px;font-size:10px}
   .pr-sort{font-weight:600;color:var(--mu)}
+  .pr-discs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:2px 0 12px}
+  .pr-dchip{border:1px solid var(--ln);background:var(--pnl2);color:var(--tx);border-radius:8px;padding:5px 11px;font-size:12px;font-weight:700;cursor:pointer}
+  .pr-dchip.on{background:var(--a);border-color:var(--a);color:#fff}
+  .pr-dchip i{font-style:normal;opacity:.6;margin-left:5px;font-size:10px;font-weight:600}
   .pr-empty{color:var(--mu);padding:18px;border:1px dashed var(--ln);border-radius:12px;text-align:center}
   .pr-addrow{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap}
   .pr-addrow input{flex:1;min-width:180px;background:var(--pnl2);border:1px solid var(--ln);color:var(--tx);border-radius:8px;padding:8px 11px;font-size:13px}
@@ -2042,6 +2046,7 @@ async function renderPredictTab() {
   // 본문
   const body = $('#pr-body'); body.innerHTML = `<div class="muted">${t('분석 중…')}</div>`;
   const key = box._sel || roster[0].key;
+  if (box._discFor !== key) { box._disc = null; box._discFor = key; }  // 선수 바뀌면 선택 종목 초기화
   const _d = { key: String(key).slice(0, 28), searchN: null, names: [] };
   let a = await DB.athleteByKey(key);
   _d.byKey = !!a;
@@ -2072,19 +2077,28 @@ async function renderPredictTab() {
   }
   const myUnit = curUnitOf(career);
   const unitStr = myUnit ? ' · ' + t('소속') + ' ' + regionLabel(myUnit) : '';
-  // 주력 종목: 훈련 우선, 없으면 대회 기록에서 가장 많은 종목
-  let dk = window.Predict.mainDisc(sessions);
-  if (!dk) { const cnt = {}; career.forEach(r => { const d = (r.event && r.event.discipline) || r.discipline; if (d) cnt[d] = (cnt[d] || 0) + 1; }); dk = (Object.entries(cnt).sort((x, y) => y[1] - x[1])[0] || [])[0] || (sessions[0] && sessions[0].dk); }
+  // 선수가 하는 모든 종목(훈련+대회 개인전) 수집 — 종목마다 각각 예측
+  const discCnt = {};
+  sessions.forEach(s => { const d = s.dk || s.disc; if (d) discCnt[d] = (discCnt[d] || 0) + 1; });
+  career.forEach(r => { const d = (r.event && r.event.discipline) || r.discipline; const indiv = r.event ? r.event.team_type === 'individual' : true; if (d && indiv) discCnt[d] = (discCnt[d] || 0) + 1; });
+  let discList = Object.keys(discCnt).sort((x, y) => discCnt[y] - discCnt[x]);
+  if (!discList.length) { const md = window.Predict.mainDisc(sessions); discList = md ? [md] : (sessions[0] && sessions[0].dk ? [sessions[0].dk] : []); }
+  // 선택 종목(없거나 유효하지 않으면 데이터 가장 많은 종목)
+  let dk = (box._disc && discList.includes(box._disc)) ? box._disc : discList[0];
+  box._disc = dk;
   // 등록된 다음 실제 대회(가장 가까운 미래, 국내 우선)
   let nextComp = null;
   try { const comps = await DB.competitions(); const today0 = new Date().toISOString().slice(0, 10);
     const up = (comps || []).filter(c => (c.date_start || '') >= today0).sort((x, y) => (x.date_start || '').localeCompare(y.date_start || ''));
     nextComp = up.find(c => c.scope === 'domestic') || up[0] || null;
   } catch (e) { }
+  const DLAB = d => (window.DISC && DISC[d]) || d;
+  const discSel = discList.length > 1 ? `<div class="pr-discs"><span class="pr-rlab">${t('종목')}</span>${discList.map(d => `<button class="pr-dchip${d === dk ? ' on' : ''}" data-d="${esc(d)}">${esc(DLAB(d))}<i>${discCnt[d] || ''}</i></button>`).join('')}</div>` : '';
+  const bindDiscs = () => box.querySelectorAll('.pr-dchip[data-d]').forEach(b => b.onclick = () => { box._disc = b.dataset.d; renderPredictTab(); });
   const R = window.Predict.forecast(dk, sessions, career, nextComp ? { nextComp: { name: nextComp.name, date: nextComp.date_start } } : {});
-  const dlab = (window.DISC && DISC[dk]) || dk;
+  const dlab = DLAB(dk);
   if (R.low || !R.enough) {
-    body.innerHTML = `<div class="pr-sub"><b>${esc(a.full_name)}</b> · ${esc(dlab)}${unitStr} · ${t(R.compBased ? '대회' : '훈련')} ${R.nSessions}${t('회')} <span class="pr-low">${t('정보 부족(5회 미만)')}</span></div><div class="pr-empty">${t('예측에 필요한 최소 기록(5회)이 모이지 않았습니다.')}</div>`; return;
+    body.innerHTML = discSel + `<div class="pr-sub"><b>${esc(a.full_name)}</b> · ${esc(dlab)}${unitStr} · ${t(R.compBased ? '대회' : '훈련')} ${R.nSessions}${t('회')} <span class="pr-low">${t('정보 부족(5회 미만)')}</span></div><div class="pr-empty">${t('이 종목은 예측에 필요한 최소 기록(5회)이 모이지 않았습니다.')}${discList.length > 1 ? ' ' + t('위에서 다른 종목을 선택해 보세요.') : ''}</div>`; bindDiscs(); return;
   }
   const up = v => v >= 0 ? 'up' : 'dn', sgn = v => (v >= 0 ? '+' : '') + v;
   let H = `<div class="pr-sub"><b>${esc(a.full_name)}</b> · ${esc(dlab)}${unitStr} · ${t(R.compBased ? '대회' : '훈련')} ${R.nSessions}${t('회')}${R.compBased ? ' <span class="pr-flag">' + t('대회 기반') + '</span>' : ''} · ${t('현재 본선환산')} <b>${R.cur.qual}</b> (${t('발당')} ${R.cur.psa})</div>`;
@@ -2136,7 +2150,7 @@ async function renderPredictTab() {
   aux += `</div></div>`;
   H += aux + `</div>`;
   H += `<p class="pr-note">※ ${t('예측은 훈련(발당평균 추세)·대회(등위/결선)·환경을 결합한 통계 추정치입니다. 표본이 적을수록 구간이 넓고 5회 미만은 표시하지 않습니다. 실제 결과와 다를 수 있습니다.')}</p>`;
-  body.innerHTML = H;
+  body.innerHTML = discSel + H; bindDiscs();
 }
 init.predict = () => renderPredictTab();
 window.renderPredictTab = renderPredictTab;

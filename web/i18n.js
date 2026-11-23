@@ -216,6 +216,7 @@
     '개인전만': 'Chỉ cá nhân', '개인+단체': 'Cá nhân + đồng đội',
     '관리 선수 명단': 'Danh sách VĐV phụ trách', '2026 기록': 'KQ 2026', '기록 없음': 'Chưa có KQ',
     '대회별 획득 메달': 'HC theo từng giải', '종목': 'Nội dung',
+    '이 종목은 예측에 필요한 최소 기록(5회)이 모이지 않았습니다.': 'Nội dung này chưa đủ số liệu tối thiểu (5 lần) để dự đoán.', '위에서 다른 종목을 선택해 보세요.': 'Hãy chọn nội dung khác ở trên.',
     // 대회 달력
     '달력': 'Lịch', '오늘': 'Hôm nay', '이번 달 대회가 없습니다.': 'Không có giải trong tháng này.',
     '클레이사격': 'Đĩa bay', '예정 일정': 'Lịch dự kiến', '혼성': 'Hỗn hợp', '혼성단체': 'Đồng đội hỗn hợp',
