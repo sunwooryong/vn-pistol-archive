@@ -72,7 +72,13 @@ const mdText = r => r.match_date ? r.match_date.slice(5).replace('-', '.') + (r.
 
 // ---------- 탭 전환 ----------
 const views = {};
-function show(tab) {
+function show(tab, _pop) {
+  if (!_pop) {   // 사용자/프로그램 이동 → 히스토리 반영(뒤로가기로 이전 탭 복귀)
+    try {
+      if (!history.state || !history.state.tab) history.replaceState({ tab }, '', '#' + tab);
+      else if (history.state.tab !== tab) history.pushState({ tab }, '', '#' + tab);
+    } catch (e) { }
+  }
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.tab === tab));
   document.querySelectorAll('.view').forEach(v => v.hidden = v.id !== 'view-' + tab);
   if (tab === 'fav') { Fav.renderTab($('#view-fav')); return; }   // 매번 새로 그림
@@ -80,6 +86,25 @@ function show(tab) {
   if (tab === 'me') { renderMe(); return; }
   if (!views[tab]) { views[tab] = true; init[tab](); }
 }
+// ---- 뒤로가기/히스토리: 오버레이(보고서·모달)와 탭 이동을 브라우저 history에 연결 ----
+function closeOverlays() {   // 열린 오버레이를 닫음(닫았으면 true)
+  const rv = document.getElementById('report-view');
+  if (rv) { rv.remove(); return true; }
+  const md = document.getElementById('modal');
+  if (md && !md.hidden) { md.hidden = true; document.body.style.overflow = ''; return true; }
+  return false;
+}
+function pushOverlay() { try { history.pushState(Object.assign({}, history.state || {}, { ov: 1 }), ''); } catch (e) { } }
+function closeTop() {   // 닫기 버튼/ESC → history 경유로 닫아 뒤로가기와 동작 일치
+  if (history.state && history.state.ov) history.back();
+  else closeOverlays();
+}
+window.addEventListener('popstate', () => {
+  if (closeOverlays()) return;   // 오버레이가 떠 있으면 먼저 닫기(뒤로가기 소비)
+  const tab = (history.state && history.state.tab) || (location.hash ? location.hash.slice(1) : '') || 'home';
+  if (document.getElementById('view-' + tab)) show(tab, true);
+});
+window.closeTop = closeTop; window.pushOverlay = pushOverlay; window.closeOverlays = closeOverlays;
 const init = {};
 
 // 홈: 올해 대회 일정
@@ -414,8 +439,8 @@ async function openCoachReport(year) {
       <button class="rv-print" id="rv-print">🖨️ ${t('인쇄')}</button>
       <button class="rv-close" id="rv-close">${t('닫기')}</button></div>
     <div class="rv-doc" id="rv-doc"><div class="muted" style="padding:40px;text-align:center">${t('불러오는 중…')}</div></div>`;
-  document.body.appendChild(view);
-  document.getElementById('rv-close').onclick = () => view.remove();
+  document.body.appendChild(view); pushOverlay();
+  document.getElementById('rv-close').onclick = () => closeTop();
   document.getElementById('rv-print').onclick = () => window.print();
 
   // 선수별 집계 (종목별로 나눔)
@@ -619,8 +644,8 @@ async function openAthleteCertificate(items, year) {
   view = el('div', 'report-view'); view.id = 'report-view';
   view.innerHTML = `<div class="rv-bar no-print"><span class="rv-ttl">📜 ${t('선수 실적 증명서')}</span><button class="rv-print" id="rv-print">🖨️ ${t('인쇄')}</button><button class="rv-close" id="rv-close">${t('닫기')}</button></div>
     <div class="rv-doc dos-doc" id="rv-doc"><div class="muted" style="padding:40px;text-align:center">${t('불러오는 중…')}</div></div>`;
-  document.body.appendChild(view);
-  $('#rv-close').onclick = () => view.remove();
+  document.body.appendChild(view); pushOverlay();
+  $('#rv-close').onclick = () => closeTop();
   const parts = [], names = [];
   for (const it of (items || [])) {
     const a = it.id ? it : await DB.athleteByKey(it.key || it.identity_key); if (!a) continue;
@@ -649,8 +674,8 @@ async function openEvalReport(athletes, year) {
       <button class="rv-print" id="rv-print">🖨️ ${t('인쇄')}</button>
       <button class="rv-close" id="rv-close">${t('닫기')}</button></div>
     <div class="rv-doc" id="rv-doc"><div class="muted" style="padding:40px;text-align:center">${t('불러오는 중…')}</div></div>`;
-  document.body.appendChild(view);
-  view.querySelector('#rv-close').onclick = () => view.remove();
+  document.body.appendChild(view); pushOverlay();
+  view.querySelector('#rv-close').onclick = () => closeTop();
   view.querySelector('#rv-print').onclick = () => window.print();
 
   const careers = new Map(); const yearsSet = new Set();
@@ -689,8 +714,8 @@ async function openDossier(a, rows) {
       <button class="rv-print" id="rv-print">🖨️ ${t('인쇄')}</button>
       <button class="rv-close" id="rv-close">${t('닫기')}</button></div>
     <div class="rv-doc dos-doc" id="rv-doc"><div class="muted" style="padding:40px;text-align:center">${t('계산 중…')}</div></div>`;
-  document.body.appendChild(view);
-  view.querySelector('#rv-close').onclick = () => view.remove();
+  document.body.appendChild(view); pushOverlay();
+  view.querySelector('#rv-close').onclick = () => closeTop();
   view.querySelector('#rv-print').onclick = () => window.print();
 
   const doc = view.querySelector('#rv-doc');
@@ -1005,8 +1030,21 @@ async function buildReportSection(a, allRows, year) {
   try { R = await DB.regionalAnalysis(a.id, anYear); } catch (e) { }
   try { stages = await DB.stageAnalysis(a.id, anYear); } catch (e) { }
   try { TR = await DB.trainingOf(a.full_name); } catch (e) { }
-  let P = null; // 예측 (총평+예측섹션 공용)
-  try { if (window.Predict) { const trs = (TR && TR.sessions) || []; let _dk = (mainK && trs.some(s => (s.dk || s.disc) === mainK)) ? mainK : window.Predict.mainDisc(trs); if (!_dk) { const cnt = {}; (allRows || []).forEach(r => { const d = (r.event && r.event.discipline) || r.discipline; if (d) cnt[d] = (cnt[d] || 0) + 1; }); _dk = (Object.entries(cnt).sort((x, y) => y[1] - x[1])[0] || [])[0] || mainK; } if (_dk && (trs.length || (allRows && allRows.length))) P = window.Predict.forecast(_dk, trs, allRows, {}); } } catch (e) { }
+  let P = null, Pall = []; // 예측 (총평+예측섹션 공용) · Pall=전 종목
+  try {
+    if (window.Predict) {
+      const trs = (TR && TR.sessions) || [];
+      const dc = {};
+      trs.forEach(s => { const d = s.dk || s.disc; if (d) dc[d] = (dc[d] || 0) + 1; });
+      (allRows || []).forEach(r => { const d = (r.event && r.event.discipline) || r.discipline; const indiv = r.event ? r.event.team_type === 'individual' : true; if (d && indiv) dc[d] = (dc[d] || 0) + 1; });
+      const dList = Object.keys(dc).sort((x, y) => dc[y] - dc[x]);
+      let _dk = (mainK && dc[mainK]) ? mainK : (window.Predict.mainDisc(trs) || dList[0] || mainK);
+      if (_dk && (trs.length || (allRows && allRows.length))) {
+        P = window.Predict.forecast(_dk, trs, allRows, {});
+        Pall = dList.map(d => { let Rr; try { Rr = window.Predict.forecast(d, trs, allRows, {}); } catch (e) { Rr = { low: true }; } return { d, R: Rr }; });
+      }
+    }
+  } catch (e) { }
   const per10t = s => (s.series && s.series.length) ? s.series.reduce((a, b) => a + b, 0) / s.series.length : (s.avg != null ? s.avg : null);
   // 소속: 최근 국내대회 unit 우선(없으면 전체 최근, 그래도 없으면 전달값) → 항상 표시
   const curUnit = (() => {
@@ -1341,6 +1379,18 @@ async function buildReportSection(a, allRows, year) {
     {
       h += `<div class="dos-sec">🔮 ${t('미래 예측')} <span class="dos-help">${t('훈련 추세+대회 기반 · 통계 추정')}</span> <span>${esc(DISC[trDk] || trDk)}</span></div>
         <div class="dos-cap">${t('발당 평균(÷발수)으로 단위 통일 · 선형추세+변동성 구간 · 표본 5회 미만 정보부족 · 실제와 다를 수 있음')}</div>`;
+      // 전 종목 예측 요약 (선수가 하는 모든 종목)
+      if (Pall.length > 1) {
+        h += `<div class="dos-cap">📊 ${t('전 종목 예측 요약')} <span class="dos-help">${t('종목별 현재·다음달·예상등위·결선확률')}</span></div>`;
+        h += `<table class="dos-tab"><thead><tr><th>${t('종목')}</th><th>${t('기반')}</th><th>${t('현재 본선')}</th><th>${t('다음 달')}</th><th>${t('예상 등위')}</th><th>${t('결선')}</th></tr></thead><tbody>`;
+        Pall.forEach(({ d, R }) => {
+          const nm = esc(DISC[d] || d) + (d === trDk ? ` <s class="dos-unit">${t('주력')}</s>` : '');
+          if (R.low || !R.enough) { h += `<tr><td class="dos-nm">${nm}</td><td colspan="5" style="color:#9aa3af">${t('정보 부족')}</td></tr>`; return; }
+          const plc = (R.placement && !R.placement.low) ? `${R.placement.expLo}–${R.placement.expHi}${t('위')}` : '–';
+          h += `<tr><td class="dos-nm">${nm}</td><td>${t(R.compBased ? '대회' : '훈련')}</td><td class="dos-b">${R.cur.qual}</td><td>${R.nextMonth ? R.nextMonth.qual : '–'}</td><td>${plc}</td><td>${R.finals ? '~' + R.finals.prob + '%' : '–'}</td></tr>`;
+        });
+        h += `</tbody></table>`;
+      }
       h += `<div class="dos-kpis sm">`
         + tile(t('다음 대회 예상'), P.nextComp.qual, `${P.nextComp.lo}~${P.nextComp.hi} ${t('점')}`)
         + tile(t('다음 달 발당'), P.nextMonth.psa, `${t('현재')} ${P.cur.psa} (${P.nextMonth.delta >= 0 ? '+' : ''}${P.nextMonth.delta})`)
@@ -1423,8 +1473,8 @@ async function openReport(athletes, year) {
       <button class="rv-print" id="rv-print">🖨️ ${t('인쇄')}</button>
       <button class="rv-close" id="rv-close">${t('닫기')}</button></div>
     <div class="rv-doc dos-doc" id="rv-doc"><div class="muted" style="padding:40px;text-align:center">${t('불러오는 중…')}</div></div>`;
-  document.body.appendChild(view);
-  view.querySelector('#rv-close').onclick = () => view.remove();
+  document.body.appendChild(view); pushOverlay();
+  view.querySelector('#rv-close').onclick = () => closeTop();
   view.querySelector('#rv-print').onclick = () => {
     const fsafe = s => String(s || '').replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
     const d = new Date(), pp = n => String(n).padStart(2, '0');
@@ -2972,7 +3022,7 @@ init.rank = async () => {
 // =====================================================================
 async function openAthleteModal(id) {
   const modal = $('#modal'), body = $('#modal-body');
-  modal.hidden = false; document.body.style.overflow = 'hidden';
+  modal.hidden = false; document.body.style.overflow = 'hidden'; pushOverlay();
   body.innerHTML = `<div class="muted">${t('불러오는 중…')}</div>`;
   const rows = await DB.athleteCareer(id);
   const a = rows[0] ? { id, ...rows[0].athlete } : { id, full_name: '' };
@@ -2982,9 +3032,9 @@ function closeModal() { $('#modal').hidden = true; document.body.style.overflow 
 document.addEventListener('click', e => {
   const lnk = e.target.closest('.lnk[data-aid]');
   if (lnk) { openAthleteModal(isNaN(+lnk.dataset.aid) ? lnk.dataset.aid : +lnk.dataset.aid); return; }
-  if (e.target.id === 'modal' || e.target.closest('#modal-close')) closeModal();
+  if (e.target.id === 'modal' || e.target.closest('#modal-close')) closeTop();
 });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#modal').hidden) closeTop(); });
 
 // =====================================================================
 //  데이터 정보(정확도) — 우측 상단
