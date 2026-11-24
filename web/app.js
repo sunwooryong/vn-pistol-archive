@@ -1892,6 +1892,20 @@ function prStyle() {
   .pr-dchip{border:1px solid var(--ln);background:var(--pnl2);color:var(--tx);border-radius:8px;padding:5px 11px;font-size:12px;font-weight:700;cursor:pointer}
   .pr-dchip.on{background:var(--a);border-color:var(--a);color:#fff}
   .pr-dchip i{font-style:normal;opacity:.6;margin-left:5px;font-size:10px;font-weight:600}
+  .pr-sumwrap{border:1px solid var(--ln);border-radius:12px;padding:10px 12px;margin:2px 0 14px;background:var(--pnl)}
+  .pr-sumh{font-size:13px;font-weight:800;color:var(--tx);margin-bottom:6px}
+  .pr-sumhint{font-size:10px;font-weight:600;color:var(--mu);margin-left:4px}
+  table.pr-sum{width:100%;border-collapse:collapse;font-size:12px}
+  table.pr-sum th{text-align:right;color:var(--mu);font-weight:600;font-size:10px;padding:3px 6px;border-bottom:1px solid var(--ln)}
+  table.pr-sum th:first-child{text-align:left}
+  table.pr-sum td{text-align:right;padding:6px;border-bottom:1px solid var(--ln2,rgba(128,128,128,.12));cursor:pointer}
+  table.pr-sum tr:last-child td{border-bottom:none}
+  table.pr-sum tr.on td{background:var(--a);color:#fff}
+  table.pr-sum tr:hover td{background:var(--pnl2)}
+  table.pr-sum tr.on:hover td{background:var(--a)}
+  .pr-sd{text-align:left!important;font-weight:700}
+  .pr-sb{font-weight:800}
+  .pr-slow{text-align:center!important;color:var(--mu)}
   .pr-empty{color:var(--mu);padding:18px;border:1px dashed var(--ln);border-radius:12px;text-align:center}
   .pr-addrow{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap}
   .pr-addrow input{flex:1;min-width:180px;background:var(--pnl2);border:1px solid var(--ln);color:var(--tx);border-radius:8px;padding:8px 11px;font-size:13px}
@@ -2092,13 +2106,26 @@ async function renderPredictTab() {
     const up = (comps || []).filter(c => (c.date_start || '') >= today0).sort((x, y) => (x.date_start || '').localeCompare(y.date_start || ''));
     nextComp = up.find(c => c.scope === 'domestic') || up[0] || null;
   } catch (e) { }
-  const DLAB = d => (window.DISC && DISC[d]) || d;
+  const DLAB = d => (typeof DISC !== 'undefined' && DISC[d]) || d;
+  const nextOpt = nextComp ? { nextComp: { name: nextComp.name, date: nextComp.date_start } } : {};
   const discSel = discList.length > 1 ? `<div class="pr-discs"><span class="pr-rlab">${t('종목')}</span>${discList.map(d => `<button class="pr-dchip${d === dk ? ' on' : ''}" data-d="${esc(d)}">${esc(DLAB(d))}<i>${discCnt[d] || ''}</i></button>`).join('')}</div>` : '';
-  const bindDiscs = () => box.querySelectorAll('.pr-dchip[data-d]').forEach(b => b.onclick = () => { box._disc = b.dataset.d; renderPredictTab(); });
-  const R = window.Predict.forecast(dk, sessions, career, nextComp ? { nextComp: { name: nextComp.name, date: nextComp.date_start } } : {});
+  const bindDiscs = () => box.querySelectorAll('[data-d]').forEach(b => b.onclick = () => { box._disc = b.dataset.d; renderPredictTab(); });
+  // 전 종목 예측 요약표 — 종목마다 forecast 실행해 한눈에 비교(행 클릭=상세)
+  const allR = discList.map(d => { let Rr; try { Rr = window.Predict.forecast(d, sessions, career, nextOpt); } catch (e) { Rr = { low: true }; } return { d, R: Rr }; });
+  const sumRow = (d, Rr) => {
+    const on = d === dk ? ' class="on"' : '';
+    if (Rr.low || !Rr.enough) return `<tr data-d="${esc(d)}"${on}><td class="pr-sd">${esc(DLAB(d))}</td><td colspan="5" class="pr-slow">${t('정보 부족')}</td></tr>`;
+    const base = Rr.compBased ? t('대회') : t('훈련');
+    const plc = (Rr.placement && !Rr.placement.low) ? `${Rr.placement.expLo}–${Rr.placement.expHi}${t('위')}` : '–';
+    const fin = Rr.finals ? `~${Rr.finals.prob}%` : '–';
+    const nx = Rr.nextMonth ? Rr.nextMonth.qual : '–';
+    return `<tr data-d="${esc(d)}"${on}><td class="pr-sd">${esc(DLAB(d))}</td><td>${base}</td><td class="pr-sb">${Rr.cur.qual}</td><td>${nx}</td><td>${plc}</td><td>${fin}</td></tr>`;
+  };
+  const discTable = allR.length > 1 ? `<div class="pr-sumwrap"><div class="pr-sumh">📊 ${t('전 종목 예측 요약')} <span class="pr-sumhint">${t('행을 누르면 상세')}</span></div><table class="pr-sum"><thead><tr><th>${t('종목')}</th><th>${t('기반')}</th><th>${t('현재 본선')}</th><th>${t('다음 달')}</th><th>${t('예상 등위')}</th><th>${t('결선')}</th></tr></thead><tbody>${allR.map(x => sumRow(x.d, x.R)).join('')}</tbody></table></div>` : '';
+  const R = (allR.find(x => x.d === dk) || {}).R || window.Predict.forecast(dk, sessions, career, nextOpt);
   const dlab = DLAB(dk);
   if (R.low || !R.enough) {
-    body.innerHTML = discSel + `<div class="pr-sub"><b>${esc(a.full_name)}</b> · ${esc(dlab)}${unitStr} · ${t(R.compBased ? '대회' : '훈련')} ${R.nSessions}${t('회')} <span class="pr-low">${t('정보 부족(5회 미만)')}</span></div><div class="pr-empty">${t('이 종목은 예측에 필요한 최소 기록(5회)이 모이지 않았습니다.')}${discList.length > 1 ? ' ' + t('위에서 다른 종목을 선택해 보세요.') : ''}</div>`; bindDiscs(); return;
+    body.innerHTML = discSel + discTable + `<div class="pr-sub"><b>${esc(a.full_name)}</b> · ${esc(dlab)}${unitStr} · ${t(R.compBased ? '대회' : '훈련')} ${R.nSessions}${t('회')} <span class="pr-low">${t('정보 부족(5회 미만)')}</span></div><div class="pr-empty">${t('이 종목은 예측에 필요한 최소 기록(5회)이 모이지 않았습니다.')}${discList.length > 1 ? ' ' + t('위에서 다른 종목을 선택해 보세요.') : ''}</div>`; bindDiscs(); return;
   }
   const up = v => v >= 0 ? 'up' : 'dn', sgn = v => (v >= 0 ? '+' : '') + v;
   let H = `<div class="pr-sub"><b>${esc(a.full_name)}</b> · ${esc(dlab)}${unitStr} · ${t(R.compBased ? '대회' : '훈련')} ${R.nSessions}${t('회')}${R.compBased ? ' <span class="pr-flag">' + t('대회 기반') + '</span>' : ''} · ${t('현재 본선환산')} <b>${R.cur.qual}</b> (${t('발당')} ${R.cur.psa})</div>`;
@@ -2150,7 +2177,7 @@ async function renderPredictTab() {
   aux += `</div></div>`;
   H += aux + `</div>`;
   H += `<p class="pr-note">※ ${t('예측은 훈련(발당평균 추세)·대회(등위/결선)·환경을 결합한 통계 추정치입니다. 표본이 적을수록 구간이 넓고 5회 미만은 표시하지 않습니다. 실제 결과와 다를 수 있습니다.')}</p>`;
-  body.innerHTML = discSel + H; bindDiscs();
+  body.innerHTML = discSel + discTable + H; bindDiscs();
 }
 init.predict = () => renderPredictTab();
 window.renderPredictTab = renderPredictTab;
