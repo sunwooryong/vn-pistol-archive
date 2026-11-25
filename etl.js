@@ -175,9 +175,35 @@ async function main() {
       idxs.forEach(i => { if (recs[i].unit === 'VIE') { drop.add(i); vieDropped++; } });
     }
   }
+  // ---------- 완전 중복행 제거 ----------
+  // 원본 시트에 같은 성적행이 2번 입력된 경우(선수·번호·날짜·점수·시리즈가 모두 동일)
+  // 1행만 남기고 제거한다. 소속만 다른 경우(VIE+클럽 이중등재, 점수 미입력 행 포함)도
+  // 같은 등록으로 보고 비-VIE 행을 우선 보존한다. 날짜/점수가 다르면(같은 종목 재사격 등)
+  // 서로 다른 기록이므로 유지한다.
+  const rowSig = x => [
+    x.year, x.comp, x.pe.code, P.norm(x.name),
+    x.partCode || '', x.relay || '', x.firingPoint || '', x.bib || '',
+    x.total, x.innerTens, x.finalScore, x.medal || '', x.teamMedal || '', x.teamMedalNo || '',
+    x.matchDate || '', x.matchTime || '', (x.series || []).join('/'),
+  ].join('¦'); // 소속(unit) 제외: 이중등재도 동일행으로 묶는다
+  const dupGroups = new Map();
+  recs.forEach((x, i) => {
+    if (drop.has(i)) return;
+    const s = rowSig(x);
+    (dupGroups.get(s) || dupGroups.set(s, []).get(s)).push(i);
+  });
+  let exactDup = 0;
+  for (const idxs of dupGroups.values()) {
+    if (idxs.length < 2) continue;
+    // 비-VIE(실제 클럽) 행을 우선 보존하고 나머지는 제거
+    idxs.sort((a, b) => (recs[a].unit === 'VIE' ? 1 : 0) - (recs[b].unit === 'VIE' ? 1 : 0));
+    idxs.slice(1).forEach(i => { drop.add(i); exactDup++; });
+  }
+
   const clean = recs.filter((_, i) => !drop.has(i));
   log('\n--- VIE 중복 제거 ---');
   log('  제거된 VIE 이중등재 행:', vieDropped);
+  log('  제거된 완전 중복행:', exactDup);
   log('  잔여 결과행:', clean.length);
 
   // ---------- 이름→출생연도 룩업(ID 기반)으로 결측 보정 ----------
